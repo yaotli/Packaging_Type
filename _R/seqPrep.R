@@ -4,6 +4,11 @@
 # for this section:
 # 1. clean the sequence ID
 # 2. try to remove apparent duplicated sequences
+#
+# Data sources:
+# 1. gisaid: 6278/ H5
+# 2. ncbi: 6677/ H5
+# 3. reference strains with clade label from Dr. Gavin Smith
 
 
 # clean ID ####
@@ -11,6 +16,7 @@
 library(seqinr)
 library(stringr)
 
+  
   file = read.fasta("~/Desktop/ReassortSubtype/pool_ha_13193.fasta")
   
   seq_name0 = attributes(file)$names
@@ -55,11 +61,11 @@ library(stringr)
     
 # deal with duplicated ID ####
   
- # D (n = 3938)
+ # D (n = 4354)
   
   duplicated_ID <- which(duplicated(seq_name) == "TRUE")
   
- # D2 (n = 4813)
+ # D2 (n = 5003)
   
   n <- "A/([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)"
   
@@ -79,7 +85,7 @@ library(stringr)
    )) == "TRUE")
 
  
- # D2 & S (n = 4327)
+ # D2 & S (n = 4461)
  
    duplicated_rm <- intersect(duplicated_ID2, duplicated_seq)
  
@@ -136,7 +142,61 @@ library(stringr)
 
 # sequence curation ####
  
+ # for ambiguous nucleotide and seq length
  
+ tobedelect1 <- c()
+
+ for(i in 1: length(seq0)){
+   
+   ATCG = c("a", "t", "c", "g")
+   
+   # convert character to string
+   
+   seq_0 = c2s(seq0[[i]])
+   seq_i = gsub("-", "", seq_0)
+   seq_i = gsub("~", "", seq_i)
+   
+   # seq length and number of ambiguous nucleotide
+   
+   seqlth = length( s2c(seq_i) )
+      amb = length( which(! s2c(seq_i) %in% ATCG ) )
+   
+   if( ( seqlth < 1500 ) | ( amb > 5 ) ){
+     
+     tobedelect1[length(tobedelect1) + 1 ] = i
+     
+   }
+   
+ }
+ 
+ # sum duplicated_rm & tobedelect1 PLUS A/unknown/unknown/G444/unknown
+ tobedelect <- sort (unique( c(1, duplicated_rm, tobedelect1) ))
+ 
+ # generate temporal info
+ 
+ d = "([0-9]{4})-([0-9]{2})-([0-9]{2})"
+
+ for (i in 1: (length(seq0) - 238)) {
+   
+   seq_name[i] <- gsub(x = seq_name[i], pattern = d, replacement = 
+                         phylo_date( str_match(string = seq_name[i], pattern = d)[,1] ))
+   
+ }
+   
+ 
+ # first output for alignment
+ 
+ remain <- seq(1: length(seq0))[-tobedelect]
+ 
+ seq_name_out <- seq_name[remain]
+      seq_out <- seq0[remain]
+      
+ write.fasta(seq_out, 
+             file.out = "~/Desktop/outputSeq1.fasta",
+             names = seq_name_out)
+ 
+ 
+
  
  
  
