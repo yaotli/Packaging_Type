@@ -161,7 +161,7 @@ library(stringr)
    seqlth = length( s2c(seq_i) )
       amb = length( which(! s2c(seq_i) %in% ATCG ) )
    
-   if( ( seqlth < 1500 ) | ( amb > 5 ) ){
+   if( ( seqlth < 1600 ) | ( amb > 5 ) ){
      
      tobedelect1[length(tobedelect1) + 1 ] = i
      
