@@ -19,8 +19,11 @@ phylo_date <- function(x){
                                        units = "days"))/365
   
   yr.daydifference = yr + daydifference
-  yr.daydifference <- round(yr.daydifference, 2)
+  yr.daydifference <- format( round(yr.daydifference, 2), nsmall = 2)
   
-  return(yr.daydifference)
+return(yr.daydifference)
   
 }
+
+
+
