@@ -90,6 +90,17 @@ cleanID <- function(x){
   
   seq_name[sub_seq] <- paste0(seq_name[sub_seq], "15")
   
+  # generate temporal info
+  
+  d = "([0-9]{4})-([0-9]{2})-([0-9]{2})"
+  
+  for (i in 1: ( length(seq0)) ) {
+    
+    seq_name[i] <- gsub(x = seq_name[i], pattern = d, replacement = 
+                          
+                          phylo_date( str_match(string = seq_name[i], pattern = d)[,1] ) )
+    
+  }
   
   # deal with duplicated ID  
   
@@ -115,13 +126,14 @@ cleanID <- function(x){
       # loop to deal with multiple replicated
       # find the date info, insert labeling in the middle
       
-      d = "([0-9]{4})-([0-9]{2})-([0-9]{2})"
+      d = "([0-9]{4})\\.([0-9]{2})"
       
       time_rep <- str_match(ap.id, d)[,1]
       
       for (k in 1: length(ap.id)){
         
         app.id[k] = sub(time_rep[k], paste0(app[k], time_rep[k]), ap.id[k])
+        
       }
       
       # back to seq_name
@@ -129,7 +141,9 @@ cleanID <- function(x){
       seq_name[dup0] = app.id
       
     }
+    
   }     
+  
   
   duplicated_id_ed = which(duplicated(seq_name) == "TRUE")
   
@@ -138,18 +152,6 @@ cleanID <- function(x){
     print("ERROR") 
     
   }else{
-    
-    # generate temporal info
-    
-    d = "([0-9]{4})-([0-9]{2})-([0-9]{2})"
-    
-    for (i in 1: ( length(seq0)) ) {
-      
-      seq_name[i] <- gsub(x = seq_name[i], pattern = d, replacement = 
-                            
-                            phylo_date( str_match(string = seq_name[i], pattern = d)[,1] ) )
-      
-    }
     
     write.fasta(seq0, 
                 file.out = "~/Desktop/cleanID.fasta", 
