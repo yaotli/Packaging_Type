@@ -11,28 +11,26 @@
 # 3. reference strains with clade label from Dr. Gavin Smith (238)
 
 
+# Prepare for tree ####
 
-# clean ID: pool_ha_12995 (gisaid + ncbi)
+
+  # clean ID: pool_ha_12995 (gisaid + ncbi)
 
 cleanID()
 
-# curateSeq
+  # curateSeq
 
 curateSeq(mode = 5)
 
-# add reference strains
-# align by MAFFT, and trim in BioEdit
+  # add reference strains
+  # align by MAFFT, and trim in BioEdit
 
-# curateSeq
+  # curateSeq
 
 curateSeq(maxamb = 1500, minseq = 1, mode = 2, vip = 238)
 
 
-# FastTree
-# ./FastTree -nt -spr 4 -nni 10 -gtr -cat 20 -gamma <tobetree.fasta> out
-
-
-
-
+  # FastTree
+  # ./FastTree -nt -spr 4 -nni 10 -gtr -cat 20 -gamma <tobetree.fasta> out
 
 
