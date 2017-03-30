@@ -283,3 +283,116 @@ curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0){
   
   
 }
+
+
+
+# findtaxa ###
+
+findtaxa <- function(type, 
+                     tree, 
+                     targetid, 
+                     target){
+  
+  # type 1 = branch coloring 
+  # type 0 = tip shape
+  # default branch color = gray
+  
+  library(ape)
+  library(ggtree)
+  
+  # extract tree data
+  tree.d <- fortify(tree)
+  tree.d[, ncol(tree.d) + 1] <- gsub("'", "", tree.d$label)
+  colnames(tree.d)[ncol(tree.d)] <- "taxaid"
+  
+  # for tip shape
+  if (type == 0){
+    
+    shapetaxa <- data.frame(node = c(1:length(tree.d$isTip)), shapee = NA)
+    
+    for (i in 1: length(targetid)){
+      
+      shapetaxa$shapee[ grep(targetid[i], tree.d$taxaid) ] <- target[i]
+      
+    }
+    
+    return(shapetaxa)
+    
+    # for branch colorring     
+  }else {
+    
+    # new column
+    
+    tree.d[, ncol(tree.d) + 1] <- "black"
+    colnames(tree.d)[ncol(tree.d)] <- "colorr"
+    
+    # for branch extension
+    
+    edgematrix <- as.matrix(tree.d[,c(2,1)])
+    
+    # color grouping 
+    
+    group_color <- unique(target)
+    
+    for (i in 1: length(group_color)){
+      
+      # color as group to combine key word to targetno
+      
+      sub_color <- which(target == group_color[i])
+      targetno <- c()
+      
+      for (t in 1: length(sub_color)){
+        
+        targetno <- unique( c(targetno, grep( targetid[ sub_color[t] ], tree.d$taxaid)) )
+        
+      }
+      
+      tobecolor = c()
+      pre_targetno = length(targetno)
+      post_targetno = 0
+      
+      # while loop 
+      
+      while( pre_targetno != post_targetno ){
+        
+        pre_targetno = length(targetno)
+        
+        for(k in 1:length(targetno)){
+          
+          # all sibiling 
+          sibs <- edgematrix[
+            which(edgematrix[,1] == 
+                    edgematrix[which(edgematrix[,2] == targetno[k]),][1]),][,2]
+          
+          if (length(sibs) == 1){
+            
+            targetno = c(targetno, edgematrix[which(edgematrix[,2] == targetno[k]),][1])
+            
+          }else{
+            
+            if (length(which(sibs %in% targetno == "FALSE")) == 0){
+              
+              tobecolor = c(edgematrix[which(edgematrix[,2] == targetno[k]),][1], tobecolor)
+              
+              targetno = c(targetno, edgematrix[which(edgematrix[,2] == targetno[k]),][1])
+            }
+            
+          }
+          targetno = unique(targetno)
+          tobecolor = unique(c(targetno, tobecolor))
+        }
+        
+        post_targetno = length(targetno)
+        
+      }
+      
+      # coloring
+      
+      tree.d$colorr[tobecolor] <- group_color[i]
+      
+    }
+    return(tree.d)    
+    
+  }
+  
+}
