@@ -286,7 +286,7 @@ curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0){
 
 
 
-# findtaxa ###
+# findtaxa ####
 
 findtaxa <- function(type, 
                      tree, 
@@ -396,3 +396,118 @@ findtaxa <- function(type,
   }
   
 }
+
+
+# subtreeseq ####
+
+
+subtreseq<-function(rmrep = 0, outlier = 0){
+  
+  library(seqinr) 
+  
+  fasta0 = read.fasta(file.choose())
+  seq.name0 = attributes(fasta0)$names
+  seq0 = getSequence(fasta0)
+  
+  sub.tree = read.table(file.choose(), header = FALSE, stringsAsFactors = FALSE)
+  id.subtree = match(sub.tree[,1], seq.name0)
+  
+  if( any(NA %in% id.subtree) == "TRUE"){
+    
+    print("Mismatch")
+    
+  }else{
+    
+    if ( rmrep == 1 ){
+      
+      dup_seq <-  which(
+        
+        duplicated( sapply(seq0, function(x){
+          
+          y = c2s(x)
+          z = gsub("-", "", y)
+          z = gsub("~", "", z)
+          
+          return(z) 
+        }  
+        )) == "TRUE")
+      
+      dup <- c()
+      
+      for (k in 1: length(dup_seq) ){
+        
+        tomatch <- gsub("~", "", gsub("-", "", c2s( seq0[[ dup_seq[k] ]] ) ))
+        
+        dup_i <- which(sapply(seq0, function(x){
+          
+          y = c2s(x)
+          z = gsub("-", "", y)
+          z = gsub("~", "", z)
+          
+          return(z)
+        }) %in% tomatch  == TRUE)
+        
+        
+        if ( any( seq.name0[dup_i] %in% sub.tree[,1] == TRUE) ){
+          
+          dup = c(dup, dup_i)
+          
+        }
+        
+      }
+      
+      id.subtree = sort(unique(c(id.subtree, dup)))
+      
+      seq.name0_subtree = seq.name0[id.subtree]
+      seq0_subtree = seq0[id.subtree]
+      
+      write.fasta(seq0_subtree, 
+                  file.out = "~/Desktop/subtree.fasta", 
+                  names = seq.name0_subtree )
+      
+      if (outlier == 1){
+        
+        id.outlier <- seq(1, length(seq0))[-id.subtree]
+        
+        seq.name0_subtree = seq.name0[id.outlier]
+        seq0_subtree = seq0[id.outlier]
+        
+        write.fasta(seq0_subtree, 
+                    file.out = "~/Desktop/subtree2.fasta", 
+                    names = seq.name0_subtree )
+        
+        
+      }
+      
+      
+      print("Done")  
+      
+      
+    }else{
+      
+      seq.name0_subtree = seq.name0[id.subtree]
+      seq0_subtree = seq0[id.subtree]
+      
+      write.fasta(seq0_subtree, 
+                  file.out = "~/Desktop/subtree.fasta", 
+                  names = seq.name0_subtree )
+      
+      if (outlier == 1){
+        
+        id.outlier <- seq(1, length(seq0))[-id.subtree]
+        
+        seq.name0_subtree = seq.name0[id.outlier]
+        seq0_subtree = seq0[id.outlier]
+        
+        write.fasta(seq0_subtree, 
+                    file.out = "~/Desktop/subtree2.fasta", 
+                    names = seq.name0_subtree )
+        
+        
+      }
+      
+      print("Done")  
+      
+    }
+    
+  } }
