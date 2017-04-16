@@ -226,6 +226,8 @@ curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0){
       
       y = c2s(x)
       z = gsub("-", "", y)
+      z = gsub("~", "", z)
+      
       
       return(z) 
     }  
