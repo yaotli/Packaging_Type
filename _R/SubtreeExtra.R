@@ -10,76 +10,79 @@
 # 2. ncbi: 6677/ H5
 #
 # download: 20170323
-# minlth: 1600
+# minlth: 1500
 # pool: pool_ha_12955.fasta
 
 # repeat previous work 
 
-  # source: pool_ha_12955.fasta
-
+  
 source("_R/Function.R")
 
   cleanID()
-
-  # curateSeq()
-  # source: cleanID_pool_ha_12955.fasta
-  # mode 5: duplicated seq x duplicated id
+  
+  # source: pool_ha_12955.fasta
+  # result: cleanID_pool_ha_12955.fasta
   
 curateSeq(maxamb = 5, minseq = 1600, mode = 5)
 
+  # mode 5: duplicated seq x duplicated id
+
+  # source: cleanID_pool_ha_12955.fasta
   # result: curateSeq-5_pool_ha_12955.fasta
-  # add reference
+  # add reference file: smallref.fasta
+  # result: addref_curateSeq-5_pool_ha_12955.fasta
+
 
   # MAFFT
-  # source: addref_curateSeq-5_pool_ha_12955
-  # result: align_addref_pool_ha_12955.txt
+  # source: addref_curateSeq-5_pool_ha_12955.fasta
+  # result: align_addref_pool_ha_12955.fasta
 
-  # trim: lth = 1686
+  # trim: lth = 1581
 
 curateSeq(maxamb = 1500, minseq = 1, mode = 2, vip = 238)
 
+  # source: trim_addref_pool_ha_12955.fasta
+  # result: curateSeq-2_trim_pool_ha_12955.fasta (n = 6582)
+
+
   # FastTree
-  # source: curateSeq-2_trim_pool_ha_12955.fasta (n = 6582)
-  # result: tree.tre
+  # source: curateSeq-2_trim_pool_ha_12955.fasta 
+  # ./FastTree -nt -spr 4 -nni 10 -gtr -cat 20 -gamma  <tobetree.fasta> tree
+  # result: 
 
 # extract subclade seq
 
+  # GsGD / non-GsGD
 
-subtreseq(rmrep = 1, outlier = 0)
+subtreseq(findrep = 1, outlier = 1, originfile = 1)
 
-  # source: 1. addref_curateSeq-5_pool_ha_12955.fasta 2. id_sub5496
-  # result: Seq_sub5496_addrep.fasta
+  # source: 1. trim_addref_pool_ha_12955.fasta, 
+  #         2. id_sub5496, 
+  #         3. align_addref_pool_ha_12955.fasta
 
-subtreseq(rmrep = 1, outlier = 1)
+  # result: 1. align_addref_GsGD.fasta, 2 align_addref_GsGDc.fasta 
+  
+  # trim: align_addref_GsGD.fasta to the length of 1581
 
-  # source: 1. Seq_sub5496_addrep.fasta 2. id_sub888
-  # result: 1. Seq_sub888_addrep.fasta 2. Seq_sub888c_addref.fasta
 
+  # 2344 / non-2344
+
+subtreseq(rmrep = 1, outlier = 1, originfile = 1)
+
+  # source: 1. trim_align_addref_GsGD.fasta , 
+  #         2. id_sub888,
+  #         3. align_addref_GsGD.fasta
+          
+  # result: 1. align_addref_GsGD_2322.fasta, 2. align_addref_GsGD_2322c.fasta
 
 
 # Difference ####
 
+  # source: 5pRNA_2344.fas and 5pRNA_GsGDnon2344.fas
+
 library(RWebLogo)
 
-  weblogo(file.in = file.choose(), color.scheme = 'classic', stacks.per.line = 150)
-
-  # source: 5_non2344.fasta and 3_non2344.fasta
-
-library(seqinr)
-
-  non2344 <- read.fasta(file.choose())
-  
-  seq_name0 = attributes(non2344)$names
-       seq0 = getSequence(non2344)
-
-  
-  non2344_nonN1 <- c( grep("_H5N2_", seq_name0), 
-                      grep("_H5N5_", seq_name0), 
-                      grep("_H5N6_", seq_name0), 
-                      grep("_H5N9_", seq_name0) )
-
-  write.fasta(seq0[non2344_nonN1], file.out = "~/Desktop/non2344_nonN1.fasta", 
-              names = seq_name0[non2344_nonN1])
-  
+  weblogo(file.in = file.choose(), 
+          color.scheme = 'classic', stacks.per.line = 150, units = 'probability')
 
 
