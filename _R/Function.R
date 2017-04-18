@@ -403,7 +403,7 @@ findtaxa <- function(type,
 # subtreeseq ####
 
 
-subtreseq<-function(rmrep = 0, outlier = 0){
+subtreseq<-function(findrep = 0, outlier = 0, originfile = 0){
   
   library(seqinr) 
   
@@ -414,13 +414,22 @@ subtreseq<-function(rmrep = 0, outlier = 0){
   sub.tree = read.table(file.choose(), header = FALSE, stringsAsFactors = FALSE)
   id.subtree = match(sub.tree[,1], seq.name0)
   
+  if (originfile == 1){
+    
+    fasta_ori = read.fasta(file.choose())
+    seq.name0_ori = attributes(fasta_ori)$names
+    seq0_ori = getSequence(fasta_ori)
+    
+  }
+  
+  
   if( any(NA %in% id.subtree) == "TRUE"){
     
     print("Mismatch")
     
   }else{
     
-    if ( rmrep == 1 ){
+    if ( findrep == 1 ){
       
       dup_seq <-  which(
         
@@ -447,6 +456,7 @@ subtreseq<-function(rmrep = 0, outlier = 0){
           z = gsub("~", "", z)
           
           return(z)
+          
         }) %in% tomatch  == TRUE)
         
         
@@ -467,6 +477,18 @@ subtreseq<-function(rmrep = 0, outlier = 0){
                   file.out = "~/Desktop/subtree.fasta", 
                   names = seq.name0_subtree )
       
+      if (originfile == 1){
+        
+        seq.name0_subtree = seq.name0_ori[id.subtree]
+        seq0_subtree = seq0_ori[id.subtree]
+        
+        write.fasta(seq0_subtree, 
+                    file.out = "~/Desktop/Ori_subtree.fasta", 
+                    names = seq.name0_subtree )
+        
+      }
+      
+      
       if (outlier == 1){
         
         id.outlier <- seq(1, length(seq0))[-id.subtree]
@@ -477,6 +499,17 @@ subtreseq<-function(rmrep = 0, outlier = 0){
         write.fasta(seq0_subtree, 
                     file.out = "~/Desktop/subtree2.fasta", 
                     names = seq.name0_subtree )
+        
+        if (originfile == 1){
+          
+          seq.name0_subtree = seq.name0_ori[id.outlier]
+          seq0_subtree = seq0_ori[id.outlier]
+          
+          write.fasta(seq0_subtree, 
+                      file.out = "~/Desktop/Ori_subtree2.fasta", 
+                      names = seq.name0_subtree )
+          
+        }
         
         
       }
