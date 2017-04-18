@@ -6,7 +6,7 @@ library(stringr)
 
   # read-in
 
-gsgd_fasta <- read.fasta("~/Desktop/RNA_GsGD.fasta")
+gsgd_fasta <- read.fasta("~/Desktop/RNA_GsGD.fas")
 
   seq_name0 = attributes(gsgd_fasta)$names
        seq0 = getSequence(gsgd_fasta)
@@ -14,7 +14,8 @@ gsgd_fasta <- read.fasta("~/Desktop/RNA_GsGD.fasta")
   # eliminate unsubtyped virus     
       
   nonsubtype <- which(is.na(str_match(pattern = "_(H[0-9]+N[0-9]+)_", seq_name0)[,1]) == TRUE)
-
+  nonsubtype <- unique( sort( c(nonsubtype, grep("H5N0", x = seq_name0)) ) )
+  
   seq_name <- seq_name0[-nonsubtype]
        seq <- seq0[-nonsubtype]
 
@@ -25,7 +26,7 @@ gsgd_fasta <- read.fasta("~/Desktop/RNA_GsGD.fasta")
   # extract subtype data  
  
      n1_id <- which( str_match(pattern = "_(H[0-9]+N[0-9]+)_", seq_name)[,2] == "H5N1" )
-  nonN1_id <- seq(1:length(seq_name))[-h5_id]
+  nonN1_id <- seq(1:length(seq_name))[-n1_id]
  
   # out_n1
   out_Nx <- rep(0, length(seq_name))
@@ -230,14 +231,17 @@ df_HA_LR <- data.frame(pos = seq(1, length(HA_LR_p)), OR = HA_LR_OR, pvalue = HA
   ggplot(df_HA_Chi_value, aes(x = pos)) + 
     geom_line(aes(y = ChiQ)) + 
     theme_bw() + 
-    geom_text(x = 1651, y = 2500, label = "1651 (108)", size = 2) + 
-    geom_text(x = 1724, y = 2300, label = "1724 (35)", size = 2) + 
-    
-    geom_text(x = 38, y = 5500, label = "38(3')", color = "RED", size = 2) + 
-    geom_text(x = 1634, y = 5500, label = "124(5')", color = "RED", size = 2) + 
-    
     geom_vline(xintercept = 38, color = "RED", linetype="dashed") + 
     geom_vline(xintercept = 1634, color = "RED", linetype="dashed") + 
+    
+    geom_text(x = 38, y = 6500, label = "38 (3')", color = "RED", size = 2) + 
+    geom_text(x = 1634, y = 6500, label = "124 (5')", color = "RED", size = 2) + 
+    
+    geom_text(x = 1651, y = 2700, label = "1651 (108)", size = 2) +
+    geom_text(x = 1687, y = 1830, label = "1687 (72)", size = 2) +
+    geom_text(x = 1724, y = 2500, label = "1724 (35)", size = 2) + 
+    geom_text(x = 1735, y = 1650, label = "1735 (24)", size = 2) + 
+    
     scale_x_continuous(breaks = seq(0, 1700, by = 250)) + 
     xlab('')
   
@@ -247,14 +251,18 @@ df_HA_LR <- data.frame(pos = seq(1, length(HA_LR_p)), OR = HA_LR_OR, pvalue = HA
   ggplot(df_HA_LR, aes(x = pos)) + 
     geom_line(aes(y = OR)) + 
     theme_bw() + 
-    geom_vline(xintercept = 1651,  linetype="dashed") + 
-    geom_vline(xintercept = 1724,  linetype="dashed") +
-    
-    geom_text(x = 1651, y = 5000000, label = "69", size = 2) + 
-    geom_text(x = 1724, y = 5500000, label = "1844", size = 2) + 
     
     geom_vline(xintercept = 38, color = "RED", linetype="dashed") + 
     geom_vline(xintercept = 1634, color = "RED", linetype="dashed") + 
+    
+    geom_text(x = 1651, y = 5000000, label = "73", size = 2) + 
+    geom_text(x = 1700, y = 5200000, label = "2760", size = 2) + 
+    geom_text(x = 1760, y = 5200000, label = "186", size = 2) + 
+    
+    
+    geom_vline(xintercept = 1651,  linetype="dashed") + 
+    geom_vline(xintercept = 1724,  linetype="dashed") +
+    geom_vline(xintercept = 1735,  linetype="dashed") +
     
     scale_x_continuous(breaks = seq(0, 1700, by = 250)) + 
     xlab("") 
@@ -264,16 +272,23 @@ df_HA_LR <- data.frame(pos = seq(1, length(HA_LR_p)), OR = HA_LR_OR, pvalue = HA
     geom_line(aes(y = pvalue)) + 
     theme_bw() + 
     geom_vline(xintercept = 1651,  linetype="dashed") + 
+    geom_vline(xintercept = 1687,  linetype="dashed") + 
     geom_vline(xintercept = 1724,  linetype="dashed") + 
+    geom_vline(xintercept = 1735,  linetype="dashed") + 
+    
+    geom_text(x = 1651, y = 300, label = "73", size = 2) + 
+    geom_text(x = 1675, y = 280, label = "78", size = 2) + 
+    geom_text(x = 1705, y = 300, label = "2760", size = 2) + 
+    geom_text(x = 1755, y = 300, label = "186", size = 2) +
     
     geom_vline(xintercept = 38, color = "RED", linetype="dashed") + 
     geom_vline(xintercept = 1634, color = "RED", linetype="dashed") + 
     
     scale_x_continuous(breaks = seq(0, 1700, by = 250)) + 
-    ylab("p-value (-log10)")
+    ylab("LR p-value (-log10)")
   
   
-multiplot(p0, p1, p2, ncol=1)
+multiplot(p0, p2, ncol=1)
 
   
   
