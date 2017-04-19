@@ -44,6 +44,18 @@ non_gsdd_fasta <- read.fasta("~/Desktop/RNA_nonGsGD.fas")
   nonN1_id <- seq(1:length(seq_name))[-n1_id]
   
   
+  NA_seq_name <- gsub(pattern = "H5", 
+                      replacement = "", 
+                      str_match(pattern = "_(H[0-9]+N[0-9]+)_", 
+                                seq_name)[,2])
+  
+  NA_seq_name_ng <- gsub(pattern = "H5", 
+                         replacement = "", 
+                         str_match(pattern = "_(H[0-9]+N[0-9]+)_", 
+                                   seq_name_ng)[,2])
+  
+  
+  
 # summary ####  
   
   X = 1735
@@ -131,3 +143,51 @@ ggplot(data = df_1651_3, aes(x =sub1651_ng, y = Freq)) +
   labs(title = "non-GsGD") + xlab("")
 
 multiplot(p1, p2, p4, ncol = 1)
+
+
+
+# coemergence of 4 residues ####
+
+
+  df_gsgd_4residue <- 
+  data.frame( nt = c(seq_matrix[, c(1735, 1724, 1687, 1651)]), 
+              pos = rep(1:4, each = dim(seq_matrix)[1]), 
+              seq = rep(1:dim(seq_matrix)[1], 4), 
+              Nx = rep(NA_seq_name, 4)) 
+  
+df_gsgd_4residue_N1 <- 
+  data.frame( nt = c(seq_matrix[n1_id,][, c(1735, 1724, 1687, 1651)]), 
+              pos = rep(1:4, each = dim(seq_matrix[n1_id,])[1]), 
+              seq = rep(1:dim(seq_matrix[n1_id,])[1], 4), 
+              Nx = rep(NA_seq_name[n1_id], 4)) 
+
+df_gsgd_4residue_Nx <- 
+  data.frame( nt = c(seq_matrix[nonN1_id,][, c(1735, 1724, 1687, 1651)]), 
+              pos = rep(1:4, each = dim(seq_matrix[nonN1_id,])[1]), 
+              seq = rep(1:dim(seq_matrix[nonN1_id,])[1], 4), 
+              Nx = rep(NA_seq_name[nonN1_id], 4)) 
+
+  p1 = 
+  ggplot(data = df_gsgd_4residue_N1, 
+         aes(pos, seq)) + geom_tile(aes(fill = nt)) + 
+    
+    scale_fill_manual(values = c("white", "#F8766D", "#7CAE00", "#00BFC4", "#C77CFF")) + 
+    theme_bw() +
+    scale_x_discrete(limits = c("24", "35", "72","108")) + 
+    xlab("") + 
+    labs(title = "N1")
+  
+  p2 = 
+    ggplot(data = df_gsgd_4residue_Nx, 
+           aes(pos, seq)) + geom_tile(aes(fill = nt)) + 
+    
+    scale_fill_manual(values = c("white", "#F8766D", "#7CAE00", "#00BFC4", "#C77CFF")) + 
+    theme_bw() +
+    scale_x_discrete(limits = c("24", "35", "72","108")) + 
+    xlab("") +
+    labs(title = "nonN1")
+  
+  multiplot(p1, p2, ncol = 1)
+  
+  
+          
