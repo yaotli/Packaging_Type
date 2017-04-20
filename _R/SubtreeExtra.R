@@ -67,13 +67,23 @@ subtreseq(findrep = 1, outlier = 1, originfile = 1)
 
   # 2344 / non-2344
 
-subtreseq(rmrep = 1, outlier = 1, originfile = 1)
+subtreseq(findrep = 1, outlier = 1, originfile = 1)
 
-  # source: 1. trim_align_addref_GsGD.fasta , 
+  # source: 1. trim_align_addref_GsGD.fasta, 
   #         2. id_sub888,
   #         3. align_addref_GsGD.fasta
           
   # result: 1. align_addref_GsGD_2322.fasta, 2. align_addref_GsGD_2322c.fasta
+
+  
+  # nonN1 in non2344 clade
+
+subtreseq(findrep = 1, outlier = 0, originfile = 1)
+
+  # souce: 1. trim_align_addref_GsGD.fasta,   
+  #        2. non2344_nonN1,
+  #        3. align_addref_GsGD.fasta
+
 
 
 # Difference ####
