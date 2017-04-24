@@ -13,7 +13,7 @@
 # minlth: 1500
 # pool: pool_ha_12955.fasta
 
-# repeat previous work 
+# repeat previous work ####
 
   
 source("_R/Function.R")
@@ -50,7 +50,7 @@ curateSeq(maxamb = 1500, minseq = 1, mode = 2, vip = 238)
   # ./FastTree -nt -spr 4 -nni 10 -gtr -cat 20 -gamma  <tobetree.fasta> tree
   # result: 
 
-# extract subclade seq
+# extract subclade seq ####
 
   # GsGD / non-GsGD
 
@@ -84,15 +84,70 @@ subtreseq(findrep = 1, outlier = 0, originfile = 1)
   #        2. non2344_nonN1,
   #        3. align_addref_GsGD.fasta
 
+  
+# seperate N1 and nonN1 ####
 
+  library(seqinr)
+  library(stringr)
+
+  file <- read.fasta(file.choose())
+
+  
+  seq_name0 = attributes(file)$names
+       seq0 = getSequence(file)
+       
+  # eliminate unsubtyped seq
+       
+  nonsubtype <- which(is.na(str_match(pattern = "_(H[0-9]+N[0-9]+)_", seq_name0)[,1]) == TRUE)
+  nonsubtype <- unique( sort( c(nonsubtype, grep("H5N0", x = seq_name0)) ) )
+  
+  if ( length(nonsubtype) > 1 ){
+  
+    seq_name <- seq_name0[-nonsubtype]
+    seq <- seq0[-nonsubtype]       
+    
+  }else{
+    
+    seq_name = seq_name0
+         seq = seq0
+    
+  }
+  
+
+     n1_id <- which( str_match(pattern = "_(H[0-9]+N[0-9]+)_", seq_name)[,2] == "H5N1" )
+  nonN1_id <- seq(1:length(seq_name))[-n1_id]
+  
+  
+  write.fasta(seq[n1_id], 
+              file.out = "~/Desktop/N1.fasta", 
+              names = seq_name[n1_id])
+  
+  write.fasta(seq[nonN1_id], 
+              file.out = "~/Desktop/Nx.fasta", 
+              names = seq_name[nonN1_id])
+  
 
 # Difference ####
 
   # source: 5pRNA_2344.fas and 5pRNA_GsGDnon2344.fas
 
+setwd("~/Desktop/3groups/UTR/")  
+filenames <- list.files(getwd())  
+
 library(RWebLogo)
 
-  weblogo(file.in = file.choose(), 
+for (k in 1: length(filenames)){
+
+  weblogo(file.in = filenames[k], open = FALSE, 
+          file.out = paste0("~/Desktop/", gsub(".fasta", "", filenames[k]), ".pdf"), 
           color.scheme = 'classic', stacks.per.line = 150, units = 'probability')
 
+}
 
+ 
+
+
+ 
+  
+  
+  
