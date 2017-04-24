@@ -40,7 +40,7 @@ return(yr.daydifference)
 
 # cleanID ####
 
-cleanID <- function(x){
+cleanID <- function(filedir = file.choose()){ 
   
   # require Function::phylo_date   
   
@@ -49,7 +49,7 @@ cleanID <- function(x){
   
   # read-in
   
-  file <- read.fasta(file.choose())
+  file <- read.fasta(filedir)
   
   seq_name0 = attributes(file)$names
   seq0 = getSequence(file)
@@ -153,8 +153,10 @@ cleanID <- function(x){
     
   }else{
     
+    filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)" )[,2]
+    
     write.fasta(seq0, 
-                file.out = "~/Desktop/cleanID.fasta", 
+                file.out = paste0("~/Desktop/cleanID_", filename, ".fasta"), 
                 names = seq_name)
     
     print("DONE")
@@ -168,7 +170,8 @@ cleanID <- function(x){
 
 # curateSeq ####
 
-curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0){
+curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0, 
+                      filedir = file.choose()  ){
   
   # should apply after cleanID
   # mode 1 : curation; 2 : duplicated seq; 3 : duplicated id; 4 : similar id
@@ -182,7 +185,7 @@ curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0){
   
   # read-in
   
-  file = read.fasta(file.choose())
+  file = read.fasta(filedir)
   
   seq_name0 = attributes(file)$names
   seq0 = getSequence(file)
@@ -276,8 +279,10 @@ curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0){
   seq_name_out <- seq_name0[remain]
   seq_out <- seq0[remain]
   
+  filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)" )[,2]
+  
   write.fasta(seq_out,
-              file.out = paste0("~/Desktop/curateSeq", "-", mode, ".fasta"), 
+              file.out = paste0("~/Desktop/curateSeq", "-", mode, "_", filename, ".fasta"), 
               names = seq_name_out)
   
   print( paste0("delete: ", length(tobedelect_f[[mode]]) ) )
