@@ -4,7 +4,7 @@
 
   # clean and curate
 
-source("./_R/Function.R")
+  source("./_R/Function.R")
 
   cleanID("~/Desktop/pool_ha_18100.fasta")
 
@@ -13,17 +13,19 @@ source("./_R/Function.R")
 
   
   # mafft
+  # reverse-complement the aligned file and keep the 5 prime region
+  # : 5pRNA_pool_ha_18100.fasta
   
   
 # extract seq with intact 5 prime end ####
   
+  
   library(seqinr)
   library(stringr)
   
-  file <- read.fasta("~/Desktop/5pRNA_pool_ha_18100.fasta")
-  
   # seq number = 11239
   
+  file <- read.fasta("~/Desktop/5pRNA_pool_ha_18100.fasta")
   seq.name0 = attributes(file)$names
        seq0 = getSequence(file)
   
@@ -40,9 +42,10 @@ source("./_R/Function.R")
      
     toremain <- seq(1, length(seq0))[-toberemove]     
        
-  
-  file2 <- read.fasta("~/Desktop/align_pool_ha_18100.fasta")    
+  write.fasta(seq0[toremain], names = seq.name0[toremain], 
+              file.out = "~/Desktop/cuated_5pRNA_pool_ha_18100.fasta")  
     
+  file2 <- read.fasta("~/Desktop/align_pool_ha_18100.fasta")    
   seq.name2 = attributes(file2)$names
        seq2 = getSequence(file2)
   
@@ -51,20 +54,29 @@ source("./_R/Function.R")
   write.fasta(seq2[toremain], names = seq.name2[toremain], 
               file.out = "~/Desktop/partial_align_pool_ha_18100.fasta")  
   
-  write.fasta(seq0[toremain], names = seq.name0[toremain], 
-              file.out = "~/Desktop/cuated_5pRNA_pool_ha_18100.fasta")  
+  # curate the file for tree
+  
+  curateSeq(maxamb = 15, minseq = 1500, mode = 7, 
+            filedir = "~/Desktop/partial_align_pool_ha_18100.fasta")
+
+  
+  # trim by BioEdit
+  # results: trim_curateSeq-7_partial_pool_ha_18100
+  
   
   # FastTree
-  # source: trim_partial_align_pool_ha_18100
-  # result: tree_trim_partial_align_pool.tre
+  # source: trim_curateSeq-7_partial_pool_ha_18100
+  # result: tree_trim_curateSeq-7_partial_align_pool_ha_18100
+  
+  
   
 # prepare the tree
   
   library(ggtree)
   library(ape)
   
-    h5tree <- read.tree("~/Desktop/nwtree_trim_partial_align_pool.tre")
-  T_h5tree <-  ggtree(h5tree)
+    h5tree <- read.tree("~/Desktop/nwtree_trim_curateSeq-7_partial_align_pool_ha_18100.tre")
+  T_h5tree <-  ggtree(h5tree, size = 0.3)
   
   gg_color_hue <- function(n) {
     hues = seq(15, 375, length = n + 1)
@@ -81,7 +93,7 @@ source("./_R/Function.R")
   
   # tree
   T_h5tree_note = T_h5tree %<+% sero_color_h5 + aes(color = I(colorr)) + 
-    geom_tippoint(size = 0.8)
+    geom_tippoint(size = 0.1)
   
   
   sero_color_h5[,12] = "N1"
@@ -106,13 +118,15 @@ source("./_R/Function.R")
 # extract info from .fasta and make the matrix heatmap ####
   
   file3 <- read.fasta("~/Desktop/cuated_5pRNA_pool_ha_18100.fasta")    
-  
   seq.name3 = attributes(file3)$names
        seq3 = getSequence(file3)
+  
+  treeid <-        
+  match(gsub("'", "", T_h5tree$data$label[which(T_h5tree$data$isTip == TRUE)]), seq.name3)
+  
+  seq_matrix2 = do.call(rbind, seq3[treeid])   
        
-  seq_matrix2 = do.call(rbind, seq3)   
-       
-  tips = gsub("'", "", sero_color_h5$label)
+  tips = sero_color_h5$taxaid
   tips = tips[which(is.na(tips ) == FALSE)]
   
   rna_24_5p <- c()
@@ -120,8 +134,8 @@ source("./_R/Function.R")
 
   for(k in 1: length(tips)){
     
-    rna_24_5p[length(rna_24_5p) + 1] = seq_matrix2[,24][match(tips[k], seq.name3)] 
-    rna_35_5p[length(rna_35_5p) + 1] = seq_matrix2[,35][match(tips[k], seq.name3)] 
+    rna_24_5p[length(rna_24_5p) + 1] = seq_matrix2[,24][match(tips[k], seq.name3[treeid] )] 
+    rna_35_5p[length(rna_35_5p) + 1] = seq_matrix2[,35][match(tips[k], seq.name3[treeid] )] 
     
   }
   
@@ -129,7 +143,7 @@ source("./_R/Function.R")
   rownames(rna_matrix) = sero_color_h5$label[ which(sero_color_h5$isTip == TRUE) ]
   
   
-  gheatmap(T_h5tree_note, rna_matrix, width=0.3) +
+  gheatmap(T_h5tree_note, rna_matrix, width=0.25) +
     scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"), 
                       values=c( "white", "steelblue", "darkgreen", "orange", "firebrick" ) ) 
 
