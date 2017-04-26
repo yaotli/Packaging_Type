@@ -10,10 +10,16 @@
 
   curateSeq(maxamb = 1000, minseq = 1, mode = 5, 
             filedir = "~/Desktop/cleanID_pool_ha_18100.fasta")  
-
   
-  # mafft
+  # seq number = 11239
+  
+  
+  # mafft: 
+  # source: cuated_5pRNA_pool_ha_18100.fasta
+  # result: align_curateSeq-5_pool_ha_18100.fasta
+  
   # reverse-complement the aligned file and keep the 5 prime region
+  # source: align_curateSeq-5_pool_ha_18100.fasta
   # : 5pRNA_pool_ha_18100.fasta
   
   
@@ -23,7 +29,6 @@
   library(seqinr)
   library(stringr)
   
-  # seq number = 11239
   
   file <- read.fasta("~/Desktop/5pRNA_pool_ha_18100.fasta")
   seq.name0 = attributes(file)$names
@@ -41,18 +46,20 @@
   toberemove <- unique(sort(c(nonsubtype, nont)))
      
     toremain <- seq(1, length(seq0))[-toberemove]     
-       
+  
+  # remove no subtype info and no position seq at 24 and 35       
   write.fasta(seq0[toremain], names = seq.name0[toremain], 
               file.out = "~/Desktop/cuated_5pRNA_pool_ha_18100.fasta")  
     
-  file2 <- read.fasta("~/Desktop/align_pool_ha_18100.fasta")    
+  file2 <- read.fasta("~/Desktop/align_curateSeq-5_pool_ha_18100.fasta")    
   seq.name2 = attributes(file2)$names
        seq2 = getSequence(file2)
   
-  # n = 3452
          
   write.fasta(seq2[toremain], names = seq.name2[toremain], 
               file.out = "~/Desktop/partial_align_pool_ha_18100.fasta")  
+  
+  # n = 3452
   
   # curate the file for tree
   
