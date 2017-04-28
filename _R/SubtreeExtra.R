@@ -131,7 +131,7 @@ subtreseq(findrep = 1, outlier = 0, originfile = 1)
 
   # source: 5pRNA_2344.fas and 5pRNA_GsGDnon2344.fas
 
-setwd("~/Desktop/3groups/UTR/")  
+setwd("~/Desktop/3pUTR/")  
 filenames <- list.files(getwd())  
 
 library(RWebLogo)
@@ -139,12 +139,48 @@ library(RWebLogo)
 for (k in 1: length(filenames)){
 
   weblogo(file.in = filenames[k], open = FALSE, 
-          file.out = paste0("~/Desktop/", gsub(".fasta", "", filenames[k]), ".pdf"), 
+          file.out = paste0("~/Desktop/3pUTR/", gsub(".fasta", "", filenames[k]), ".pdf"), 
           color.scheme = 'classic', stacks.per.line = 150, units = 'probability')
 
 }
 
  
+# subtree extraction ####
+# 
+# original data: pool_ha_18100
+# tree: tree_trim_curateSeq-7_partial_align_pool_ha_18100
+#
+
+
+subtreseq(findrep = 0, outlier = 1)
+
+  # source: 1. cuated_5pRNA_pool_ha_18100.fasta
+  #         2. gsgd_id_2085
+
+
+subtreseq(findrep = 0, outlier = 1)
+
+  # source: 1. subSeq_GsGD_2085.fasta
+  #         2. 2344_id_498
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  
