@@ -48,8 +48,6 @@
     toremain <- seq(1, length(seq0))[-toberemove]     
   
   # remove no subtype info and no position seq at 24 and 35       
-  write.fasta(seq0[toremain], names = seq.name0[toremain], 
-              file.out = "~/Desktop/cuated_5pRNA_pool_ha_18100.fasta")  
     
   file2 <- read.fasta("~/Desktop/align_curateSeq-5_pool_ha_18100.fasta")    
   seq.name2 = attributes(file2)$names
@@ -98,9 +96,18 @@
   sero_color_h5 <- findtaxa(type = 1, h5tree, targetid = serotype, target = sero_color)
 
   
-  # tree
+  # tree with color on branch
+  
   T_h5tree_note = T_h5tree %<+% sero_color_h5 + aes(color = I(colorr)) + 
     geom_tippoint(size = 0.1)
+  
+  # to inspect the node number:
+  # T_h5tree_note + geom_text(aes(label = node), size = 0.5)
+  
+  T_h5tree_note_r = ggtree::rotate(T_h5tree_note, 2766)
+  T_h5tree_note_r = ggtree::rotate(T_h5tree_note_r, 2767)
+  T_h5tree_note_r = ggtree::rotate(T_h5tree_note_r, 2992)
+  
   
   
   sero_color_h5[,12] = "N1"
@@ -124,14 +131,24 @@
   
 # extract info from .fasta and make the matrix heatmap ####
   
-  file3 <- read.fasta("~/Desktop/cuated_5pRNA_pool_ha_18100.fasta")    
+  file3 <- read.fasta("~/Desktop/trim_curateSeq-7_partial_align_pool_ha_18100.fasta")    
   seq.name3 = attributes(file3)$names
-       seq3 = getSequence(file3)
+  seq3 = getSequence(file3)
+  
+  # seq.name0 from 5pRNA_pool_ha_18100.fasta
+  treematch <- match(seq.name3, seq.name0)
+  
+  write.fasta(seq0[treematch], names = seq.name0[treematch], 
+              file.out = "~/Desktop/curated_5pRNA_pool_ha_18100.fasta")
+  
+  file5 <- read.fasta("~/Desktop/curated_5pRNA_pool_ha_18100.fasta")    
+  seq.name5 = attributes(file5)$names
+       seq5 = getSequence(file5)
   
   treeid <-        
-  match(gsub("'", "", T_h5tree$data$label[which(T_h5tree$data$isTip == TRUE)]), seq.name3)
+  match(gsub("'", "", T_h5tree$data$label[which(T_h5tree$data$isTip == TRUE)]), seq.name5)
   
-  seq_matrix2 = do.call(rbind, seq3[treeid])   
+  seq_matrix2 = do.call(rbind, seq5[treeid])   
        
   tips = sero_color_h5$taxaid
   tips = tips[which(is.na(tips ) == FALSE)]
@@ -150,7 +167,7 @@
   rownames(rna_matrix) = sero_color_h5$label[ which(sero_color_h5$isTip == TRUE) ]
   
   
-  gheatmap(T_h5tree_note, rna_matrix, width=0.25) +
+  gheatmap(T_h5tree_note_r, rna_matrix, width=0.25) +
     scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"), 
                       values=c( "white", "steelblue", "darkgreen", "orange", "firebrick" ) ) 
 
