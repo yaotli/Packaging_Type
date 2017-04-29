@@ -71,6 +71,9 @@ source("./_R/Function.R")
     p24 = seq_matrix[,24]
     p35 = seq_matrix[,35]
     
+    p72 = seq_matrix[,72]
+    p108 = seq_matrix[,108]
+    
     
     # make into dataframe
 
@@ -123,6 +126,33 @@ source("./_R/Function.R")
     assign( paste0("df_p35_y", x), df )
     
     
+# df_p72_y    
+    
+    df = as.data.frame(
+      prop.table( table( p72, Year, exclude = "-"), margin = 2),
+      stringsAsFactors = FALSE
+    )
+    
+    df[,4] = groupnames[x]
+    colnames(df)[4] = "group"
+    
+    assign( paste0("df_p72_y_", x), df)    
+    
+
+# df_p108_y
+    
+    df = as.data.frame(
+      prop.table( table( p108, Year, exclude = "-"), margin = 2),
+      stringsAsFactors = FALSE
+    )
+    
+    df[,4] = groupnames[x]
+    colnames(df)[4] = "group"
+    
+    assign( paste0("df_p108_y", x), df )
+    
+    
+    
 # df_p24_subtype
     
     df = as.data.frame(
@@ -148,7 +178,34 @@ source("./_R/Function.R")
     
     assign( paste0("df_p35_subtype", x), df )
     
-      }    
+      
+# df_p72_subtype
+    
+    df = as.data.frame(
+      prop.table( table( p72, Subtype, exclude = "-"), margin = 2),
+      stringsAsFactors = FALSE
+    )
+    
+    df[,4] = groupnames[x]
+    colnames(df)[4] = "group"
+    
+    assign( paste0("df_p72_subtype", x), df )    
+    
+
+# df_p108_subtype
+    
+    df = as.data.frame(
+      prop.table( table( p108, Subtype, exclude = "-"), margin = 2),
+      stringsAsFactors = FALSE
+    )
+    
+    df[,4] = groupnames[x]
+    colnames(df)[4] = "group"
+    
+    assign( paste0("df_p108_subtype", x), df )        
+    
+    
+    }    
 
        
 # combine df
@@ -160,9 +217,18 @@ source("./_R/Function.R")
       df_p24_y <- rbind(df_p24_y_1, df_p24_y_2, df_p24_y_3)     
   
       df_p35_y <- rbind(df_p35_y1, df_p35_y2, df_p35_y3)     
+      
+      df_p72_y <- rbind(df_p72_y_1, df_p72_y_2, df_p72_y_3)     
+      
+      df_p108_y <- rbind(df_p108_y1, df_p108_y2, df_p108_y3)     
+      
        
       df_p24_subtype <- rbind(df_p24_subtype1, df_p24_subtype2, df_p24_subtype3)
       df_p35_subtype <- rbind(df_p35_subtype1, df_p35_subtype2, df_p35_subtype3)
+      
+      df_p72_subtype <- rbind(df_p72_subtype1, df_p72_subtype2, df_p72_subtype3)
+      df_p108_subtype <- rbind(df_p108_subtype1, df_p108_subtype2, df_p108_subtype3)
+      
   
 # ggplot
   
@@ -175,7 +241,7 @@ library(ggplot2)
     geom_bar(stat = "identity") +
     theme_classic() + 
     guides(fill = guide_legend(title=NULL)) +
-    xlab("")  + 
+    xlab("")  + ylab("") +
     scale_fill_manual(values = c("gray" ,gg_color_hue(8)) ) +
     facet_wrap(~group, ncol = 1) + 
     theme(legend.position = "top")
@@ -206,7 +272,7 @@ library(ggplot2)
     theme_bw() + 
     theme(strip.background = 
             element_rect(colour = "black", fill = "white", size = 1.5)) +
-    xlab("") + 
+    xlab("") + ylab("") +
     theme(legend.position = "top")
   
   f3 = ggplot(data = df_p35_y, aes(x = Year, y = Freq, group = p35, colour = p35))  + 
@@ -215,14 +281,36 @@ library(ggplot2)
     theme_bw() + 
     theme(strip.background = 
             element_rect(colour = "black", fill = "white", size = 1.5)) +
-    xlab("") + 
+    xlab("") + ylab("") +
     theme(legend.position = "top")
+  
+  
+  f7 = ggplot(data = df_p72_y, aes(x = Year, y = Freq, group = p72, colour = p72))  + 
+    geom_line(size = 1.5) + 
+    facet_wrap(~ group, ncol = 1) +
+    theme_bw() + 
+    theme(strip.background = 
+            element_rect(colour = "black", fill = "white", size = 1.5)) +
+    xlab("") + ylab("") +
+    theme(legend.position = "top")
+  
+  
+  f8 = ggplot(data = df_p108_y, aes(x = Year, y = Freq, group = p108, colour = p108))  + 
+    geom_line(size = 1.5) + 
+    facet_wrap(~ group, ncol = 1) +
+    theme_bw() + 
+    theme(strip.background = 
+            element_rect(colour = "black", fill = "white", size = 1.5)) +
+    xlab("") + ylab("") +
+    theme(legend.position = "top")
+  
     
   
 library(ggtree)
   
   multiplot(p, f2, f3, ncol = 1)  
   
+  multiplot(p, f7, f8, ncol = 1)  
   
 
 # nt_subtype
@@ -233,7 +321,7 @@ library(ggtree)
     geom_bar(stat = "identity") +
     theme_classic() + 
     guides(fill = guide_legend(title="p24")) +
-    xlab("")  + 
+    xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
     theme(legend.position = "top")
   
@@ -241,11 +329,33 @@ library(ggtree)
     geom_bar(stat = "identity") +
     theme_classic() + 
     guides(fill = guide_legend(title="p35")) +
-    xlab("")  + 
+    xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
     theme(legend.position = "top")
   
+  
+  f9 = ggplot(data = df_p72_subtype, aes(x = Subtype, y = Freq, fill = p72))  + 
+    geom_bar(stat = "identity") +
+    theme_classic() + 
+    guides(fill = guide_legend(title="p72")) +
+    xlab("")  + ylab("") +
+    facet_wrap(~group, ncol = 1) + 
+    theme(legend.position = "top")  
+  
+  
+  f10 = ggplot(data = df_p108_subtype, aes(x = Subtype, y = Freq, fill = p108))  + 
+    geom_bar(stat = "identity") +
+    theme_classic() + 
+    guides(fill = guide_legend(title="p108")) +
+    xlab("")  + ylab("") +
+    facet_wrap(~group, ncol = 1) + 
+    theme(legend.position = "top")  
+  
+  
+  
   multiplot(f5, f6, ncol = 2)  
+  
+  multiplot(f9, f10, ncol = 2)  
   
   
   
