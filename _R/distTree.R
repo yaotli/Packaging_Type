@@ -153,23 +153,33 @@
   tips = sero_color_h5$taxaid
   tips = tips[which(is.na(tips ) == FALSE)]
   
-  rna_24_5p <- c()
-  rna_35_5p <- c()
+   rna_24_5p <- c()
+   rna_35_5p <- c()
+   rna_72_5p <- c()
+  rna_108_5p <- c()
 
   for(k in 1: length(tips)){
     
     rna_24_5p[length(rna_24_5p) + 1] = seq_matrix2[,24][match(tips[k], seq.name3[treeid] )] 
-    rna_35_5p[length(rna_35_5p) + 1] = seq_matrix2[,35][match(tips[k], seq.name3[treeid] )] 
+    rna_35_5p[length(rna_35_5p) + 1] = seq_matrix2[,35][match(tips[k], seq.name3[treeid] )]
+    rna_72_5p[length(rna_72_5p) + 1] = seq_matrix2[,72][match(tips[k], seq.name3[treeid] )] 
+    rna_108_5p[length(rna_108_5p) + 1] = seq_matrix2[,108][match(tips[k], seq.name3[treeid] )] 
+    
     
   }
   
-  rna_matrix = data.frame(p24 = rna_24_5p, p35 = rna_35_5p, stringsAsFactors = FALSE)  
+  rna_108_5p = gsub(pattern = "y", "-", rna_108_5p)
+  
+  rna_matrix = data.frame(p24 = rna_24_5p, p35 = rna_35_5p, 
+                          p72 = rna_72_5p, p108 = rna_108_5p,
+                          stringsAsFactors = FALSE)  
+  
   rownames(rna_matrix) = sero_color_h5$label[ which(sero_color_h5$isTip == TRUE) ]
   
   
   gheatmap(T_h5tree_note_r, rna_matrix, width=0.25) +
     scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"), 
-                      values=c( "white", "steelblue", "darkgreen", "orange", "firebrick" ) ) 
+                      values=c( "white", "steelblue", "darkgreen", "orange", "firebrick") ) 
 
 
 # msaplot 
@@ -182,7 +192,6 @@
   seq.name4 = paste0("'", seq.name4, "'")     
        
   write.fasta(seq4, names = seq.name4, file.out = "~/Desktop/out.fasta")
-  
   
   msaplot(T_h5tree_annotate, "~/Desktop/out.fasta", width = 0.25)
   
