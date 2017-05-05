@@ -560,4 +560,46 @@ gg_color_hue <- function(n) {
 
 
 
+# trimtool ####
+
+trimtool <- function(propblank = 0.8, filedir = file.choose()){
+  
+  library(seqinr)
+  
+  file = read.fasta(filedir)
+  seq_name0 = attributes(file)$names
+  seq0 = getSequence(file)
+  
+  seq_matrix = do.call(rbind, seq0)
+  
+  coltoberemove = apply(seq_matrix, 2, function(x){
+    
+    blank = ( length( which( x == "-") ) + length( which( x == "~") ) ) 
+    fl = length(x)
+    
+    if (fl*propblank < blank){
+      
+      return(1)
+      
+    }else{
+      
+      return(0)
+    }   
+  }
+  )
+  
+  cut_matrix = seq_matrix[,-which(coltoberemove == 1)]
+  
+  seq_cut = as.list( data.frame(t(cut_matrix), stringsAsFactors = FALSE) )
+  
+  filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fas)" )[,2]
+  
+  write.fasta(seq_cut, 
+              file.out = paste0("~/Desktop/trim_", filename, ".fasta"),
+              names = seq_name0)
+  print("DONE")
+  
+}
+
+
 
