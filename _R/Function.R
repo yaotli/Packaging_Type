@@ -155,9 +155,15 @@ cleanID <- function(filedir = file.choose()){
     
     filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)" )[,2]
     
-    write.fasta(seq0, 
+    # sort by time
+    
+    year0 <- as.numeric(gsub("_", "", str_match(seq_name, "_([0-9]{4})\\.([0-9]+)")[,1]))
+    
+    sortid <- sort(year0, na.last = FALSE, index.return = TRUE)$ix
+
+    write.fasta(seq0[sortid], 
                 file.out = paste0("~/Desktop/cleanID_", filename, ".fasta"), 
-                names = seq_name)
+                names = seq_name[sortid])
     
     print("DONE")
     
