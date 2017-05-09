@@ -64,6 +64,7 @@ cleanID <- function(filedir = file.choose()){
   seq_name = gsub("\\'", "", seq_name)
   seq_name = gsub("\\.", "-", seq_name)  
   
+  seq_name = gsub("\\?", "", seq_name)  
   seq_name = gsub(">", "", seq_name)  
   
   # for gisaid
