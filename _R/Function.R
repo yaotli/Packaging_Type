@@ -570,6 +570,7 @@ gg_color_hue <- function(n) {
 
 trimtool <- function(propblank = 0.8, filedir = file.choose()){
   
+  library(stringr)
   library(seqinr)
   
   file = read.fasta(filedir)
