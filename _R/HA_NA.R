@@ -215,17 +215,37 @@ source("./_R/Function.R")
   trimtool(propblank = 0.5, filedir = "~/Desktop/GsGD_NU_p.fasta")
   
   
-# prepare the cophy
+# prepare the cophy (tree file for tanglegram)
+
+library(ape)    
   
-  # id copy from Tree_trim_GsGD_NU_p
+  # nwk from GsGD_HAp_4575
+  HAtree <- read.tree("~/Desktop/HA_NA/tanglegram/GsGD_HA_nwk")
   
-  txtfile <- read.table("~/Desktop/cophy_id.txt")
-  txtfile[,2] = txtfile[1]
-  txtfile[,1] = paste0(txtfile[,1], ":")
-  txtfile[,2] = paste0(txtfile[,2], ",")
+  # nwk from Tree_trim_GsGD_NU_p
+  NUtree <- read.tree("~/Desktop/HA_NA/tanglegram/GsGD_NU_nwk")
   
-  write.csv(txtfile, "txtfile.csv")
   
+  NUtree$edge.length = NULL
+  HAtree$edge.length = NULL
+  
+  hamatch <- match(NUtree$tip.label, HAtree$tip.label)
+  
+  NUtree$tip.label = seq(1, length(NUtree$tip.label))
+  
+  HAtree$tip.label[hamatch] = seq(1, length(NUtree$tip.label))
+  HAtree$tip.label[-hamatch] = seq((length(NUtree$tip.label) + 1), length(HAtree$tip.label))
+  
+  write.tree(HAtree, file = "~/Desktop/HA_NA/tanglegram/GsGD_HA_R")
+  write.tree(NUtree, file = "~/Desktop/HA_NA/tanglegram/GsGD_NU_R")
+  
+  # association block in NEXUS
+  
+  col1 <- paste0("'", seq(1, length(NUtree$tip.label)), ":")
+  col2 <- paste0(seq(1, length(NUtree$tip.label)), ",")
+  
+  write.csv(data.frame(col1,col2, stringsAsFactors = FALSE), 
+            "~/Desktop/HA_NA/tanglegram/IDlink.csv", row.names = FALSE, col.names = FALSE)
   
   
   
