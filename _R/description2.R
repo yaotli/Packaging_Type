@@ -11,9 +11,9 @@ source("./_R/Function.R")
     
     # input
     
-    filedir = c("~/Desktop/subSeq_GsGD_2085.fasta", 
-                "~/Desktop/subSeq_nonGsGD_644.fasta", 
-                "~/Desktop/subSeq_2344_498.fasta")
+    filedir = c("~/Desktop/gheatmap/subSeq_GsGD_2085.fasta", 
+                "~/Desktop/gheatmap/subSeq_nonGsGD_644.fasta", 
+                "~/Desktop/gheatmap/subSeq_2344_498.fasta")
     
     file = read.fasta(filedir[x])
     seq_name0 = attributes(file)$names
@@ -273,7 +273,9 @@ library(ggplot2)
     theme(strip.background = 
             element_rect(colour = "black", fill = "white", size = 1.5)) +
     xlab("") + ylab("") +
-    theme(legend.position = "top")
+    theme(legend.position = "top") + 
+    scale_color_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
+    
   
   f3 = ggplot(data = df_p35_y, aes(x = Year, y = Freq, group = p35, colour = p35))  + 
     geom_line(size = 1.5) + 
@@ -282,7 +284,8 @@ library(ggplot2)
     theme(strip.background = 
             element_rect(colour = "black", fill = "white", size = 1.5)) +
     xlab("") + ylab("") +
-    theme(legend.position = "top")
+    theme(legend.position = "top") + 
+    scale_color_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
   
   
   f7 = ggplot(data = df_p72_y, aes(x = Year, y = Freq, group = p72, colour = p72))  + 
@@ -292,7 +295,9 @@ library(ggplot2)
     theme(strip.background = 
             element_rect(colour = "black", fill = "white", size = 1.5)) +
     xlab("") + ylab("") +
-    theme(legend.position = "top")
+    theme(legend.position = "top") + 
+    scale_color_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
+  
   
   
   f8 = ggplot(data = df_p108_y, aes(x = Year, y = Freq, group = p108, colour = p108))  + 
@@ -302,7 +307,9 @@ library(ggplot2)
     theme(strip.background = 
             element_rect(colour = "black", fill = "white", size = 1.5)) +
     xlab("") + ylab("") +
-    theme(legend.position = "top")
+    theme(legend.position = "top") + 
+    scale_color_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
+  
   
     
   
@@ -323,7 +330,9 @@ library(ggtree)
     guides(fill = guide_legend(title="p24")) +
     xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
-    theme(legend.position = "top")
+    theme(legend.position = "top") + 
+    scale_fill_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
+  
   
   f6 = ggplot(data = df_p35_subtype, aes(x = Subtype, y = Freq, fill = p35))  + 
     geom_bar(stat = "identity") +
@@ -331,7 +340,8 @@ library(ggtree)
     guides(fill = guide_legend(title="p35")) +
     xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
-    theme(legend.position = "top")
+    theme(legend.position = "top") + 
+    scale_fill_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
   
   
   f9 = ggplot(data = df_p72_subtype, aes(x = Subtype, y = Freq, fill = p72))  + 
@@ -340,7 +350,8 @@ library(ggtree)
     guides(fill = guide_legend(title="p72")) +
     xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
-    theme(legend.position = "top")  
+    theme(legend.position = "top") + 
+    scale_fill_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))  
   
   
   f10 = ggplot(data = df_p108_subtype, aes(x = Subtype, y = Freq, fill = p108))  + 
@@ -349,7 +360,8 @@ library(ggtree)
     guides(fill = guide_legend(title="p108")) +
     xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
-    theme(legend.position = "top")  
+    theme(legend.position = "top") + 
+    scale_fill_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))  
   
   
   
