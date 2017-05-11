@@ -30,7 +30,7 @@
   library(stringr)
   
   
-  file <- read.fasta("~/Desktop/5pRNA_pool_ha_18100.fasta")
+  file <- read.fasta("~/Desktop/gheatmap/5pRNA_pool_ha_18100.fasta")
   seq.name0 = attributes(file)$names
        seq0 = getSequence(file)
   
@@ -80,7 +80,7 @@
   library(ggtree)
   library(ape)
   
-    h5tree <- read.tree("~/Desktop/nwtree_trim_curateSeq-7_partial_align_pool_ha_18100.tre")
+    h5tree <- read.tree("~/Desktop/gheatmap/nwtree_trim_curateSeq-7_partial_align_pool_ha_18100.tre")
   T_h5tree <-  ggtree(h5tree, size = 0.3)
   
   gg_color_hue <- function(n) {
@@ -107,8 +107,7 @@
   T_h5tree_note_r = ggtree::rotate(T_h5tree_note, 2766)
   T_h5tree_note_r = ggtree::rotate(T_h5tree_note_r, 2767)
   T_h5tree_note_r = ggtree::rotate(T_h5tree_note_r, 2992)
-  
-  
+
   
   sero_color_h5[,12] = "N1"
   
@@ -131,7 +130,7 @@
   
 # extract info from .fasta and make the matrix heatmap ####
   
-  file3 <- read.fasta("~/Desktop/trim_curateSeq-7_partial_align_pool_ha_18100.fasta")    
+  file3 <- read.fasta("~/Desktop/gheatmap//trim_curateSeq-7_partial_align_pool_ha_18100.fasta")    
   seq.name3 = attributes(file3)$names
   seq3 = getSequence(file3)
   
@@ -141,7 +140,7 @@
   write.fasta(seq0[treematch], names = seq.name0[treematch], 
               file.out = "~/Desktop/curated_5pRNA_pool_ha_18100.fasta")
   
-  file5 <- read.fasta("~/Desktop/curated_5pRNA_pool_ha_18100.fasta")    
+  file5 <- read.fasta("~/Desktop/gheatmap//curated_5pRNA_pool_ha_18100.fasta")    
   seq.name5 = attributes(file5)$names
        seq5 = getSequence(file5)
   
@@ -179,7 +178,7 @@
   
   gheatmap(T_h5tree_note_r, rna_matrix, width=0.25) +
     scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"), 
-                      values=c( "white", "steelblue", "darkgreen", "orange", "firebrick") ) 
+                      values=c( "white", "darkgreen", "steelblue", "orange", "firebrick") ) 
 
 
 # msaplot 
