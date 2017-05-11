@@ -131,7 +131,7 @@ subtreseq(findrep = 1, outlier = 0, originfile = 1)
 
   # source: 5pRNA_2344.fas and 5pRNA_GsGDnon2344.fas
 
-setwd("~/Desktop/3pUTR/")  
+setwd("~/Desktop/5p4nt/")  
 filenames <- list.files(getwd())  
 
 library(RWebLogo)
@@ -139,7 +139,7 @@ library(RWebLogo)
 for (k in 1: length(filenames)){
 
   weblogo(file.in = filenames[k], open = FALSE, 
-          file.out = paste0("~/Desktop/3pUTR/", gsub(".fasta", "", filenames[k]), ".pdf"), 
+          file.out = paste0("~/Desktop/5p4nt/", gsub(".fasta", "", filenames[k]), ".pdf"), 
           color.scheme = 'classic', stacks.per.line = 150, units = 'probability')
 
 }
