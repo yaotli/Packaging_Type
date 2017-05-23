@@ -20,9 +20,32 @@ library(ggtree)
 
   # read fron .nwk filw
 
-  sub5496 <- read.tree(file.choose())
+  sub5496 <- read.tree("~/Desktop/TAC1/Sub5496_note")
   T_sub5496 <-  ggtree(sub5496)
 
+  
+  # time-isolate distribution 
+  
+  Year_id <- c("2014", "2015", "2016", "2017")
+  yeardis <- findtaxa(type = 0, tree = sub5496, Year_id, rep("orange", 4))
+  
+  T_sub5496_yr <- T_sub5496 %<+% yeardis + 
+    geom_tippoint(aes(color = I(shapee)), size = 1, alpha = 0.8)
+  
+  # clade 
+  
+  cladenode <- c("5523", "6930", "8014", "9056", "9521", "9955", "10606")
+  cladenon <- c("2.3.4.4", "2.3.2", "2.2.1", "2.2.2", "2.1", "1", "0, 7")
+  
+  for (i in 1: 7){
+    
+    T_sub5496_yr <- T_sub5496_yr + 
+      geom_cladelabel(node = cladenode[i], label = cladenon[i], align = FALSE, fontsize = 5)
+    
+  }
+  
+  
+  
   # use findtaxa tip label
 
   serotype <- c("H5N8", "H5N6", "H5N2", "H5N3", "H5N5")

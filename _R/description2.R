@@ -11,7 +11,7 @@ source("./_R/Function.R")
     
     # input
     
-    filedir = c("~/Desktop/gheatmap/subSeq_GsGD_2085.fasta", 
+    filedir = c("~/Desktop/gheatmap/subSeq_non2344GsGD_1587.fasta", 
                 "~/Desktop/gheatmap/subSeq_nonGsGD_644.fasta", 
                 "~/Desktop/gheatmap/subSeq_2344_498.fasta")
     
@@ -296,7 +296,7 @@ library(ggplot2)
             element_rect(colour = "black", fill = "white", size = 1.5)) +
     xlab("") + ylab("") +
     theme(legend.position = "top") + 
-    scale_color_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))
+    scale_color_manual(values=c("#7CAE00", "#00A9FF", "#F8766D"))
   
   
   
@@ -351,7 +351,7 @@ library(ggtree)
     xlab("")  + ylab("") +
     facet_wrap(~group, ncol = 1) + 
     theme(legend.position = "top") + 
-    scale_fill_manual(values=c("#7CAE00", "#00A9FF", "#CD9600", "#F8766D"))  
+    scale_fill_manual(values=c("#7CAE00", "#00A9FF", "#F8766D"))  
   
   
   f10 = ggplot(data = df_p108_subtype, aes(x = Subtype, y = Freq, fill = p108))  + 
