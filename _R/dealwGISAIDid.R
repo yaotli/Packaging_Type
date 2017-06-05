@@ -182,27 +182,37 @@ for(i in 1: length(seq_m))
 
 ## identical ID ----------------
 
-# note: use id_m instead of id_g to find the index
+# keep the one with longest sequence
 
-dup_id  <- which(duplicated(id_m) == TRUE)
-dup_all <- c()
-
-for(i in 1: length(dup_id))
+if ( length( which(duplicated(id_g) == TRUE) ) > 0 )
 {
-  dup_all = c(dup_all, which(match(id_m, id_m[dup_id[i]]) != "NA") )
+  toberemove_2 <- c()
+  dup_id       <- which(duplicated(id_g) == TRUE)
   
+  for(i in 1: length(dup_id) )
+  {
+    
+    dup_id_i <- which( id_g %in% id_g[dup_all[i]] == TRUE)
+    
+    SeqL     <- which.max(
+      sapply(seq_m[dup_id_i], function(x)
+      {
+        
+        y = c2s(x)
+        z = gsub("-", "", y)
+        z = gsub("~", "", z)
+        
+        l = length(s2c(z))
+        
+        return(l)
+      }
+      )
+    )
+    
+    toberemove_2 <- c(toberemove_2, dup_id_i[-SeqL] ) 
+    
+  }
 }
-
-dup_all <- unique(dup_all)
-
-  print(id_m[dup_all])
-  print(id_g[dup_all])
-  print(sheet$Passage_History[dup_all])
-  
-# keep: 
-# print(sheet$Passage_History[dup_all[c(1,3,6,7,9,11,14)]])
-
-toberemove_2 <- dup_all[-c(1,3,6,7,9,11,14)]
 
 
 ## mixed sample ----------------
@@ -303,7 +313,7 @@ if (  length(which(duplicated(id_n_ed) == TRUE) ) > 0  )
 
 ## combine ncbi and gisaid ----------------   
    
-# n = 9243
+# n = 9246
     
  id_final <- c(id_gisaid, id_n_ed)
 seq_final <- c(seq_gisaid, seq_n)
