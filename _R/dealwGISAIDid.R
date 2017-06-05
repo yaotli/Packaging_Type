@@ -47,46 +47,12 @@ sheet <- rbind(table_1, table_2)
 ### remove duplicated id (same isolateID) -------------------------------- 
 
 # keep the one with longest sequence
+# function: keepLongSeq  
 
-if (  length(which(duplicated(id) == TRUE) ) > 0  )
-{
-    toberemove <- c()
-    dup        <- which(duplicated(id) == TRUE)
+remain <- keepLongSeq(seq, id)
+id     <- id[remain]
+seq    <- seq[remain]
     
-    print(id[dup])
-  
-    for(k in 1: length(dup) )
-    {
-      
-      id_dup_k <- which( id %in% id[ dup[k] ] == TRUE)
-        
-      seqL     <- which.max(
-        
-        sapply(seq[id_dup_k], function(x)
-        {
-          
-          y = c2s(x)
-          z = gsub("-", "", y)
-          z = gsub("~", "", z)
-          
-          l = length(s2c(z))
-          
-          return(l)
-        }
-        )
-
-      )
-      
-      toberemove <- c(toberemove, id_dup_k[-seqL])
-      
-    }
-    
-    remain <- seq(1, length(id))[-toberemove]
-    id     <- id[remain]
-    seq    <- seq[remain]
-    
-}
-  
 
 ### match .fasta id with .csv --------------------------------
 
@@ -184,35 +150,7 @@ for(i in 1: length(seq_m))
 
 # keep the one with longest sequence
 
-if ( length( which(duplicated(id_g) == TRUE) ) > 0 )
-{
-  toberemove_2 <- c()
-  dup_id       <- which(duplicated(id_g) == TRUE)
-  
-  for(i in 1: length(dup_id) )
-  {
-    
-    dup_id_i <- which( id_g %in% id_g[dup_all[i]] == TRUE)
-    
-    SeqL     <- which.max(
-      sapply(seq_m[dup_id_i], function(x)
-      {
-        
-        y = c2s(x)
-        z = gsub("-", "", y)
-        z = gsub("~", "", z)
-        
-        l = length(s2c(z))
-        
-        return(l)
-      }
-      )
-    )
-    
-    toberemove_2 <- c(toberemove_2, dup_id_i[-SeqL] ) 
-    
-  }
-}
+toberemove_2 <- keepLongSeq(seq_m, id_g, showRemain = FALSE)
 
 
 ## mixed sample ----------------
@@ -272,52 +210,20 @@ seq_gisaid <- seq_m[remain_2]
 
 ## deal with idnetical id --------------------------------
 
-
-if (  length(which(duplicated(id_n_ed) == TRUE) ) > 0  )
-{
-  toberemove <- c()
-  dup_id_n   <- which(duplicated(id_n_ed) == TRUE)
-  
-  for( k in 1: length(dup_id_n) )
-  {
-    
-    id_dup_k <- which( id_n_ed %in% id_n_ed[ dup_id_n[k] ])
-    
-    seqL     <- which.max(
-      
-      sapply(seq_n[id_dup_k], function(x)
-      {
-        
-        y = c2s(x)
-        z = gsub("-", "", y)
-        z = gsub("~", "", z)
-        
-        l = length(s2c(z))
-        
-        return(l)
-      }
-      )
-    )
-    print(id_n_ed[id_dup_k])
-    
-    toberemove <- c(toberemove, id_dup_k[-seqL])
-    
-  }
-  
-  remain  <- seq(1, length(seq_n))[-toberemove]
-  id_n_ed <- id_n_ed[remain]
-  seq_n   <- seq_n[remain]
-  
-}
+seq_n   <- seq_n[ keepLongSeq(seq_n, id_n_ed) ]
+id_n_ed <- id_n_ed[ keepLongSeq(seq_n, id_n_ed) ]
 
 
 ## combine ncbi and gisaid ----------------   
    
-# n = 9246
-    
  id_final <- c(id_gisaid, id_n_ed)
 seq_final <- c(seq_gisaid, seq_n)
 
+seq_final <- seq_final[ keepLongSeq(seq_final, id_final) ]
+id_final  <- id_final[ keepLongSeq(seq_final, id_final) ]
+
+
+# n = 9163
 # sort based on time  
 
     yeari <- as.numeric( gsub("_", "", str_match(id_final, "_([0-9]{4})\\.([0-9]+)")[,1]) )
@@ -325,7 +231,7 @@ sortindex <- sort(yeari, na.last = FALSE, index.return = TRUE)$ix
 
 write.fasta(seq_final[sortindex], 
             id_final[sortindex], 
-            file.out = "~/Desktop/Geo/H5_merged_9243.fasta")  
+            file.out = "~/Desktop/Geo/H5_merged_9163.fasta")  
   
   
   
