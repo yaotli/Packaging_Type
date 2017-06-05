@@ -1,6 +1,7 @@
 # Functions applied for this project
 
-# phylo_date ####
+## phylo_date ----------------
+
 # convert YYYY-MM-DD to YY.date
 
 phylo_date <- function(x){
@@ -38,7 +39,7 @@ return(yr.daydifference)
 
 
 
-# cleanID ####
+### cleanID --------------------------------
 
 cleanID <- function(filedir = file.choose()){ 
   
@@ -175,7 +176,7 @@ cleanID <- function(filedir = file.choose()){
 
 
 
-# curateSeq ####
+### curateSeq --------------------------------
 
 curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0, 
                       filedir = file.choose()  ){
@@ -300,7 +301,7 @@ curateSeq <- function(maxamb = 5, minseq = 1600, mode = 1, vip = 0,
 
 
 
-# findtaxa ####
+### findtaxa --------------------------------
 
 findtaxa <- function(type, 
                      tree, 
@@ -412,7 +413,7 @@ findtaxa <- function(type,
 }
 
 
-# subtreeseq ####
+### subtreeseq --------------------------------
 
 
 subtreseq<-function(findrep = 0, outlier = 0, originfile = 0){
@@ -559,7 +560,7 @@ subtreseq<-function(findrep = 0, outlier = 0, originfile = 0){
     
   } }
 
-# gg_color_hue
+## gg_color_hue ----------------
 
 gg_color_hue <- function(n) {
   hues = seq(15, 375, length = n + 1)
@@ -567,7 +568,7 @@ gg_color_hue <- function(n) {
 
 
 
-# trimtool ####
+### trimtool --------------------------------
 
 trimtool <- function(propblank = 0.8, filedir = file.choose()){
   
@@ -610,4 +611,58 @@ trimtool <- function(propblank = 0.8, filedir = file.choose()){
 }
 
 
+## keepLongSeq ----------------
 
+
+keepLongSeq <- function(seq_0, 
+                        id_0, 
+                        showRemain = TRUE)
+{
+  library(seqinr)
+  
+  
+  if( length( which( duplicated(id_0) == TRUE) ) )
+  {
+    toberemove <- c()
+    dup        <- which( duplicated(id_0) == TRUE)
+    
+    for( k in 1: length(dup) )
+    {
+      id_dup_k <- which(id_0 %in% id_0[ dup[k] ] == TRUE)
+      SeqL     <- which.max(
+        
+        sapply(seq_0[id_dup_k], function(x)
+        {
+          
+          y = c2s(x)
+          z = gsub("-", "", y)
+          z = gsub("~", "", z)
+          
+          l = length(s2c(z))
+          
+          return(l)
+          
+        })
+      )
+      
+      toberemove <- c(toberemove, id_dup_k[-SeqL])  
+    }
+    
+    remain <- seq(1, length(seq_0))[-toberemove]
+    
+    if (showRemain == TRUE)
+    {
+      return(remain)
+      
+    }else
+    {
+      return(toberemove)  
+      
+    }
+    
+  }else
+  {
+    print("No identical ID here")
+  }
+  
+}
