@@ -1,12 +1,16 @@
 # The aim of this section is to examine the nucleotide change distribution on tree
-#
-# 
 
-  # clean and curate
+source("~/Packaging_Type/_R/Function.R")
+setwd("~/Desktop/Geo/")
 
-  source("./_R/Function.R")
+### curate and align --------------------------------
 
-  cleanID("~/Desktop/pool_ha_18100.fasta")
+# curate the sequence file
+
+curateSeq(maxamb = 150, minseq = 1, filedir = "./H5_merged_9197.fasta")
+
+
+
 
   curateSeq(maxamb = 1000, minseq = 1, mode = 5, 
             filedir = "~/Desktop/cleanID_pool_ha_18100.fasta")  
