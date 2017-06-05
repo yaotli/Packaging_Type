@@ -210,8 +210,10 @@ seq_gisaid <- seq_m[remain_2]
 
 ## deal with idnetical id --------------------------------
 
-seq_n   <- seq_n[ keepLongSeq(seq_n, id_n_ed) ]
-id_n_ed <- id_n_ed[ keepLongSeq(seq_n, id_n_ed) ]
+remain_3 <- keepLongSeq(seq_n, id_n_ed)     
+    
+seq_n    <- seq_n[ remain_3 ]
+id_n_ed  <- id_n_ed[ remain_3 ]
 
 
 ## combine ncbi and gisaid ----------------   
@@ -219,11 +221,13 @@ id_n_ed <- id_n_ed[ keepLongSeq(seq_n, id_n_ed) ]
  id_final <- c(id_gisaid, id_n_ed)
 seq_final <- c(seq_gisaid, seq_n)
 
-seq_final <- seq_final[ keepLongSeq(seq_final, id_final) ]
-id_final  <- id_final[ keepLongSeq(seq_final, id_final) ]
+remain_4  <- keepLongSeq(seq_final, id_final)
+
+seq_final <- seq_final[ remain_4 ]
+id_final  <- id_final[ remain_4 ]
 
 
-# n = 9163
+# n = 9197
 # sort based on time  
 
     yeari <- as.numeric( gsub("_", "", str_match(id_final, "_([0-9]{4})\\.([0-9]+)")[,1]) )
@@ -231,7 +235,7 @@ sortindex <- sort(yeari, na.last = FALSE, index.return = TRUE)$ix
 
 write.fasta(seq_final[sortindex], 
             id_final[sortindex], 
-            file.out = "~/Desktop/Geo/H5_merged_9163.fasta")  
+            file.out = "~/Desktop/Geo/H5_merged_9197.fasta")  
   
   
   
