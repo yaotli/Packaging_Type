@@ -60,63 +60,68 @@ curateSeq(maxamb = 150, minseq = 1500, mode = 2,
 trimtool(propblank = 0.99, 
          filedir = "./align_cut/curateSeq-2_5p124_align_H5_merged_2744.fasta")
 
-  
+# last curation to remove identical sequences
+
+curateSeq(maxamb = 150, minseq = 10, mode = 2, 
+          filedir = "./align_cut/trim_curateSeq-2_5p124_align_H5_merged_2744.fasta")
+
+
 ## FastTree ----------------
 
 # file: fasttree_1
 
-# extract Eurasian strains (remove one Korea at the root) and build the tree
+# extract Eurasian strains (remove one Korea/2004 at the root) and build the tree
 # n = 2255
 
 # convert .tre to .nwk
 
 ### ggtree -------------------------------- 
 
-sub2255_file <- read.tree("./tree/sub_2255")
-sub2255_T0   <- ggtree(sub2255_file, size = 0.3)
+sub2068_file <- read.tree("./tree/sub_2068")
+sub2068_T0   <- ggtree(sub2068_file, size = 0.3)
 
 serotype_all <- c("h5n1", "h5n2", "h5n3", "h5n4", "h5n5", "h5n6", "h5n7", "h5n8", "h5n9")
 sero_color   <- c("black", gg_color_hue(8))
   
-sub2255_color_sero <- 
-  findtaxa(type = 1, sub2255_file, targetid = serotype_all, target = sero_color)
+sub2068_color_sero <- 
+  findtaxa(type = 1, sub2068_file, targetid = serotype_all, target = sero_color)
 
 
 ## basic ggtree with NA subtype ----------------
 
   
-sub2255_sero <- 
-  sub2255_T0 %<+%     
-  sub2255_color_sero + 
+sub2068_sero <- 
+  sub2068_T0 %<+%     
+  sub2068_color_sero + 
   aes(color = I(colorr)) + 
   geom_tippoint(size = 0.1)
 
-gzoom(sub2255_sero, c(1:641), widths = c(0.5,0.5))
+gzoom(sub2068_sero, c(1:571), widths = c(0.5,0.5))
 
 
 # to inspect the node number:
-# sub2255_sero + geom_text(aes(label = node), size = 0.5)
+# sub2068_sero + geom_text(aes(label = node), size = 0.5)
 # to rotate the branch:
 # ggtree::rotate(T_h5tree_note, 2766)
   
 ## label by tip ---------------- 
   
-sub2255_color_sero[,12] = "N1"
+sub2068_color_sero[,12] = "N1"
   
-for (k in 1: length(sub2255_color_sero[,12]) )
+for (k in 1: length(sub2068_color_sero[,12]) )
 {
-  sub2255_color_sero[,12][k] <- 
+  sub2068_color_sero[,12][k] <- 
     sub(pattern = "h5", replacement = "", serotype_all)[
-      match( sub2255_color_sero[,11][k], sero_color) ]
+      match( sub2068_color_sero[,11][k], sero_color) ]
   
 }
   
-colnames(sub2255_color_sero)[12] = "NAtype"
+colnames(sub2068_color_sero)[12] = "NAtype"
   
 # tree with annotation
 
-sub2255_sero_tipanno <- 
-  sub2255_T0 %<+% sub2255_color_sero +
+sub2068_sero_tipanno <- 
+  sub2068_T0 %<+% sub2068_color_sero +
   geom_tippoint(aes(color = NAtype)) + 
   scale_color_manual( values =  sero_color ) + 
   theme(legend.position = "left", legend.text = element_text(size= 30 )) +
@@ -127,27 +132,27 @@ sub2255_sero_tipanno <-
 
 # prepare data.frame for heatmap
 
-taxa_sub2255    <- 
-  gsub( "'", "", fortify(sub2255_file)$label[which( fortify(sub2255_file)$isTip == TRUE)] )
+taxa_sub2068    <- 
+  gsub( "'", "", fortify(sub2068_file)$label[which( fortify(sub2068_file)$isTip == TRUE)] )
 
-sub2255_5p_seq  <- file_5p124_seq[ match(taxa_sub2255, file_5p124_id) ]
-sub2255_seqMx   <- do.call(rbind, sub2255_5p_seq)
+sub2068_5p_seq  <- file_5p124_seq[ match(taxa_sub2068, file_5p124_id) ]
+sub2068_seqMx   <- do.call(rbind, sub2068_5p_seq)
 
-sub2255_heatmap <- data.frame(p24 = sub2255_seqMx[,24], 
-                             p35 = sub2255_seqMx[,35], 
-                             p72 = sub2255_seqMx[,72],
-                             p108 = sub2255_seqMx[,108], stringsAsFactors = FALSE)
+sub2068_heatmap <- data.frame(p24 = sub2068_seqMx[,24], 
+                              p35 = sub2068_seqMx[,35], 
+                              p72 = sub2068_seqMx[,72],
+                              p108 = sub2068_seqMx[,108], stringsAsFactors = FALSE)
 
-sub2255_heatmap$p108[ which(sub2255_heatmap$p108 == "y") ] = "-"
+sub2068_heatmap$p108[ which(sub2068_heatmap$p108 == "y") ] = "-"
 
-rownames(sub2255_heatmap) <- 
-  paste0("'", file_5p124_id[ match(taxa_sub2255, file_5p124_id) ], "'")
+rownames(sub2068_heatmap) <- 
+  paste0("'", file_5p124_id[ match(taxa_sub2068, file_5p124_id) ], "'")
   
 ## heatmaptree ----------------
 
-sub2255_maptree <- 
-gheatmap(sub2255_sero, 
-         sub2255_heatmap, width=0.25) +
+sub2068_maptree <- 
+gheatmap(sub2068_sero, 
+         sub2068_heatmap, width=0.25) +
 scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"),
                   values=c( "white", "darkgreen", "steelblue", "orange", "firebrick") ) 
 
@@ -155,41 +160,48 @@ scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"),
 
 ### 2.3.4 subtree --------------------------------
 
-sub641_file <- read.tree("./tree/sub_641")
-sub641_T0   <- ggtree(sub641_file, size = 0.3)
+sub571_file <- read.tree("./tree/sub_571")
+sub571_T0   <- ggtree(sub571_file, size = 0.4)
 
-sub641_color_sero <- 
-  findtaxa(type = 1, sub641_file, targetid = serotype_all, target = sero_color)
+sub571_color_sero <- 
+  findtaxa(type = 1, sub571_file, targetid = serotype_all, target = sero_color)
 
-sub641_sero <- 
-  sub641_T0 %<+%     
-  sub641_color_sero + 
-  aes(color = I(colorr)) + 
-  geom_tippoint(size = 0.1)
+sub571_sero <- 
+  sub571_T0 %<+%     
+  sub571_color_sero + 
+  aes(color = I(colorr)) 
 
+# highlight N1
+
+sub571_tip_N1 <- 
+  findtaxa(type = 0, sub571_file, targetid = "N1", target = "1")
+
+sub571_sero_NA <- 
+  sub571_sero %<+% 
+  sub571_tip_N1 + 
+  geom_tippoint(aes(shape = shapee), size = 1, color = "black")
 
 
 # heatmap 
 
-taxa_sub641    <- 
-  gsub( "'", "", fortify(sub641_file)$label[which( fortify(sub641_file)$isTip == TRUE)] )
+taxa_sub571    <- 
+  gsub( "'", "", fortify(sub571_file)$label[which( fortify(sub571_file)$isTip == TRUE)] )
 
-sub641_5p_seq  <- file_5p124_seq[ match(taxa_sub641, file_5p124_id) ]
-sub641_seqMx   <- do.call(rbind, sub641_5p_seq)
+sub571_5p_seq  <- file_5p124_seq[ match(taxa_sub571, file_5p124_id) ]
+sub571_seqMx   <- do.call(rbind, sub571_5p_seq)
 
-sub641_heatmap <- data.frame(p24 = sub641_seqMx[,24], 
-                              p35 = sub641_seqMx[,35], 
-                              p72 = sub641_seqMx[,72],
-                              p108 = sub641_seqMx[,108], stringsAsFactors = FALSE)
+sub571_heatmap <- data.frame(p24 = sub571_seqMx[,24], 
+                              p35 = sub571_seqMx[,35], 
+                              p72 = sub571_seqMx[,72],
+                              p108 = sub571_seqMx[,108], stringsAsFactors = FALSE)
+
+rownames(sub571_heatmap) <- 
+  paste0("'", file_5p124_id[ match(taxa_sub571, file_5p124_id) ], "'")
 
 
-rownames(sub641_heatmap) <- 
-  paste0("'", file_5p124_id[ match(taxa_sub641, file_5p124_id) ], "'")
-
-
-sub641_maptree <- 
-  gheatmap(sub641_sero, 
-           sub641_heatmap, width=0.25) +
+sub571_maptree <- 
+  gheatmap(sub571_sero_NA, 
+           sub571_heatmap, width=0.25) +
   scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"),
                     values=c( "white", "darkgreen", "steelblue", "orange", "firebrick") ) 
 
@@ -206,14 +218,3 @@ sub641_maptree <-
   write.fasta(seq4, names = seq.name4, file.out = "~/Desktop/out.fasta")
   
   msaplot(T_h5tree_annotate, "~/Desktop/out.fasta", width = 0.25)
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
