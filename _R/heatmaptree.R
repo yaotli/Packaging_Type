@@ -1,191 +1,200 @@
-# The aim of this section is to examine the nucleotide change distribution on tree
+# The aim of this section is to examine the RNA 5p nucleotide distribution on tree
 
 source("~/Packaging_Type/_R/Function.R")
 setwd("~/Desktop/Geo/")
+
+library(seqinr)
+library(stringr)
+library(ggtree)
+library(ggplot2)
+
 
 ### curate and align --------------------------------
 
 # curate the sequence file
 
-curateSeq(maxamb = 150, minseq = 1, filedir = "./H5_merged_9197.fasta")
+curateSeq(maxamb = 150, minseq = 1, mode = 2, filedir = "./H5_merged_9197.fasta")
+
+## mafft ----------------
+
+# file: mafft_1
+  
+
+### extract seq with intact 5p end --------------------------------
+  
+file_5p124     <- read.fasta("./align_cut/5p124nt_H5_merged_8602.fasta")
+file_5p124_id  <- attributes(file_5p124)$names
+file_5p124_seq <- getSequence(file_5p124)
+  
+
+## remove no subtype and p24/p35 ----------------
+
+nonsubtype <- 
+  which(is.na(str_match(pattern = "_(H[0-9]+N[0-9]+)_", file_5p124_id)[,1]) == TRUE)
+
+nonsubtype <- unique( sort( c(nonsubtype, grep("H5N0", x = file_5p124_id)) ) )
+
+# read seq into matrix
+
+seqMx_5p124      <- do.call(rbind, file_5p124_seq)
+both2rDash       <- intersect( which(seqMx_5p124[,24] == "-"), which(seqMx_5p124[,35] == "-") )
+toberemove_5p124 <- unique( sort( c(nonsubtype, both2rDash) ) )
+remain_5p124     <- seq(1, length(file_5p124_seq))[-toberemove_5p124]     
+  
+# output file
+
+alined_8602 <- read.fasta("./align_cut/align_H5_merged_8602.fasta")    
+
+write.fasta(getSequence(alined_8602)[remain_5p124], 
+            attributes(alined_8602)$names[remain_5p124], 
+            file.out = "./align_cut/5p124_align_H5_merged_2769.fasta")  
+
+
+### build the ML tree --------------------------------  
+  
+curateSeq(maxamb = 150, minseq = 1500, mode = 2, 
+            filedir = "./align_cut/5p124_align_H5_merged_2769.fasta")
+
+# trim by trimtool plus manually modify to 1680 nt
+
+trimtool(propblank = 0.99, 
+         filedir = "./align_cut/curateSeq-2_5p124_align_H5_merged_2744.fasta")
+
+  
+## FastTree ----------------
+
+# file: fasttree_1
+
+# extract Eurasian strains (remove one Korea at the root) and build the tree
+# n = 2255
+
+# convert .tre to .nwk
+
+### ggtree -------------------------------- 
+
+sub2255_file <- read.tree("./tree/sub_2255")
+sub2255_T0   <- ggtree(sub2255_file, size = 0.3)
+
+serotype_all <- c("h5n1", "h5n2", "h5n3", "h5n4", "h5n5", "h5n6", "h5n7", "h5n8", "h5n9")
+sero_color   <- c("black", gg_color_hue(8))
+  
+sub2255_color_sero <- 
+  findtaxa(type = 1, sub2255_file, targetid = serotype_all, target = sero_color)
+
+
+## basic ggtree with NA subtype ----------------
+
+  
+sub2255_sero <- 
+  sub2255_T0 %<+%     
+  sub2255_color_sero + 
+  aes(color = I(colorr)) + 
+  geom_tippoint(size = 0.1)
+
+gzoom(sub2255_sero, c(1:641), widths = c(0.5,0.5))
+
+
+# to inspect the node number:
+# sub2255_sero + geom_text(aes(label = node), size = 0.5)
+# to rotate the branch:
+# ggtree::rotate(T_h5tree_note, 2766)
+  
+## label by tip ---------------- 
+  
+sub2255_color_sero[,12] = "N1"
+  
+for (k in 1: length(sub2255_color_sero[,12]) )
+{
+  sub2255_color_sero[,12][k] <- 
+    sub(pattern = "h5", replacement = "", serotype_all)[
+      match( sub2255_color_sero[,11][k], sero_color) ]
+  
+}
+  
+colnames(sub2255_color_sero)[12] = "NAtype"
+  
+# tree with annotation
+
+sub2255_sero_tipanno <- 
+  sub2255_T0 %<+% sub2255_color_sero +
+  geom_tippoint(aes(color = NAtype)) + 
+  scale_color_manual( values =  sero_color ) + 
+  theme(legend.position = "left", legend.text = element_text(size= 30 )) +
+  guides(colour=guide_legend("NA", override.aes = list(size = 20 )))
+
+
+## extract sequence info ----------------
+
+# prepare data.frame for heatmap
+
+taxa_sub2255    <- 
+  gsub( "'", "", fortify(sub2255_file)$label[which( fortify(sub2255_file)$isTip == TRUE)] )
+
+sub2255_5p_seq  <- file_5p124_seq[ match(taxa_sub2255, file_5p124_id) ]
+sub2255_seqMx   <- do.call(rbind, sub2255_5p_seq)
+
+sub2255_heatmap <- data.frame(p24 = sub2255_seqMx[,24], 
+                             p35 = sub2255_seqMx[,35], 
+                             p72 = sub2255_seqMx[,72],
+                             p108 = sub2255_seqMx[,108], stringsAsFactors = FALSE)
+
+sub2255_heatmap$p108[ which(sub2255_heatmap$p108 == "y") ] = "-"
+
+rownames(sub2255_heatmap) <- 
+  paste0("'", file_5p124_id[ match(taxa_sub2255, file_5p124_id) ], "'")
+  
+## heatmaptree ----------------
+
+sub2255_maptree <- 
+gheatmap(sub2255_sero, 
+         sub2255_heatmap, width=0.25) +
+scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"),
+                  values=c( "white", "darkgreen", "steelblue", "orange", "firebrick") ) 
 
 
 
+### 2.3.4 subtree --------------------------------
 
-  curateSeq(maxamb = 1000, minseq = 1, mode = 5, 
-            filedir = "~/Desktop/cleanID_pool_ha_18100.fasta")  
-  
-  # seq number = 11239
-  
-  
-  # mafft: 
-  # source: cuated_5pRNA_pool_ha_18100.fasta
-  # result: align_curateSeq-5_pool_ha_18100.fasta
-  
-  # reverse-complement the aligned file and keep the 5 prime region
-  # source: align_curateSeq-5_pool_ha_18100.fasta
-  # : 5pRNA_pool_ha_18100.fasta
-  
-  
-# extract seq with intact 5 prime end ####
-  
-  
-  library(seqinr)
-  library(stringr)
-  
-  
-  file <- read.fasta("~/Desktop/gheatmap/5pRNA_pool_ha_18100.fasta")
-  seq.name0 = attributes(file)$names
-       seq0 = getSequence(file)
-  
-  # no subtype info     
-  nonsubtype <- which(is.na(str_match(pattern = "_(H[0-9]+N[0-9]+)_", seq.name0)[,1]) == TRUE)
-  nonsubtype <- unique( sort( c(nonsubtype, grep("H5N0", x = seq.name0)) ) )
-       
-  seq_matrix <- do.call(rbind, seq0)
-  
-  # no both positions we are interested
-        nont <- intersect(which(seq_matrix[,24] == "-"), which(seq_matrix[,35] == "-"))
-  
-  toberemove <- unique(sort(c(nonsubtype, nont)))
-     
-    toremain <- seq(1, length(seq0))[-toberemove]     
-  
-  # remove no subtype info and no position seq at 24 and 35       
-    
-  file2 <- read.fasta("~/Desktop/align_curateSeq-5_pool_ha_18100.fasta")    
-  seq.name2 = attributes(file2)$names
-       seq2 = getSequence(file2)
-  
-         
-  write.fasta(seq2[toremain], names = seq.name2[toremain], 
-              file.out = "~/Desktop/partial_align_pool_ha_18100.fasta")  
-  
-  # n = 3452
-  
-  # curate the file for tree
-  
-  curateSeq(maxamb = 15, minseq = 1500, mode = 7, 
-            filedir = "~/Desktop/partial_align_pool_ha_18100.fasta")
+sub641_file <- read.tree("./tree/sub_641")
+sub641_T0   <- ggtree(sub641_file, size = 0.3)
 
-  
-  # trim by BioEdit
-  # results: trim_curateSeq-7_partial_pool_ha_18100
-  
-  
-  # FastTree
-  # source: trim_curateSeq-7_partial_pool_ha_18100
-  # result: tree_trim_curateSeq-7_partial_align_pool_ha_18100
-  
-  
-  
-# prepare the tree
-  
-  library(ggtree)
-  library(ape)
-  
-    h5tree <- read.tree("~/Desktop/gheatmap/nwtree_trim_curateSeq-7_partial_align_pool_ha_18100.tre")
-  T_h5tree <-  ggtree(h5tree, size = 0.3)
-  
-  gg_color_hue <- function(n) {
-    hues = seq(15, 375, length = n + 1)
-    hcl(h = hues, l = 65, c = 100)[1:n] }
-  
-  
-  serotype <- c("H5N1", "H5N2", "H5N3", "H5N4", "H5N5", 
-                "H5N6", "H5N7", "H5N8", "H5N9")
-  
-  sero_color <- c("black", gg_color_hue(8))
-  
-  sero_color_h5 <- findtaxa(type = 1, h5tree, targetid = serotype, target = sero_color)
+sub641_color_sero <- 
+  findtaxa(type = 1, sub641_file, targetid = serotype_all, target = sero_color)
 
-  
-  # tree with color on branch
-  
-  T_h5tree_note = T_h5tree %<+% sero_color_h5 + aes(color = I(colorr)) + 
-    geom_tippoint(size = 0.1)
-  
-  # to inspect the node number:
-  # T_h5tree_note + geom_text(aes(label = node), size = 0.5)
-  
-  T_h5tree_note_r = ggtree::rotate(T_h5tree_note, 2766)
-  T_h5tree_note_r = ggtree::rotate(T_h5tree_note_r, 2767)
-  T_h5tree_note_r = ggtree::rotate(T_h5tree_note_r, 2992)
-
-  
-  sero_color_h5[,12] = "N1"
-  
-  for (k in 1: length(sero_color_h5[,12])){
-    
-    sero_color_h5[,12][k] = 
-      sub(pattern = "H5", replacement = "", serotype)[
-        match(sero_color_h5[,11][k], sero_color)]
-  }
-  
-  colnames(sero_color_h5)[12] = "NAtype"
-  
-  # tree with annotation
-  
-  T_h5tree_annotate = T_h5tree %<+% sero_color_h5 + 
-    geom_tippoint(aes(color = NAtype ), size = 0.8) + 
-    scale_color_manual(values=sero_color) + 
-    theme(legend.position = "left", legend.text = element_text(size=30)) +
-    guides(colour=guide_legend("NA", override.aes = list(size =20)))
-  
-# extract info from .fasta and make the matrix heatmap ####
-  
-  file3 <- read.fasta("~/Desktop/gheatmap//trim_curateSeq-7_partial_align_pool_ha_18100.fasta")    
-  seq.name3 = attributes(file3)$names
-  seq3 = getSequence(file3)
-  
-  # seq.name0 from 5pRNA_pool_ha_18100.fasta
-  treematch <- match(seq.name3, seq.name0)
-  
-  write.fasta(seq0[treematch], names = seq.name0[treematch], 
-              file.out = "~/Desktop/curated_5pRNA_pool_ha_18100.fasta")
-  
-  file5 <- read.fasta("~/Desktop/gheatmap//curated_5pRNA_pool_ha_18100.fasta")    
-  seq.name5 = attributes(file5)$names
-       seq5 = getSequence(file5)
-  
-  treeid <-        
-  match(gsub("'", "", T_h5tree$data$label[which(T_h5tree$data$isTip == TRUE)]), seq.name5)
-  
-  seq_matrix2 = do.call(rbind, seq5[treeid])   
-       
-  tips = sero_color_h5$taxaid
-  tips = tips[which(is.na(tips ) == FALSE)]
-  
-   rna_24_5p <- c()
-   rna_35_5p <- c()
-   rna_72_5p <- c()
-  rna_108_5p <- c()
-
-  for(k in 1: length(tips)){
-    
-    rna_24_5p[length(rna_24_5p) + 1] = seq_matrix2[,24][match(tips[k], seq.name3[treeid] )] 
-    rna_35_5p[length(rna_35_5p) + 1] = seq_matrix2[,35][match(tips[k], seq.name3[treeid] )]
-    rna_72_5p[length(rna_72_5p) + 1] = seq_matrix2[,72][match(tips[k], seq.name3[treeid] )] 
-    rna_108_5p[length(rna_108_5p) + 1] = seq_matrix2[,108][match(tips[k], seq.name3[treeid] )] 
-    
-    
-  }
-  
-  rna_108_5p = gsub(pattern = "y", "-", rna_108_5p)
-  
-  rna_matrix = data.frame(p24 = rna_24_5p, p35 = rna_35_5p, 
-                          p72 = rna_72_5p, p108 = rna_108_5p,
-                          stringsAsFactors = FALSE)  
-  
-  rownames(rna_matrix) = sero_color_h5$label[ which(sero_color_h5$isTip == TRUE) ]
-  
-  
-  gheatmap(T_h5tree_note_r, rna_matrix, width=0.25) +
-    scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"), 
-                      values=c( "white", "darkgreen", "steelblue", "orange", "firebrick") ) 
+sub641_sero <- 
+  sub641_T0 %<+%     
+  sub641_color_sero + 
+  aes(color = I(colorr)) + 
+  geom_tippoint(size = 0.1)
 
 
-# msaplot 
+
+# heatmap 
+
+taxa_sub641    <- 
+  gsub( "'", "", fortify(sub641_file)$label[which( fortify(sub641_file)$isTip == TRUE)] )
+
+sub641_5p_seq  <- file_5p124_seq[ match(taxa_sub641, file_5p124_id) ]
+sub641_seqMx   <- do.call(rbind, sub641_5p_seq)
+
+sub641_heatmap <- data.frame(p24 = sub641_seqMx[,24], 
+                              p35 = sub641_seqMx[,35], 
+                              p72 = sub641_seqMx[,72],
+                              p108 = sub641_seqMx[,108], stringsAsFactors = FALSE)
+
+
+rownames(sub641_heatmap) <- 
+  paste0("'", file_5p124_id[ match(taxa_sub641, file_5p124_id) ], "'")
+
+
+sub641_maptree <- 
+  gheatmap(sub641_sero, 
+           sub641_heatmap, width=0.25) +
+  scale_fill_manual(breaks=c( "-", "a", "u", "c", "g"),
+                    values=c( "white", "darkgreen", "steelblue", "orange", "firebrick") ) 
+
+
+### msaplot --------------------------------
   
   file4 <- read.fasta("~/Desktop/cuated_5pRNA_pool_ha_18100 2.fasta")    
   
