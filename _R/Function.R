@@ -627,10 +627,9 @@ trimtool <- function(propblank = 0.8, filedir = file.choose()){
 
 keepLongSeq <- function(seq_0, 
                         id_0, 
-                        showRemain = TRUE)
+                        showRemain = FALSE)
 {
   library(seqinr)
-  
   
   if( length( which( duplicated(id_0) == TRUE) ) )
   {
@@ -649,7 +648,7 @@ keepLongSeq <- function(seq_0,
           z = gsub("-", "", y)
           z = gsub("~", "", z)
           
-          l = length(s2c(z))
+          l = length( s2c(z) )
           
           return(l)
           
@@ -667,8 +666,9 @@ keepLongSeq <- function(seq_0,
       
     }else
     {
-      return(toberemove)  
-      
+      return( list(seq = seq_0[remain], 
+                   id  = id_0[remain]) ) 
+
     }
     
   }else
@@ -677,3 +677,26 @@ keepLongSeq <- function(seq_0,
   }
   
 }
+
+### fastaEx --------------------------------
+
+fastaEx <- function(filedir = file.choose())
+{
+  require(seqinr)
+  
+  file     <- read.fasta(filedir)
+  file_seq <- getSequence(file)
+  file_id  <- attributes(file)$names
+  
+  return( list(seq = file_seq, 
+               id  = file_id ) )
+}
+
+
+
+
+
+
+
+
+
