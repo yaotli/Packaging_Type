@@ -1,36 +1,104 @@
-# Aim of the project: 
-# to understand the subtype dist. in Gs/GD and 
-# inspect the essential cis-determinants
-# for this section:
-# 1. clean the sequence ID
-# 2. try to remove apparent duplicated sequences
-#
-# Data sources:
-# 1. gisaid: 6278/ H5
-# 2. ncbi: 6677/ H5
-# 3. reference strains with clade label from Dr. Gavin Smith (238)
+# prepare sequences for major HA-NA comparative study
+# NOTE: 1. use underline (_) replace blank in ID from NCBI
+#       2. check >_A (replace with >A_) in ID from GISAID
+
+library(seqinr)
+library(stringr)
+
+setwd("~/Desktop/data_souce/")
+source("~/Packaging_Type/_R/Function.R")
+
+# gisaid
+file_ha_g <- "./pH5_G_1856_20170608.fasta" 
+file_na_g <- "./pNA_G_1855_20170608.fasta"
+csv_g     <- "./pH5NA_G_1855_20170608.csv"
 
 
-# Prepare for tree ####
+# ncbi
+file_ha_n <- "./pH5_N_5483_20170608.fasta" 
+file_na_n <- "./pNA_N_5338_20170608.fasta"
+csv_n_ha  <- "./pH5_N_5483_20170608.csv"
+csv_n_na  <- "./pNA_N_5338_20170608.csv"
 
 
-  # clean ID: pool_ha_12995 (gisaid + ncbi)
+### gisaid --------------------------------
 
-cleanID()
+## remove sequence duplicated isolatedID ----------------
 
-  # curateSeq
+# HA
 
-curateSeq(mode = 5)
+ha_g_seq    <- keepLongSeq( fastaEx(file_ha_g)$seq, 
+                         fastaEx(file_ha_g)$id )$seq
 
-  # add reference strains
-  # align by MAFFT, and trim in BioEdit
+ha_g_id     <- keepLongSeq( fastaEx(file_ha_g)$seq, 
+                         fastaEx(file_ha_g)$id)$id
 
-  # curateSeq
+# deal with assession number 
 
-curateSeq(maxamb = 1500, minseq = 1, mode = 2, vip = 238)
+ha_g_id_ID  <- gsub("_ISL_", "", 
+                    str_match(ha_g_id, "EPI_ISL_([0-9]+)" )[, 1])
+
+ha_g_id_epi <- str_replace(gsub("_EPI_ISL_([0-9]+)", "", ha_g_id), 
+                           "A/", paste0(ha_g_id_ID, "_") ) 
 
 
-  # FastTree
-  # ./FastTree -nt -spr 4 -nni 10 -gtr -cat 20 -gamma <tobetree.fasta> out
+# NA 
+
+nu_g_seq    <- fastaEx(file_na_g)$seq
+nu_g_id     <- fastaEx(file_na_g)$id
+
+# deal with assession number 
+
+nu_g_id_ID  <- gsub("_ISL_", "", 
+                   str_match(nu_g_id, "EPI_ISL_([0-9]+)" )[, 1])
+
+nu_g_id_epi <- str_replace(gsub("_EPI_ISL_([0-9]+)", "", nu_g_id), 
+                           "A/", paste0(nu_g_id_ID, "_") ) 
+
+
+
+## prepare the datasheet
+
+### ncbi --------------------------------
+
+# HA 
+
+ha_n_seq    <- fastaEx(file_ha_n)$seq
+ha_n_id     <- fastaEx(file_ha_n)$id
+
+# id start without "A/"
+ha_n_id[ which( startsWith(prefix = "A/", x = ha_n_id) == FALSE) ] <- 
+  paste0("A/", ha_n_id[ which( startsWith(prefix = "A/", x = ha_n_id) == FALSE) ])
+
+ha_n_id_epi <- 
+  str_replace(string      = gsub("(_[A-Z]{1,2})([0-9]{5,6})", "", ha_n_id), 
+              pattern     = "A/", 
+              replacement = paste0( str_match( ha_n_id, "([A-Z]{1,2})([0-9]{5,6})" )[, 1], "_") )
+  
+# NA 
+
+nu_n_seq <- fastaEx(file_na_n)$seq
+nu_n_id  <- fastaEx(file_na_n)$id
+
+nu_n_id[ which( startsWith(prefix = "A/", x = nu_n_id) == FALSE) ] <- 
+  paste0("A/", nu_n_id[ which( startsWith(prefix = "A/", x = nu_n_id) == FALSE) ])
+
+nu_n_id_epi <- 
+  str_replace(string      = gsub("(_[A-Z]{1,2})([0-9]{5,6})", "", nu_n_id), 
+              pattern     = "A/", 
+              replacement = paste0( str_match( nu_n_id, "([A-Z]{1,2})([0-9]{5,6})" )[, 1], "_") )
+
+
+## read-in .csv files
+
+## keep paired HA-NA and prepare datasheet
+
+
+
+
+
+
+
+
 
 
