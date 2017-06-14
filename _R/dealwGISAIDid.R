@@ -178,7 +178,7 @@ seq_gisaid <- seq_m[remain_2]
 
     id_n_ed = gsub(" ", "_", id_n)
     id_n_ed = gsub("\\(|\\)|\\[|\\[|\\.", "-", id_n_ed)
-    id_n_ed = gsub("\\'|\\?|\\>", "", id_n_ed)
+    id_n_ed = gsub("\\'|\\?|>", "", id_n_ed)
     id_n_ed = gsub("_A_/", "", id_n_ed)
 
 # deal with date
