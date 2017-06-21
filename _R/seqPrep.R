@@ -9,16 +9,16 @@ setwd("~/Desktop/data_souce/")
 source("~/Packaging_Type/_R/Function.R")
 
 # gisaid
-file_ha_g <- "./pH5_G_1856_20170608.fasta" 
-file_na_g <- "./pNA_G_1855_20170608.fasta"
-csv_g     <- "./pH5NA_G_1855_20170608.csv"
+file_ha_g <- "./raw/pH5_G_1856_20170608.fasta" 
+file_na_g <- "./raw/pNA_G_1855_20170608.fasta"
+csv_g     <- "./raw/pH5NA_G_1855_20170608.csv"
 
 
 # ncbi
-file_ha_n <- "./pH5_N_5592_20170612.fasta" 
-file_na_n <- "./pNA_N_5560_20170612.fasta"
-csv_n_ha  <- "./pH5_N_5592_20170612.csv"
-csv_n_na  <- "./pNA_N_5560_20170612.csv"
+file_ha_n <- "./raw/pH5_N_5592_20170612.fasta" 
+file_na_n <- "./raw/pNA_N_5560_20170612.fasta"
+csv_n_ha  <- "./raw/pH5_N_5592_20170612.csv"
+csv_n_na  <- "./raw/pNA_N_5560_20170612.csv"
 
 
 ### gisaid --------------------------------
@@ -310,16 +310,105 @@ pool_df     <- rbind(sheet_n, sheet_g)
 
 # export
 
-write.fasta(ha_pool_seq, ha_pool_id, "ha_pool.fasta")
+write.fasta(ha_pool_seq, ha_pool_id, "h5_pool.fasta")
 write.fasta(nu_pool_seq, nu_pool_id, "nu_pool.fasta")
 write.csv(pool_df, "pool_df.csv")
 
 
+### sequence cleaning and curate --------------------------------
+
+pool_h5_fasta = "./h5_pool.fasta"
+pool_nu_fasta = "./nu_pool.fasta"
+pool_csv      = "./pool_df.csv"
+
+
+# cleanID
+cleanID(pool_h5_fasta)
+cleanID(pool_nu_fasta)
+
+# curate file
+
+cleanedH5 = "./cleanID_h5_pool.fasta"
+
+curateSeq(maxamb = 150, minseq = 1500, mode = 1, filedir = cleanedH5)
+
+# align the seq by MAFFT (shell: mafft_1)
+# trim in BioEdit and FastTree (shell: fasttree_1)
+
+# mannually extract GsGD lineage names (file: sub_6064)
+# extract seq and re-FastTree
+
+# file1 = trim_h5_pool_lth1683
+# file2 = sub_6064
+
+subtreseq()
+
+# fasttree (file: fasttree_2)
+
+
+### subextract sequences from tree  --------------------------------
+
+library(ggtree)
+library(ape)
+
+h5_GsGDfile <- read.tree("./Tree/h5_GsGD")
+
+
+## dirty match for lineage annotation ----------------
+
+refname       <- read.table("./ref_name", stringsAsFactors = FALSE)[,1]
+refname       <- gsub("/|\\||-|\\{|\\}", "_", gsub(">", "", gsub("A/", "", refname) ) )
+
+refname_split <- strsplit( refname, "_", fixed = TRUE ) 
+refname_split <- lapply(refname_split, 
+                        function(x)
+                          {
+                          x_i  <- gsub(pattern = "[0-9]+", "", x)
+                          x_ii <- gsub(pattern = "[a-zA-Z]+", "", x)
+                          y = c(x_i, x_ii)
+                          
+                          y = y[!y == ""]
+                          
+                        }) 
+
+treeid_split  <- strsplit( gsub("'", "", h5_GsGDfile$tip.label), "_", fixed = TRUE)
+treeid_split  <- lapply(treeid_split, 
+                        function(x)
+                        {
+                          x_i  <- gsub(pattern = "[0-9]+", "", x)
+                          x_ii <- gsub(pattern = "[a-zA-Z]+", "", x)
+                          y = c(x_i, x_ii)
+                          
+                          y = y[!y == ""]
+                          
+                        }) 
+
+dirttymath <- sapply(refname_split, 
+                     function(y)
+                       {
+                       return(
+                         which.max(
+                           sapply(treeid_split, 
+                                  function(x)
+                                  {
+                                    sum( tolower(y) %in% tolower(x) )
+                                  })
+                                  )
+                             )
+                         })
+
+# matchlist <- data.frame(ref = refname, 
+#                         all = gsub(pattern = "'", "", h5_GsGDfile$tip.label[ dirttymath ]))
 
 
 
+## map back to tree ----------------
 
+h5_GsGDfile_clade <- h5_GsGDfile
+h5_GsGDfile_clade$tip.label[-dirttymath] = " "
+h5_GsGDfile_clade$tip.label[ dirttymath] = refname
 
+ggtree(h5_GsGDfile_clade, size = 0.3) + geom_tiplab(size = 0.8, col = "RED")
 
 
 
