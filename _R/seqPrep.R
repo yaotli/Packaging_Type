@@ -4,6 +4,8 @@
 
 library(seqinr)
 library(stringr)
+library(ggtree)
+library(ape)
 
 setwd("~/Desktop/data_souce/")
 source("~/Packaging_Type/_R/Function.R")
@@ -163,7 +165,7 @@ sheet_nu_n_file   <- read.csv(csv_n_na, header = FALSE, stringsAsFactors = FALSE
 
 ha_n_select_remain <- keepLongSeq(ha_n_seq, sheet_ha_n_file$V9, showRemain = TRUE)
 
-# eliminate the 4767 (A/yellow-billed teal/Chile/14/2014)
+# eliminate the no.4767 (A/yellow-billed teal/Chile/14/2014)
 
 HANAdis            <- match(setdiff( unique(sheet_ha_n_file$V9), unique(sheet_nu_n_file$V9) ), 
                             sheet_ha_n_file$V9)
@@ -216,7 +218,7 @@ for (i in 1: length(  setdiff(ha_n_select_id_ac0, nu_n_select_id_ac0)  ))
 
   append.i     <- which.max( nchar( appends ) )
     
-  append       <-  appends[ append.i]
+  append       <- appends[ append.i]
   
   ha_n_select_id[ha_i] <- gsub(pattern     = "_H5N[0-9]_([0-9]{4})-([0-9-]+)", 
                                replacement = append, 
@@ -228,9 +230,6 @@ for (i in 1: length(  setdiff(ha_n_select_id_ac0, nu_n_select_id_ac0)  ))
   
   print( c( ha_n_select_id[ha_i],  nu_n_select_id[nu_i] ) )
 }
-
-
-# make corresponded table
 
 
 # remove A/
@@ -253,7 +252,7 @@ sheet_n_name      <- sub("Influenza A virus \\(|", "",
 
 # ncbi specific
 
-sheet_n_segment   <- as.numeric(gsub(" \\(([A-Z]{2})\\)", "", sheet_n_raw$V4))
+sheet_n_segment   <- as.numeric( gsub(" \\(([A-Z]{2})\\)", "", sheet_n_raw$V4) )
   
 sheet_n_NUac      <- 
   nu_n_select_ac[ match( sub( "([A-Z]{1,2})([0-9]{5,6})_", "", ha_n_select_id), 
@@ -322,15 +321,15 @@ pool_nu_fasta = "./nu_pool.fasta"
 pool_csv      = "./pool_df.csv"
 
 
+## HA ----------------
+
 # cleanID
 cleanID(pool_h5_fasta)
-cleanID(pool_nu_fasta)
 
 # curate file
+# 1. maxamb = 150 | 2. minseq = 1500
 
-cleanedH5 = "./cleanID_h5_pool.fasta"
-
-curateSeq(maxamb = 150, minseq = 1500, mode = 1, filedir = cleanedH5)
+curateSeq(maxamb = 150, minseq = 1500, mode = 1, filedir = "./cleanID_h5_pool.fasta")
 
 # align the seq by MAFFT (shell: mafft_1)
 # trim in BioEdit and FastTree (shell: fasttree_1)
@@ -346,15 +345,37 @@ subtreseq()
 # fasttree (file: fasttree_2)
 
 
+## NA ----------------
+
+# cleanID
+cleanID(pool_nu_fasta)
+
+# curate file
+# 1. maxamb = 135 | 2. minseq = 1350
+
+curateSeq(maxamb = 130, minseq = 1300, mode = 1, filedir = "./cleanID_nu_pool.fasta")
+
+## select N1 virus
+
+subfastaSeq(subtype = "H5N1", filedir = "./curateSeq-1_cleanID_nu_pool.fasta")
+
+# align by MAFFT (shell: mafft_2)
+
+# trim firstly by trimtool
+# and in BioEdit
+trimtool(propblank = 0.9, filedir = "./align_trim/align_nu_pool_H5N1-1000-3000.fasta")
+
+# Fasttree (shell: fasttree_3)
+
 ### subextract sequences from tree  --------------------------------
 
-library(ggtree)
-library(ape)
 
 h5_GsGDfile <- read.tree("./Tree/h5_GsGD")
 
 
 ## dirty match for lineage annotation ----------------
+
+# refname derived from the smallref.fasta
 
 refname       <- read.table("./ref_name", stringsAsFactors = FALSE)[,1]
 refname       <- gsub("/|\\||-|\\{|\\}", "_", gsub(">", "", gsub("A/", "", refname) ) )
@@ -408,8 +429,10 @@ h5_GsGDfile_clade <- h5_GsGDfile
 h5_GsGDfile_clade$tip.label[-dirttymath] = " "
 h5_GsGDfile_clade$tip.label[ dirttymath] = refname
 
-ggtree(h5_GsGDfile_clade, size = 0.3) + geom_tiplab(size = 0.8, col = "RED")
+ggtree(h5_GsGDfile, size = 0.2) 
+ggtree(h5_GsGDfile_clade, size = 0.2) + geom_tiplab(size = 0.8, col = "RED")
 
+# viewClade(g, node = identify(g)) + geom_tiplab(size = 0.5)
 
 
 
