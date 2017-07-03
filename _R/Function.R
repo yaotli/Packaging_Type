@@ -39,7 +39,7 @@ phylo_date <- function(x)
   
   return(yr.daydifference)
   
-#v20170614
+  #v20170614
 }
   
 
@@ -298,6 +298,8 @@ curateSeq <- function(maxamb  = 5,
   
   print( paste0("delete: ", length(tobedelect_f[[mode]]) ) )
   print( paste0("remain: ", length(remain) ) )
+  
+  #v201706
 }
   
   
@@ -421,7 +423,7 @@ findtaxa <- function(type,
     return(tree.d)    
     
   }
-  
+  #v201706
   }
 
 
@@ -562,6 +564,7 @@ subtreseq<-function(findrep    = 0,
     }
     
   }
+ #v201706
 }
 
 
@@ -671,6 +674,7 @@ keepLongSeq <- function(seq_0,
     print("No identical ID here")
   }
   
+  #v201706
 }
 
 ### fastaEx --------------------------------
@@ -685,10 +689,60 @@ fastaEx <- function(filedir = file.choose())
   
   return( list(seq = file_seq, 
                id  = file_id ) )
+  #v201706
 }
 
 
+### subfastaSeq --------------------------------
 
+subfastaSeq <- function(subtype = "H5N1", 
+                        time_s  =  1000,
+                        time_e  =  3000,
+                        filedir = file.choose(),
+                        invertedsubtype = FALSE)
+{
+  require(seqinr)
+  require(stringr)
+  
+  file  = read.fasta(filedir)
+  
+  seq_name0 <- attributes(file)$names
+  seq0      <- getSequence(file)
+  
+  # subtype 
+  
+  if( invertedsubtype == TRUE )
+  {
+    subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
+                      x       = seq_name0, 
+                      invert  = TRUE)   
+  }else
+  {
+    subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
+                      x       = seq_name0)        
+  }
+  
+  
+  # time of isolation
+  
+  T_iso  <- as.numeric( gsub("_", "", str_match(seq_name0, "_([0-9]{4})\\.([0-9]+)")[,1] )  )
+  
+  time_i <- which(T_iso < time_e & T_iso > time_s)
+  
+  # output 
+  
+  remain   <- sort( intersect( subtype_i, time_i ) )
+  
+  filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
+  
+  write.fasta(sequences = seq0[remain], 
+              names     = seq_name0[remain],
+              file.out  = paste0("~/Desktop/", filename, "_", subtype, "-", time_s, "-", time_e, ".fasta") )
+  
+  print( seq_name0[remain] )
+  
+  #v20170703 
+}
 
 
 
