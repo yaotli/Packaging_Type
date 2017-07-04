@@ -48,17 +48,17 @@ ha_g_id_ac0 <- gsub("_EPI_ISL_([0-9]+)", "", ha_g_id)
 
 
 # duplicated name and remove name with "RG"
+# n = 1849
 
 noDupName_g <- keepLongSeq(ha_g_seq, ha_g_id_ac0, showRemain = TRUE)
 
-# n = 1849
 ha_g_seq    <- ha_g_seq[ noDupName_g ]
 ha_g_id_epi <- ha_g_id_epi[  noDupName_g ]
 
 
 rg_ha_g     <- grep(pattern = "RG", ha_g_id_epi)
 
-# n = 1874
+# n = 1847
 ha_g_seq    <- ha_g_seq[ seq(1, length(ha_g_seq))[- rg_ha_g ] ]
 ha_g_id_epi <- ha_g_id_epi[  seq(1, length(ha_g_id_epi))[- rg_ha_g ] ]
 
@@ -82,8 +82,7 @@ nu_g_id_ac0 <- gsub("_EPI_ISL_([0-9]+)", "", nu_g_id)
 
 # duplicated name and remove name with "RG"
 
-noDupName_g_nu <- match( nu_g_ac, ha_g_ac[noDupName_g] )
-noDupName_g_nu <- noDupName_g_nu[!is.na(noDupName_g_nu)]
+noDupName_g_nu <- match(ha_g_ac[noDupName_g], nu_g_ac)
 
 nu_g_seq    <- nu_g_seq[ noDupName_g_nu ]
 nu_g_id_epi <- nu_g_id_epi[  noDupName_g_nu ]
@@ -102,6 +101,7 @@ sheet_g_file      <- read.csv(csv_g, header = TRUE, stringsAsFactors = FALSE)
 sheet_g_assession <- gsub("_ISL_", "", sheet_g_file$Isolate_Id)
 sheet_g_subtype   <- gsub("A / H5", "", sheet_g_file$Subtype)
 
+
 # geo
 
 sheet_g_geo       <- gsub(pattern = " ", "_", sheet_g_file$Location)
@@ -115,7 +115,8 @@ sheet_g           <- data.frame(ac      = sheet_g_assession,
                                 geo     = sheet_g_geo, 
                                 subtype = sheet_g_subtype,
                                 segment = 46,
-                                pac     = "NA", stringsAsFactors = FALSE)
+                                pac     = sheet_g_assession, 
+                                stringsAsFactors = FALSE)
 
 
 # check accession no. (ac)
@@ -289,7 +290,8 @@ sheet_n           <- data.frame(ac      = sheet_n_assession,
                                 geo     = sheet_n_geo, 
                                 subtype = sheet_n_subtype,
                                 segment = sheet_n_segment, 
-                                pac     = sheet_n_pac, stringsAsFactors = FALSE)
+                                pac     = sheet_n_pac, 
+                                stringsAsFactors = FALSE)
 
 # check accession no. (ac)
 # TRUE %in% is.na(match(str_match(ha_n_select_ac, "([A-Z]{1,2})([0-9]{5,6})")[,1], sheet_n$ac))
@@ -351,7 +353,7 @@ subtreseq()
 cleanID(pool_nu_fasta)
 
 # curate file
-# 1. maxamb = 135 | 2. minseq = 1350
+# 1. maxamb = 130 | 2. minseq = 1300
 
 curateSeq(maxamb = 130, minseq = 1300, mode = 1, filedir = "./cleanID_nu_pool.fasta")
 
@@ -366,6 +368,7 @@ subfastaSeq(subtype = "H5N1", filedir = "./curateSeq-1_cleanID_nu_pool.fasta")
 trimtool(propblank = 0.9, filedir = "./align_trim/align_nu_pool_H5N1-1000-3000.fasta")
 
 # Fasttree (shell: fasttree_3)
+
 
 ### subextract sequences from tree  --------------------------------
 
