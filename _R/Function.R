@@ -699,7 +699,10 @@ subfastaSeq <- function(subtype = "H5N1",
                         time_s  =  1000,
                         time_e  =  3000,
                         filedir = file.choose(),
-                        invertedsubtype = FALSE)
+                        invertedsubtype = FALSE, 
+                        AC      = FALSE, 
+                        AC_list = NA, 
+                        no = "")
 {
   require(seqinr)
   require(stringr)
@@ -711,39 +714,68 @@ subfastaSeq <- function(subtype = "H5N1",
   
   # subtype 
   
-  if( invertedsubtype == TRUE )
+  if (AC == TRUE)
   {
-    subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
-                      x       = seq_name0, 
-                      invert  = TRUE)   
+    ac_code  <- "EPI[0-9]+|[A-Z]{1,2}[0-9]{5,6}"
+    ac.file  <- str_match( seq_name0 , ac_code )
+    
+    ac.i     <- match( AC_list, ac.file)
+    
+    if ( TRUE %in% is.na(ac.i) )
+    {
+      print("ERROR")
+      
+    }else
+    {
+      filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
+      
+      write.fasta(sequences = seq0[ac.i], 
+                  names     = seq_name0[ac.i],
+                  file.out  = paste0("~/Desktop/", "ac", no, "_", filename, ".fasta") )
+      
+      print( seq_name0[ac.i] )
+      
+    }
+    
   }else
   {
-    subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
-                      x       = seq_name0)        
+    
+    if( invertedsubtype == TRUE )
+    {
+      subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
+                        x       = seq_name0, 
+                        invert  = TRUE)   
+    }else
+    {
+      subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
+                        x       = seq_name0)        
+    }
+    
+    
+    # time of isolation
+    
+    T_iso  <- as.numeric( gsub("_", "", str_match(seq_name0, "_([0-9]{4})\\.([0-9]+)")[,1] )  )
+    
+    time_i <- which(T_iso < time_e & T_iso > time_s)
+    
+    # output 
+    
+    remain   <- sort( intersect( subtype_i, time_i ) )
+    
+    filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
+    
+    write.fasta(sequences = seq0[remain], 
+                names     = seq_name0[remain],
+                file.out  = paste0("~/Desktop/", filename, "_", subtype, "-", time_s, "-", time_e, ".fasta") )
+    
+    print( seq_name0[remain] )
+    
+    
   }
   
   
-  # time of isolation
-  
-  T_iso  <- as.numeric( gsub("_", "", str_match(seq_name0, "_([0-9]{4})\\.([0-9]+)")[,1] )  )
-  
-  time_i <- which(T_iso < time_e & T_iso > time_s)
-  
-  # output 
-  
-  remain   <- sort( intersect( subtype_i, time_i ) )
-  
-  filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
-  
-  write.fasta(sequences = seq0[remain], 
-              names     = seq_name0[remain],
-              file.out  = paste0("~/Desktop/", filename, "_", subtype, "-", time_s, "-", time_e, ".fasta") )
-  
-  print( seq_name0[remain] )
-  
-  #v20170703 
+  #v20170705 
 }
-
 
 
 
