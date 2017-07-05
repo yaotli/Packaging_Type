@@ -62,7 +62,7 @@ cleanID <- function(filedir = file.choose())
   # deal with ineligible id
   
   seq_name  <- gsub(" ", "_", seq_name0)
-  seq_name  <- gsub("\\(|\\)|\\[|\\]|\\.", "_", seq_name)
+  seq_name  <- gsub("\\(|\\)|\\[|\\]|\\.|:", "_", seq_name)
   seq_name  <- gsub("\\'|\\?|>", "", seq_name)
   
   # for gisaid
