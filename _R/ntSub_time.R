@@ -289,5 +289,54 @@ multiplot(clade234_N1_China, clade7_N1_China, clade232_N1_China, ncol = 1)
 
 
 
+### update the table --------------------------------
+
+# HA
+
+for(i in 1: length( grep("_h5", list.files("./Clade/updated/") ) ) )
+{
+  
+  k = grep("_h5", list.files("./Clade/updated/") )[ i ]
+  
+  cladename_i   <- read.table( file = 
+                               paste0("./Clade/updated/", list.files("./Clade/updated/")[ k ]),
+                               stringsAsFactors = FALSE)
+  
+  cladematch    <- as.numeric( h5_GsGD_table$name %in% cladename_i[,1] )
+  
+  h5_GsGD_table[, ncol(h5_GsGD_table) + 1] =  cladematch
+  
+  colnames( h5_GsGD_table )[ ncol( h5_GsGD_table ) ] =
+    sub(".txt", "", list.files("./Clade/updated/")[ k ] )
+}
+
+# NA 
+
+for(i in 1: length( grep("_n1", list.files("./Clade/updated/") ) ) )
+{
+  
+  k = grep("_n1", list.files("./Clade/updated/") )[ i ]
+  
+  cladename_i   <- read.table( file = 
+                               paste0("./Clade/updated/", list.files("./Clade/updated/")[ k ]),
+                               stringsAsFactors = FALSE)
+  
+  cladematch    <- as.numeric( n1_table$name %in% cladename_i[,1] )
+  
+  n1_table[, ncol(n1_table) + 1] =  cladematch
+  
+  colnames( n1_table )[ ncol( n1_table ) ] =
+    sub(".txt", "", list.files("./Clade/updated/")[k] )
+}
+
+
+
+
+### Export table --------------------------------
+
+write.csv(h5_GsGD_table, "h5_GsGD_table.csv")
+write.csv(n1_table, "n1_table.csv")
+
+
 
 
