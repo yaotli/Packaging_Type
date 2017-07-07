@@ -429,25 +429,31 @@ findtaxa <- function(type,
 
 ### subtreeseq --------------------------------
 
-subtreseq<-function(findrep    = 0, 
-                    outlier    = 0, 
-                    originfile = 0)
+subtreseq<-function(findrep      = 0, 
+                    outlier      = 0, 
+                    originfile   = 0, 
+                    seq_filedir  = file.choose(), 
+                    list_filedir = file.choose(),
+                    ori_filedir  = file.choose(), 
+                    no          = "")
 {
   library(seqinr) 
+  library(stringr)
   
   # readin
-  fasta0    = read.fasta(file.choose())
+  fasta0    = read.fasta( seq_filedir )
   seq.name0 = attributes(fasta0)$names
   seq0      = getSequence(fasta0)
+  filename  = str_match( seq_filedir, "([a-zA-Z0-9-_]+)(\\.)(fasta)")[,2] 
   
-  sub.tree   = read.table(file.choose(), header = FALSE, stringsAsFactors = FALSE)
-  id.subtree = match(sub.tree[,1], seq.name0)
+  sub.tree   = read.table( list_filedir, header = FALSE, stringsAsFactors = FALSE)
+  id.subtree = match( sub.tree[,1], seq.name0)
   
   if (originfile == 1)
   {
-    fasta_ori     = read.fasta(file.choose())
-    seq.name0_ori = attributes(fasta_ori)$names
-    seq0_ori      = getSequence(fasta_ori)
+    fasta_ori     = read.fasta( ori_filedir )
+    seq.name0_ori = attributes( fasta_ori )$names
+    seq0_ori      = getSequence( fasta_ori )
   }
   
   # error
@@ -473,7 +479,7 @@ subtreseq<-function(findrep    = 0,
       
       dup     <- c()
       
-      for (k in 1: length(dup_seq) )
+      for ( k in 1: length(dup_seq) )
       {
         tomatch <- gsub("~", "", gsub("-", "", c2s( seq0[[ dup_seq[k] ]] ) ))
         
@@ -495,13 +501,13 @@ subtreseq<-function(findrep    = 0,
         
       }
       
-      id.subtree        = sort( unique( c(id.subtree, dup )) )
+      id.subtree        = sort( unique( c( id.subtree, dup )) )
       
       seq.name0_subtree = seq.name0[id.subtree]
       seq0_subtree      = seq0[id.subtree]
       
       write.fasta(seq0_subtree, 
-                  file.out = "~/Desktop/subtree.fasta", 
+                  file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtree.fasta"), 
                   names    = seq.name0_subtree )  
       
       # originfile = 1
@@ -512,7 +518,7 @@ subtreseq<-function(findrep    = 0,
         seq0_subtree      = seq0_ori[id.subtree]
         
         write.fasta(seq0_subtree, 
-                    file.out = "~/Desktop/Ori_subtree.fasta", 
+                    file.out = paste0("~/Desktop/", no, "_", filename, "_", "Ori_subtree.fasta"), 
                     names = seq.name0_subtree )
       }
       
@@ -524,7 +530,7 @@ subtreseq<-function(findrep    = 0,
         seq0_subtree      = seq0[id.outlier]
         
         write.fasta(seq0_subtree, 
-                    file.out = "~/Desktop/subtree2.fasta", 
+                    file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtreeB.fasta"), 
                     names    = seq.name0_subtree )
         
         if (originfile == 1)
@@ -533,7 +539,7 @@ subtreseq<-function(findrep    = 0,
           seq0_subtree      = seq0_ori[id.outlier]
           
           write.fasta(seq0_subtree, 
-                      file.out = "~/Desktop/Ori_subtree2.fasta", 
+                      file.out = paste0("~/Desktop/", no, "_", filename, "_", "Ori_subtreeB.fasta"), 
                       names    = seq.name0_subtree )
         }
       }
@@ -546,25 +552,25 @@ subtreseq<-function(findrep    = 0,
       seq0_subtree      = seq0[id.subtree]
       
       write.fasta(seq0_subtree, 
-                  file.out = "~/Desktop/subtree.fasta", 
+                  file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtree.fasta"), 
                   names    = seq.name0_subtree )
       
       if (outlier == 1)
       {
-        id.outlier        <- seq(1, length(seq0))[-id.subtree]
+        id.outlier        <- seq(1, length(seq0) )[-id.subtree]
         
         seq.name0_subtree = seq.name0[id.outlier]
         seq0_subtree      = seq0[id.outlier]
         
         write.fasta(seq0_subtree, 
-                    file.out = "~/Desktop/subtree2.fasta", 
+                    file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtreeB.fasta"), 
                     names    = seq.name0_subtree )
       }
       print("Done")
     }
     
   }
- #v201706
+  #v20170707
 }
 
 
