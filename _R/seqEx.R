@@ -15,9 +15,9 @@ for(i in 8: 10)
   index = which(h5_GsGD_table$geo == "China" &  h5_GsGD_table$subtype == "N1" & h5_GsGD_table[, i] == 1 )
   
   subfastaSeq(filedir = "./align_trim/trim_h5_pool_lth1683.fasta", 
-              AC = TRUE,
+              AC      = TRUE,
               AC_list = h5_GsGD_table$ac[ index ], 
-              no = colnames(h5_GsGD_table)[i] )
+              no      = colnames(h5_GsGD_table)[i] )
   
 }
 
@@ -27,9 +27,45 @@ for(i in 7: 9)
   index = which(n1_table$geo == "China" & n1_table[, i] == 1 )
   
   subfastaSeq(filedir = "./align_trim/trim_nu_pool_H5N1-1000-3000_lth1350.fasta", 
-              AC = TRUE,
+              AC      = TRUE,
               AC_list = n1_table$ac[ index ], 
-              no = colnames(n1_table)[i] )
+              no      = colnames(n1_table)[i] )
   
 }
+
+
+### Sampled and filtered seq --------------------------------
+
+# HA 
+for(i in 12: ncol(h5_GsGD_table) )
+{
+  index = which(h5_GsGD_table[, i] == 1 )
+  
+  subfastaSeq(filedir = "./align_trim/trim_h5_pool_lth1683.fasta", 
+              AC      = TRUE,
+              AC_list = h5_GsGD_table$ac[ index ], 
+              no      = colnames(h5_GsGD_table)[i] )
+  
+}
+
+
+# NA 
+for(i in 11: ncol(n1_table) )
+{
+  index = which(n1_table[, i] == 1 )
+  
+  subfastaSeq(filedir = "./align_trim/trim_nu_pool_H5N1-1000-3000_lth1350.fasta", 
+              AC      = TRUE,
+              AC_list = n1_table$ac[ index ], 
+              no      = colnames(n1_table)[i] )
+  
+}
+
+
+
+
+
+
+
+
 
