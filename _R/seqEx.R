@@ -61,6 +61,19 @@ for(i in 11: ncol(n1_table) )
   
 }
 
+### Sampled seq of clade 232 before 2014 --------------------------------
+
+s_clads232 <- c("./Clade/sampled_clade_tree_CH/sampled_fas/s_clade232_h5_CH.fasta", 
+                "./Clade/sampled_clade_tree_CH/sampled_fas/s_clade232_n1_CH.fasta")
+
+
+for(k in 1: length(s_clads232) )
+{
+  subfastaSeq( time_e = 2014,
+               filedir = s_clads232[k] )
+}
+
+
 
 
 
