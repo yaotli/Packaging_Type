@@ -13,7 +13,8 @@ pool_csv <- "./pool_df.csv"
 gsgdtree <- "./Tree/h5_GsGD"
 n1tree   <- "./Tree/N1_pool"
 
-### HA substitution over time ----------------------------------
+
+### HA data ----------------------------------
 
 # tree file import and data retrive 
 
@@ -23,7 +24,6 @@ h5_GsGDfile     <- read.tree(gsgdtree)
 h5_GsGDtreedata <- fortify(h5_GsGDfile)
 
 rootnode        <- length(h5_GsGDfile$tip.label) + 1
-
 
 # info for the dataframe
 
@@ -63,101 +63,9 @@ for(i in 1: length( list.files("./Clade/cladetxt/") ) )
     sub(".txt", "", list.files("./Clade/cladetxt/")[i] )
 }
 
-# stratified by country 
-
-h5_GsGD_table_CH <- h5_GsGD_table[which(h5_GsGD_table$geo == "China"), ]
 
 
-## clade234_HA_China ----------------
-
-clade234_HA_China <- 
-  
-  ggplot( data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade234 == 1 & h5_GsGD_table_CH$subtype == "N1"), ], 
-          aes(x = time, y = distance) ) + 
-  theme_bw() + 
-  
-  # gray background: all GsGD
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$sGsGD == 1), ], 
-             aes(x = time, y = distance), color = "gray", alpha = 0.2) +
-  
-  # open circle: non-N1; circle: N1
-  
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade234 == 1), ], 
-             aes(x = time, y = distance), shape = 21, color = "#FF7256", fill = NA, stroke = 1) + 
-
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade234 == 1 & h5_GsGD_table_CH$subtype == "N1"), ], 
-             aes(x = time, y = distance), color = "red") +
-
-  stat_smooth(method = "auto") + 
-
-  geom_vline(xintercept = 2008, size = 2, color = "black") + 
-  ggtitle("clade234_HA_China") + 
-  xlab("")
-
-
-
-## clade7_HA_China ----------------
-
-clade7_HA_China <- 
-  
-  ggplot( data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade7 == 1 & h5_GsGD_table_CH$subtype == "N1"), ], 
-          aes(x = time, y = distance) ) + 
-  theme_bw() + 
-  
-  # gray background: all GsGD
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$sGsGD == 1), ], 
-             aes(x = time, y = distance), color = "gray", alpha = 0.2) +
-  
-  # open circle: non-N1; circle: N1
-  
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade7 == 1), ], 
-             aes(x = time, y = distance), shape = 21, color = "#7FFF00", fill = NA, stroke = 1) + 
-  
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade7 == 1 & h5_GsGD_table_CH$subtype == "N1"), ], 
-             aes(x = time, y = distance), color = "green") + 
-    
-  stat_smooth(method = "auto") + 
-    
-  geom_vline(xintercept = 2006, size = 2, color = "black") +
-  ggtitle("clade7_HA_China") + 
-  xlab("")
-
-
-## clade232_HA_China ----------------
-
-clade232_HA_China <- 
-  
-  ggplot( data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade232 == 1 & h5_GsGD_table_CH$subtype == "N1"), ], 
-          aes(x = time, y = distance) ) + 
-  theme_bw() + 
-  
-  # gray background: all GsGD
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$sGsGD == 1), ], 
-             aes(x = time, y = distance), color = "gray", alpha = 0.2) +
-  
-  # open circle: non-N1; circle: N1
-  
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade232 == 1), ], 
-             aes(x = time, y = distance), shape = 21, color = "#00BFFF", fill = NA, stroke = 1) + 
-  
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade232 == 1 & h5_GsGD_table_CH$subtype == "N1"), ], 
-             aes(x = time, y = distance), color = "blue") + 
-  
-  stat_smooth(method = "auto") + 
-  geom_vline(xintercept = 2012, size = 2, color = "black") +
-  
-  ggtitle("clade232_HA_China") + 
-  xlab("")
-
-
-
-## combine ----------------
-
-multiplot(clade234_HA_China, clade7_HA_China, clade232_HA_China, ncol = 1)
-
-
-
-### NA substitution over time ----------------------------------
+### NA data ----------------------------------
 
 n1_file     <- read.tree(n1tree)
 n1_treedata <- fortify(n1_file)
@@ -201,95 +109,35 @@ for(k in 7: ncol(h5_GsGD_table) )
 }
 
 
-# stratified by country 
 
-n1_table_CH <- n1_table[which(n1_table$geo == "China"), ]
+### UPDATE THE TABLE USING TREE FILES --------------------------------
 
+# make labeld tree file into txt
 
-## clade234_N1_China ----------------
+dir_sampledtre  <- "./Clade/sampled_clade_tree_CH/sampled_tre/"
+list_sampledtre <- list.files("./Clade/sampled_clade_tree_CH/sampled_tre/")
 
-clade234_N1_China <- 
+for( k in 1: length(list_sampledtre) )
+{
+  tre_k <- read.csv( paste0(dir_sampledtre, list_sampledtre[k]) , stringsAsFactors = FALSE)[, 1]
   
-  ggplot( data = n1_table_CH[which(n1_table_CH$clade234 == 1), ], 
-          aes(x = time, y = distance) ) + 
+  ntax  <- as.numeric( str_match(tre_k [ grep("ntax", tre_k) ], "(ntax=)([0-9]+)")[,3] )
+  tax_s <- grep("ntax", tre_k) + 2
+  tax_e <- tax_s + ntax - 1
   
-  theme_bw() + 
+  taxaname <- tre_k[tax_s: tax_e]
+  reded    <- grep("#ff0000", taxaname)
+  remain   <- taxaname[ - reded ]
+  remain   <- gsub("\t|\\'", "", remain)
+  remain   <- gsub("\\[\\&\\!color\\=#[A-Za-z0-9]{6}\\]", "", remain)
   
-  # gray background: all GsGD
-  geom_point( data = n1_table_CH[which(n1_table_CH$sGsGD == 1), ], 
-              aes(x = time, y = distance ), 
-              color = "gray", 
-              alpha = 0.2) +
+  write.table(remain, 
+              paste0("./Clade/sampled_clade_tree_CH/sampledtxt/", list_sampledtre[ k ], ".txt"), 
+              col.names = F, row.names = F, quote = F)
+  print( length(remain) )
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$clade234 == 1), ], 
-             aes(x = time, y = distance), color = "red") +
-  
-  stat_smooth(method = "auto") + 
-  
-  geom_vline(xintercept = 2008, size = 2, color = "black") + 
-  ggtitle("clade234_N1_China") + 
-  xlab("")
+}
 
-
-
-## clade7_HA_China ----------------
-
-clade7_N1_China <- 
-  
-  ggplot( data = n1_table_CH[which(n1_table_CH$clade7 == 1), ], 
-          aes(x = time, y = distance) ) + 
-  
-  theme_bw() + 
-  
-  # gray background: all GsGD
-  geom_point( data = n1_table_CH[which(n1_table_CH$sGsGD == 1), ], 
-              aes(x = time, y = distance ), 
-              color = "gray", 
-              alpha = 0.2) +
-  
-  geom_point(data = n1_table_CH[which(n1_table_CH$clade7 == 1), ], 
-             aes(x = time, y = distance), color = "green") +
-  
-  stat_smooth(method = "auto") + 
-  
-  geom_vline(xintercept = 2006, size = 2, color = "black") + 
-  ggtitle("clade7_N1_China") + 
-  xlab("")
-
-
-## clade232_HA_China ----------------
-
-clade232_N1_China <- 
-  
-  ggplot( data = n1_table_CH[which(n1_table_CH$clade232 == 1), ], 
-          aes(x = time, y = distance) ) + 
-  
-  theme_bw() + 
-  
-  # gray background: all GsGD
-  geom_point( data = n1_table_CH[which(n1_table_CH$sGsGD == 1), ], 
-              aes(x = time, y = distance ), 
-              color = "gray", 
-              alpha = 0.2) +
-  
-  geom_point(data = n1_table_CH[which(n1_table_CH$clade232 == 1), ], 
-             aes(x = time, y = distance), color = "blue") +
-  
-  stat_smooth(method = "auto") + 
-  
-  geom_vline(xintercept = 2012, size = 2, color = "black") + 
-  ggtitle("clade232_N1_China") + 
-  xlab("")
-
-
-
-## combine ----------------
-
-multiplot(clade234_N1_China, clade7_N1_China, clade232_N1_China, ncol = 1)
-
-
-
-### update the table --------------------------------
 
 # HA
 
@@ -337,6 +185,225 @@ for(i in 1: length( grep("_n1", list.files("./Clade/updated/") ) ) )
 write.csv(h5_GsGD_table, "h5_GsGD_table.csv")
 write.csv(n1_table, "n1_table.csv")
 
+# stratified by geo
+
+h5_GsGD_table_CH <- h5_GsGD_table[which(h5_GsGD_table$geo == "China"), ]
+n1_table_CH      <- n1_table[which(n1_table$geo == "China"), ]
 
 
+
+### Figuree --------------------------------
+
+ggplot( data = h5_GsGD_table, 
+        aes(x = time, y = distance) ) + 
+  geom_point(color = "gray") +
+  geom_point( data = h5_GsGD_table[which(h5_GsGD_table$subtype == "N1"), ],
+              aes(x = time, y = distance) ) +
+  theme_bw() + 
+  facet_wrap(~ geo)
+
+
+## clade234_HA_China ----------------
+
+clade234_HA_China <- 
+  
+  ggplot( data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$s_clade234_h5_CH == 1), ], 
+          aes(x = time, y = distance) ) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank()) + 
+  
+  # gray background: all GsGD
+  geom_point(data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$sGsGD == 1), ], 
+             aes(x = time, y = distance), 
+             color = "gray", alpha = 0.2, stroke = 0, size = 2) +
+  
+  # open circle: non-N1; circle: N1
+  
+  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade234 == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 1, color = "red", size = 2) + 
+  
+  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$s_clade234_h5_CH == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
+  
+  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2008, size = 1.5, color = "black") + 
+  ggtitle("clade234_HA_China") + 
+  
+  scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
+  xlab("") + ylab("Subst / site")
+
+
+
+## clade7_HA_China ----------------
+
+clade7_HA_China <- 
+  
+  ggplot( data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$s_clade7_h5_CH == 1), ], 
+          aes(x = time, y = distance) ) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank()) + 
+  
+  # gray background: all GsGD
+  geom_point(data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$sGsGD == 1), ], 
+             aes(x = time, y = distance), 
+             color = "gray", alpha = 0.2, stroke = 0, size = 2) +
+  
+  # open circle: non-N1; circle: N1
+  
+  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade7 == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 1, color = "red", size = 2) + 
+  
+  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$s_clade7_h5_CH == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
+  
+  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2006, size = 1.5, color = "black") + 
+  ggtitle("clade7_HA_China") + 
+  
+  scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
+  xlab("") + ylab("Subst / site")
+
+
+## clade232_HA_China ----------------
+
+clade232_HA_China <- 
+  
+  ggplot( data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$s_clade232_h5_CH == 1), ], 
+          aes(x = time, y = distance) ) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank()) + 
+  
+  # gray background: all GsGD
+  geom_point(data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$sGsGD == 1), ], 
+             aes(x = time, y = distance), 
+             color = "gray", alpha = 0.2, stroke = 0, size = 2) +
+  
+  # open circle: non-N1; circle: N1
+  
+  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade232 == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 1, color = "red", size = 2) + 
+  
+  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$s_clade232_h5_CH == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
+  
+  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2012, size = 1.5, color = "black") + 
+  ggtitle("clade232_HA_China") + 
+  
+  scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
+  xlab("") + ylab("Subst / site")
+
+
+
+## clade234_N1_China ----------------
+
+clade234_N1_China <- 
+  
+  ggplot( data = n1_table_CH[ which(n1_table_CH$s_clade234_n1_CH == 1), ], 
+          aes(x = time, y = distance) ) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank()) + 
+  
+  # gray background: all GsGD
+  geom_point(data = n1_table_CH[ which(n1_table_CH$sGsGD == 1), ], 
+             aes(x = time, y = distance), 
+             color = "gray", alpha = 0.2, stroke = 0, size = 2) +
+  
+  # open circle: non-N1; circle: N1
+  
+  geom_point(data = n1_table_CH[which(n1_table_CH$clade234 == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 1, color = "red", size = 2) + 
+  
+  geom_point(data = n1_table_CH[which(n1_table_CH$s_clade234_n1_CH == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
+  
+  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2008, size = 1.5, color = "black") + 
+  ggtitle("clade234_N1_China") + 
+  
+  scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
+  xlab("") + ylab("Subst / site")
+
+
+
+
+
+## clade7_NA_China ----------------
+
+clade7_N1_China <- 
+  
+  ggplot( data = n1_table_CH[ which(n1_table_CH$s_clade7_n1_CH == 1), ], 
+          aes(x = time, y = distance) ) + 
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) + 
+  
+  # gray background: all GsGD
+  geom_point(data = n1_table_CH[ which(n1_table_CH$sGsGD == 1), ], 
+             aes(x = time, y = distance), 
+             color = "gray", alpha = 0.2, stroke = 0, size = 2) +
+  
+  # open circle: non-N1; circle: N1
+  
+  geom_point(data = n1_table_CH[which(n1_table_CH$clade7 == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 1, color = "red", size = 2) + 
+  
+  geom_point(data = n1_table_CH[which(n1_table_CH$s_clade7_n1_CH == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
+  
+  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2006, size = 1.5, color = "black") + 
+  ggtitle("clade7_N1_China") + 
+  
+  scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
+  xlab("") + ylab("Subst / site")
+
+
+
+## clade232_NA_China ----------------
+
+clade232_N1_China <- 
+  
+  ggplot( data = n1_table_CH[ which(n1_table_CH$s_clade232_n1_CH == 1), ], 
+          aes(x = time, y = distance) ) + 
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) + 
+  
+  # gray background: all GsGD
+  geom_point(data = n1_table_CH[ which(n1_table_CH$sGsGD == 1), ], 
+             aes(x = time, y = distance), 
+             color = "gray", alpha = 0.2, stroke = 0, size = 2) +
+  
+  # open circle: non-N1; circle: N1
+  
+  geom_point(data = n1_table_CH[which(n1_table_CH$clade232 == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 1, color = "red", size = 2) + 
+  
+  geom_point(data = n1_table_CH[which(n1_table_CH$s_clade232_n1_CH == 1), ], 
+             aes(x = time, y = distance), 
+             shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
+  
+  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2012, size = 1.5, color = "black") + 
+  ggtitle("clade232_N1_China") + 
+  
+  scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
+  xlab("") + ylab("Subst / site")
+
+
+
+## combine ----------------
+
+multiplot(clade234_HA_China, clade7_HA_China, clade232_HA_China, 
+          clade234_N1_China, clade7_N1_China, clade232_N1_China, ncol = 2)
 
