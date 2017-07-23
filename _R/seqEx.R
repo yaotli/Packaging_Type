@@ -9,30 +9,41 @@ n1_table      <- read.csv("./n1_table.csv", header = TRUE, stringsAsFactors = FA
 
 ### HA and N1 from 3 clades in China --------------------------------
 
+# for further clade-wide sampleing
+# geo: China (CN) plus Hong_kong (HK)
+
 # HA 
+
 for(i in 8: 10)
 {
-  index = which(h5_GsGD_table$geo == "China" &  h5_GsGD_table$subtype == "N1" & h5_GsGD_table[, i] == 1 )
+  index = which( ( h5_GsGD_table$geo == "China" | h5_GsGD_table$geo == "Hong_Kong" ) &  
+                   h5_GsGD_table$subtype == "N1" & h5_GsGD_table[, i] == 1 )
   
   subfastaSeq(filedir = "./align_trim/trim_h5_pool_lth1683.fasta", 
               AC      = TRUE,
               AC_list = h5_GsGD_table$ac[ index ], 
               no      = colnames(h5_GsGD_table)[i] )
-  
 }
 
+  
+
 # NA
+
 for(i in 7: 9)
 {
-  index = which(n1_table$geo == "China" & n1_table[, i] == 1 )
+  index = which( ( n1_table$geo == "China" | n1_table$geo == "Hong_Kong" ) & 
+                       n1_table[, i] == 1 )
   
   subfastaSeq(filedir = "./align_trim/trim_nu_pool_H5N1-1000-3000_lth1350.fasta", 
               AC      = TRUE,
               AC_list = n1_table$ac[ index ], 
               no      = colnames(n1_table)[i] )
-  
 }
 
+
+
+# clade tree (geo: CN + HK )
+# fasttree (shell: fastttree)
 
 ### Sampled and filtered seq --------------------------------
 
@@ -63,8 +74,8 @@ for(i in 11: ncol(n1_table) )
 
 ### Sampled seq of clade 232 before 2014 --------------------------------
 
-s_clads232 <- c("./Clade/sampled_clade_tree_CH/sampled_fas/s_clade232_h5_CH.fasta", 
-                "./Clade/sampled_clade_tree_CH/sampled_fas/s_clade232_n1_CH.fasta")
+s_clads232 <- c("./Clade/sampled_clade_tree_CNHK/sampled_fas/s_clade232_h5_CNHK.fasta", 
+                "./Clade/sampled_clade_tree_CNHK/sampled_fas/s_clade232_n1_CNHK.fasta")
 
 
 for(k in 1: length(s_clads232) )
