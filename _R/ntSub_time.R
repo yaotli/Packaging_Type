@@ -108,14 +108,19 @@ for(k in 7: ncol(h5_GsGD_table) )
   
 }
 
+# subtree and sampling 
+
+# write.csv(h5_GsGD_table, "h5_GsGD_table.csv")
+# write.csv(n1_table, "n1_table.csv")
+
 
 
 ### UPDATE THE TABLE USING TREE FILES --------------------------------
 
 # make labeld tree file into txt
 
-dir_sampledtre  <- "./Clade/sampled_clade_tree_CH/sampled_tre/"
-list_sampledtre <- list.files("./Clade/sampled_clade_tree_CH/sampled_tre/")
+dir_sampledtre  <- "./Clade/sampled_clade_tree_CNHK/sampled_tre/"
+list_sampledtre <- list.files( dir_sampledtre )
 
 for( k in 1: length(list_sampledtre) )
 {
@@ -132,7 +137,7 @@ for( k in 1: length(list_sampledtre) )
   remain   <- gsub("\\[\\&\\!color\\=#[A-Za-z0-9]{6}\\]", "", remain)
   
   write.table(remain, 
-              paste0("./Clade/sampled_clade_tree_CH/sampledtxt/", list_sampledtre[ k ], ".txt"), 
+              paste0("./Clade/sampled_clade_tree_CNHK/sampledtxt/", list_sampledtre[ k ], ".txt"), 
               col.names = F, row.names = F, quote = F)
   print( length(remain) )
   
@@ -187,8 +192,8 @@ write.csv(n1_table, "n1_table.csv")
 
 # stratified by geo
 
-h5_GsGD_table_CH <- h5_GsGD_table[which(h5_GsGD_table$geo == "China"), ]
-n1_table_CH      <- n1_table[which(n1_table$geo == "China"), ]
+h5_GsGD_table_cnhk <- h5_GsGD_table[which(h5_GsGD_table$geo == "China" | h5_GsGD_table$geo == "Hong_Kong" ), ]
+n1_table_cnhk      <- n1_table[which(n1_table$geo == "China" | n1_table$geo == "Hong_Kong" ), ]
 
 
 
@@ -205,132 +210,134 @@ ggplot( data = h5_GsGD_table,
 
 ## clade234_HA_China ----------------
 
-clade234_HA_China <- 
+clade234_HA_cnhk <- 
   
-  ggplot( data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$s_clade234_h5_CH == 1), ], 
+  ggplot( data = h5_GsGD_table_cnhk[ which(h5_GsGD_table_cnhk$s_clade234_h5_CNHK == 1), ], 
           aes(x = time, y = distance) ) + 
   theme_bw() + 
-  theme(panel.grid.minor = element_blank()) + 
+  theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   
   # gray background: all GsGD
-  geom_point(data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$sGsGD == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[ which(h5_GsGD_table_cnhk$sGsGD == 1), ], 
              aes(x = time, y = distance), 
              color = "gray", alpha = 0.2, stroke = 0, size = 2) +
   
   # open circle: non-N1; circle: N1
   
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade234 == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[which(h5_GsGD_table_cnhk$clade234 == 1), ], 
              aes(x = time, y = distance), 
              shape = 1, color = "red", size = 2) + 
   
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$s_clade234_h5_CH == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[which(h5_GsGD_table_cnhk$s_clade234_h5_CNHK == 1), ], 
              aes(x = time, y = distance), 
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
-  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2008, size = 1.5, color = "black") + 
-  ggtitle("clade234_HA_China") + 
+  stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2008, size = 1, color = "black") + 
+  ggtitle("clade234_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Subst / site")
+  xlab("") + ylab("Root-to-tip divergence")
 
 
 
 ## clade7_HA_China ----------------
 
-clade7_HA_China <- 
+clade7_HA_cnhk <- 
   
-  ggplot( data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$s_clade7_h5_CH == 1), ], 
+  ggplot( data = h5_GsGD_table_cnhk[ which(h5_GsGD_table_cnhk$s_clade7_h5_CNHK == 1), ], 
           aes(x = time, y = distance) ) + 
   theme_bw() + 
-  theme(panel.grid.minor = element_blank()) + 
+  theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   
   # gray background: all GsGD
-  geom_point(data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$sGsGD == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[ which(h5_GsGD_table_cnhk$sGsGD == 1), ], 
              aes(x = time, y = distance), 
              color = "gray", alpha = 0.2, stroke = 0, size = 2) +
   
   # open circle: non-N1; circle: N1
   
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade7 == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[which(h5_GsGD_table_cnhk$clade7 == 1), ], 
              aes(x = time, y = distance), 
              shape = 1, color = "red", size = 2) + 
   
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$s_clade7_h5_CH == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[which(h5_GsGD_table_cnhk$s_clade7_h5_CNHK == 1), ], 
              aes(x = time, y = distance), 
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
-  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2006, size = 1.5, color = "black") + 
-  ggtitle("clade7_HA_China") + 
+  stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2006, size = 1, color = "black") + 
+  ggtitle("clade7_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Subst / site")
+  xlab("") + ylab("Root-to-tip divergence")
+
 
 
 ## clade232_HA_China ----------------
 
-clade232_HA_China <- 
+clade232_HA_cnhk <- 
   
-  ggplot( data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$s_clade232_h5_CH == 1), ], 
+  ggplot( data = h5_GsGD_table_cnhk[ which(h5_GsGD_table_cnhk$s_clade232_h5_CNHK == 1), ], 
           aes(x = time, y = distance) ) + 
   theme_bw() + 
-  theme(panel.grid.minor = element_blank()) + 
+  theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   
   # gray background: all GsGD
-  geom_point(data = h5_GsGD_table_CH[ which(h5_GsGD_table_CH$sGsGD == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[ which(h5_GsGD_table_cnhk$sGsGD == 1), ], 
              aes(x = time, y = distance), 
              color = "gray", alpha = 0.2, stroke = 0, size = 2) +
   
   # open circle: non-N1; circle: N1
   
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$clade232 == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[which(h5_GsGD_table_cnhk$clade232 == 1), ], 
              aes(x = time, y = distance), 
              shape = 1, color = "red", size = 2) + 
   
-  geom_point(data = h5_GsGD_table_CH[which(h5_GsGD_table_CH$s_clade232_h5_CH == 1), ], 
+  geom_point(data = h5_GsGD_table_cnhk[which(h5_GsGD_table_cnhk$s_clade232_h5_CNHK == 1), ], 
              aes(x = time, y = distance), 
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
-  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2012, size = 1.5, color = "black") + 
-  ggtitle("clade232_HA_China") + 
+  stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2012, size = 1, color = "black") + 
+  ggtitle("clade232_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Subst / site")
+  xlab("") + ylab("Root-to-tip divergence")
 
 
 
 ## clade234_N1_China ----------------
 
-clade234_N1_China <- 
+clade234_N1_cnhk <- 
   
-  ggplot( data = n1_table_CH[ which(n1_table_CH$s_clade234_n1_CH == 1), ], 
+  ggplot( data = n1_table_cnhk[ which(n1_table_cnhk$s_clade234_n1_CNHK == 1), ], 
           aes(x = time, y = distance) ) + 
   theme_bw() + 
-  theme(panel.grid.minor = element_blank()) + 
+  theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   
   # gray background: all GsGD
-  geom_point(data = n1_table_CH[ which(n1_table_CH$sGsGD == 1), ], 
+  geom_point(data = n1_table_cnhk[ which(n1_table_cnhk$sGsGD == 1), ], 
              aes(x = time, y = distance), 
              color = "gray", alpha = 0.2, stroke = 0, size = 2) +
   
   # open circle: non-N1; circle: N1
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$clade234 == 1), ], 
+  geom_point(data = n1_table_cnhk[which(n1_table_cnhk$clade234 == 1), ], 
              aes(x = time, y = distance), 
              shape = 1, color = "red", size = 2) + 
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$s_clade234_n1_CH == 1), ], 
+  geom_point(data = n1_table_cnhk[which(n1_table_cnhk$s_clade234_n1_CNHK == 1), ], 
              aes(x = time, y = distance), 
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
-  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2008, size = 1.5, color = "black") + 
-  ggtitle("clade234_N1_China") + 
+  stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2008, size = 1, color = "black") + 
+  ggtitle("clade234_N1_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Subst / site")
+  scale_y_continuous(limits = c(0.05, 0.2) ) + 
+  xlab("") + ylab("Root-to-tip divergence")
 
 
 
@@ -338,72 +345,73 @@ clade234_N1_China <-
 
 ## clade7_NA_China ----------------
 
-clade7_N1_China <- 
+clade7_N1_cnhk <- 
   
-  ggplot( data = n1_table_CH[ which(n1_table_CH$s_clade7_n1_CH == 1), ], 
+  ggplot( data = n1_table_cnhk[ which(n1_table_cnhk$s_clade7_n1_CNHK == 1), ], 
           aes(x = time, y = distance) ) + 
-  theme_bw() +
-  theme(panel.grid.minor = element_blank()) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   
   # gray background: all GsGD
-  geom_point(data = n1_table_CH[ which(n1_table_CH$sGsGD == 1), ], 
+  geom_point(data = n1_table_cnhk[ which(n1_table_cnhk$sGsGD == 1), ], 
              aes(x = time, y = distance), 
              color = "gray", alpha = 0.2, stroke = 0, size = 2) +
   
   # open circle: non-N1; circle: N1
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$clade7 == 1), ], 
+  geom_point(data = n1_table_cnhk[which(n1_table_cnhk$clade7 == 1), ], 
              aes(x = time, y = distance), 
              shape = 1, color = "red", size = 2) + 
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$s_clade7_n1_CH == 1), ], 
+  geom_point(data = n1_table_cnhk[which(n1_table_cnhk$s_clade7_n1_CNHK == 1), ], 
              aes(x = time, y = distance), 
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
-  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2006, size = 1.5, color = "black") + 
-  ggtitle("clade7_N1_China") + 
+  stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2006, size = 1, color = "black") + 
+  ggtitle("clade7_N1_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Subst / site")
+  scale_y_continuous(limits = c(0.05, 0.2) ) + 
+  xlab("") + ylab("Root-to-tip divergence")
 
 
 
 ## clade232_NA_China ----------------
 
-clade232_N1_China <- 
+clade232_N1_cnhk <- 
   
-  ggplot( data = n1_table_CH[ which(n1_table_CH$s_clade232_n1_CH == 1), ], 
+  ggplot( data = n1_table_cnhk[ which(n1_table_cnhk$s_clade232_n1_CNHK == 1), ], 
           aes(x = time, y = distance) ) + 
-  theme_bw() +
-  theme(panel.grid.minor = element_blank()) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), panel.grid.major.y = element_blank()) + 
   
   # gray background: all GsGD
-  geom_point(data = n1_table_CH[ which(n1_table_CH$sGsGD == 1), ], 
+  geom_point(data = n1_table_cnhk[ which(n1_table_cnhk$sGsGD == 1), ], 
              aes(x = time, y = distance), 
              color = "gray", alpha = 0.2, stroke = 0, size = 2) +
   
   # open circle: non-N1; circle: N1
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$clade232 == 1), ], 
+  geom_point(data = n1_table_cnhk[which(n1_table_cnhk$clade232 == 1), ], 
              aes(x = time, y = distance), 
              shape = 1, color = "red", size = 2) + 
   
-  geom_point(data = n1_table_CH[which(n1_table_CH$s_clade232_n1_CH == 1), ], 
+  geom_point(data = n1_table_cnhk[which(n1_table_cnhk$s_clade232_n1_CNHK == 1), ], 
              aes(x = time, y = distance), 
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
-  stat_smooth(method = "auto", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2012, size = 1.5, color = "black") + 
-  ggtitle("clade232_N1_China") + 
+  stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
+  geom_vline(xintercept = 2012, size = 1, color = "black") + 
+  ggtitle("clade232_N1_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Subst / site")
-
+  scale_y_continuous(limits = c(0.05, 0.2) ) + 
+  xlab("") + ylab("Root-to-tip divergence")
 
 
 ## combine ----------------
 
-multiplot(clade234_HA_China, clade7_HA_China, clade232_HA_China, 
-          clade234_N1_China, clade7_N1_China, clade232_N1_China, ncol = 2)
+multiplot(clade234_HA_cnhk, clade7_HA_cnhk, clade232_HA_cnhk, 
+          clade234_N1_cnhk, clade7_N1_cnhk, clade232_N1_cnhk, ncol = 2)
 
