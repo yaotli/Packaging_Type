@@ -165,13 +165,13 @@ cleanID <- function(filedir = file.choose())
     sortid <- sort( year0, na.last = FALSE, index.return = TRUE )$ix
     
     write.fasta( seq0[sortid], 
-                 file.out = paste0("~/Desktop/cleanID_", filename, ".fasta"), 
+                 file.out = paste0("./cleanID_", filename, ".fasta"), 
                  names = seq_name[sortid])
     
     print("DONE")
     
   }
-  #20170614    
+  #20170728    
 } 
 
   
@@ -293,13 +293,13 @@ curateSeq <- function(maxamb  = 5,
   filename     <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)" )[,2]
   
   write.fasta(seq_out,
-              file.out = paste0("~/Desktop/curateSeq", "-", mode, "_", filename, ".fasta"), 
+              file.out = paste0("./curateSeq", "-", mode, "_", filename, ".fasta"), 
               names = seq_name_out)
   
   print( paste0("delete: ", length(tobedelect_f[[mode]]) ) )
   print( paste0("remain: ", length(remain) ) )
   
-  #v201706
+  #v20170728
 }
   
   
@@ -507,7 +507,7 @@ subtreseq<-function(findrep      = 0,
       seq0_subtree      = seq0[id.subtree]
       
       write.fasta(seq0_subtree, 
-                  file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtree.fasta"), 
+                  file.out = paste0("./", no, "_", filename, "_", "subtree.fasta"), 
                   names    = seq.name0_subtree )  
       
       # originfile = 1
@@ -518,7 +518,7 @@ subtreseq<-function(findrep      = 0,
         seq0_subtree      = seq0_ori[id.subtree]
         
         write.fasta(seq0_subtree, 
-                    file.out = paste0("~/Desktop/", no, "_", filename, "_", "Ori_subtree.fasta"), 
+                    file.out = paste0("./", no, "_", filename, "_", "Ori_subtree.fasta"), 
                     names = seq.name0_subtree )
       }
       
@@ -530,7 +530,7 @@ subtreseq<-function(findrep      = 0,
         seq0_subtree      = seq0[id.outlier]
         
         write.fasta(seq0_subtree, 
-                    file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtreeB.fasta"), 
+                    file.out = paste0("./", no, "_", filename, "_", "subtreeB.fasta"), 
                     names    = seq.name0_subtree )
         
         if (originfile == 1)
@@ -539,7 +539,7 @@ subtreseq<-function(findrep      = 0,
           seq0_subtree      = seq0_ori[id.outlier]
           
           write.fasta(seq0_subtree, 
-                      file.out = paste0("~/Desktop/", no, "_", filename, "_", "Ori_subtreeB.fasta"), 
+                      file.out = paste0("./", no, "_", filename, "_", "Ori_subtreeB.fasta"), 
                       names    = seq.name0_subtree )
         }
       }
@@ -552,7 +552,7 @@ subtreseq<-function(findrep      = 0,
       seq0_subtree      = seq0[id.subtree]
       
       write.fasta(seq0_subtree, 
-                  file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtree.fasta"), 
+                  file.out = paste0("./", no, "_", filename, "_", "subtree.fasta"), 
                   names    = seq.name0_subtree )
       
       if (outlier == 1)
@@ -563,14 +563,14 @@ subtreseq<-function(findrep      = 0,
         seq0_subtree      = seq0[id.outlier]
         
         write.fasta(seq0_subtree, 
-                    file.out = paste0("~/Desktop/", no, "_", filename, "_", "subtreeB.fasta"), 
+                    file.out = paste0("./", no, "_", filename, "_", "subtreeB.fasta"), 
                     names    = seq.name0_subtree )
       }
       print("Done")
     }
     
   }
-  #v20170707
+  #v20170728
 }
 
 
@@ -619,10 +619,11 @@ trimtool <- function(propblank = 0.8, filedir = file.choose()){
   filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fas)" )[,2]
   
   write.fasta(seq_cut, 
-              file.out = paste0("~/Desktop/trim_", filename, ".fasta"),
+              file.out = paste0("./trim_", filename, ".fasta"),
               names = seq_name0)
   print("DONE")
-  
+
+  #20170729  
 }
 
 
@@ -737,7 +738,7 @@ subfastaSeq <- function(subtype = "H5N1",
       
       write.fasta(sequences = seq0[ac.i], 
                   names     = seq_name0[ac.i],
-                  file.out  = paste0("~/Desktop/", "ac", no, "_", filename, ".fasta") )
+                  file.out  = paste0("./", "ac", no, "_", filename, ".fasta") )
       
       print( seq_name0[ac.i] )
       
@@ -772,7 +773,7 @@ subfastaSeq <- function(subtype = "H5N1",
     
     write.fasta(sequences = seq0[remain], 
                 names     = seq_name0[remain],
-                file.out  = paste0("~/Desktop/", filename, "_", subtype, "-", time_s, "-", time_e, ".fasta") )
+                file.out  = paste0("./", filename, "_", subtype, "-", time_s, "-", time_e, ".fasta") )
     
     print( seq_name0[remain] )
     
@@ -780,7 +781,7 @@ subfastaSeq <- function(subtype = "H5N1",
   }
   
   
-  #v20170705 
+  #v20170729
 }
 
 
