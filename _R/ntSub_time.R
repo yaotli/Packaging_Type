@@ -13,182 +13,15 @@ pool_csv <- "./pool_df.csv"
 gsgdtree <- "./Tree/h5_GsGD"
 n1tree   <- "./Tree/N1_pool"
 
-
-### HA data ----------------------------------
-
-# tree file import and data retrive 
-
-pool_table      <- read.csv(pool_csv, header = TRUE, stringsAsFactors = FALSE)
-
-h5_GsGDfile     <- read.tree(gsgdtree)
-h5_GsGDtreedata <- fortify(h5_GsGDfile)
-
-rootnode        <- length(h5_GsGDfile$tip.label) + 1
-
-# info for the dataframe
-
-h5_GsGD_R2tip <- dist.nodes(h5_GsGDfile)[rootnode, 1: (rootnode - 1)]
-
-h5_GsGD_name  <- gsub("'", "", h5_GsGDtreedata$label[1: rootnode - 1] )
-h5_GsGD_time  <- as.numeric( str_match( h5_GsGD_name, "[0-9]{4}\\.[0-9]{2,3}") )
-h5_GsGD_NA    <- str_match( h5_GsGD_name, "(_H5)(N[0-9])")[,3]
-
-ac_code       <- "EPI[0-9]+|[A-Z]{1,2}[0-9]{5,6}"
-h5_GsGD_ac    <- str_match( h5_GsGD_name, ac_code)
-
-h5_GsGD_geo   <- pool_table$geo[ match(h5_GsGD_ac, pool_table$ac) ] 
-
-h5_GsGD_table <- data.frame(name    = h5_GsGD_name,  
-                            subtype = h5_GsGD_NA,
-                            ac      = h5_GsGD_ac,
-                            geo     = h5_GsGD_geo,
-                            distance = h5_GsGD_R2tip, 
-                            time     = h5_GsGD_time, 
-                            stringsAsFactors = FALSE)
+h5_GsGD_table_dir <- "./h5_GsGD_table.csv"
+n1_table_dir      <- "./n1_table.csv"   
 
 
-## clade info ----------------
+### read-in table --------------------------------
 
-for(i in 1: length( list.files("./Clade/cladetxt/") ) )
-{
-  cladename_i   <- read.table(file = 
-                                paste0("./Clade/cladetxt/", list.files("./Clade/cladetxt/")[i]),
-                                stringsAsFactors = FALSE)
-  
-  cladematch    <- as.numeric( h5_GsGD_name %in% cladename_i[,1] )
-  
-  h5_GsGD_table[, ncol(h5_GsGD_table) + 1] =  cladematch
-  
-  colnames( h5_GsGD_table )[ ncol( h5_GsGD_table ) ] =
-    sub(".txt", "", list.files("./Clade/cladetxt/")[i] )
-}
+h5_GsGD_table <- read.csv( h5_GsGD_table_dir, header = TRUE, stringsAsFactors = FALSE)
+n1_table      <- read.csv( n1_table_dir, header = TRUE, stringsAsFactors = FALSE)
 
-
-
-### NA data ----------------------------------
-
-n1_file     <- read.tree(n1tree)
-n1_treedata <- fortify(n1_file)
-
-rootnode_nu <- length(n1_file$tip.label) + 1
-
-# info for the dataframe
-
-n1_R2tip <- dist.nodes(n1_file)[rootnode_nu, 1: (rootnode_nu - 1)]
-
-n1_name  <- gsub("'", "", n1_treedata$label[1: rootnode_nu - 1] )
-n1_time  <- as.numeric( str_match( n1_name, "[0-9]{4}\\.[0-9]{2,3}") )
-
-ac_code  <- "EPI[0-9]+|[A-Z]{1,2}[0-9]{5,6}"
-n1_ac    <- str_match( n1_name, ac_code)
-
-n1_geo   <- pool_table$geo[ match(n1_ac, pool_table$ac) ] 
-
-n1_table <- data.frame( name     = n1_name,  
-                        ac       = n1_ac,
-                        geo      = n1_geo,
-                        distance = n1_R2tip, 
-                        time     = n1_time, 
-                        stringsAsFactors = FALSE)
-
-
-## match NA to HA ----------------
-
-for(k in 7: ncol(h5_GsGD_table) )
-{
-  
-  n1_table_i <- 
-  h5_GsGD_table[, k][ match( pool_table$pac[ match( n1_table$ac, pool_table$ac ) ], 
-                             h5_GsGD_table$ac ) ]
-  
-  n1_table_i[ is.na(n1_table_i) ] = 0
-  
-  n1_table[, ncol(n1_table) + 1] = n1_table_i
-  colnames( n1_table )[ ncol(n1_table) ] = colnames(h5_GsGD_table)[k]
-  
-}
-
-# subtree and sampling 
-
-# write.csv(h5_GsGD_table, "h5_GsGD_table.csv")
-# write.csv(n1_table, "n1_table.csv")
-
-
-
-### UPDATE THE TABLE USING TREE FILES --------------------------------
-
-# make labeld tree file into txt
-
-dir_sampledtre  <- "./Clade/sampled_clade_tree_CNHK/sampled_tre/"
-list_sampledtre <- list.files( dir_sampledtre )
-
-for( k in 1: length(list_sampledtre) )
-{
-  tre_k <- read.csv( paste0(dir_sampledtre, list_sampledtre[k]) , stringsAsFactors = FALSE)[, 1]
-  
-  ntax  <- as.numeric( str_match(tre_k [ grep("ntax", tre_k) ], "(ntax=)([0-9]+)")[,3] )
-  tax_s <- grep("ntax", tre_k) + 2
-  tax_e <- tax_s + ntax - 1
-  
-  taxaname <- tre_k[tax_s: tax_e]
-  reded    <- grep("#ff0000", taxaname)
-  remain   <- taxaname[ - reded ]
-  remain   <- gsub("\t|\\'", "", remain)
-  remain   <- gsub("\\[\\&\\!color\\=#[A-Za-z0-9]{6}\\]", "", remain)
-  
-  write.table(remain, 
-              paste0("./Clade/sampled_clade_tree_CNHK/sampledtxt/", list_sampledtre[ k ], ".txt"), 
-              col.names = F, row.names = F, quote = F)
-  print( length(remain) )
-  
-}
-
-
-# HA
-
-for(i in 1: length( grep("_h5", list.files("./Clade/updated/") ) ) )
-{
-  
-  k = grep("_h5", list.files("./Clade/updated/") )[ i ]
-  
-  cladename_i   <- read.table( file = 
-                               paste0("./Clade/updated/", list.files("./Clade/updated/")[ k ]),
-                               stringsAsFactors = FALSE)
-  
-  cladematch    <- as.numeric( h5_GsGD_table$name %in% cladename_i[,1] )
-  
-  h5_GsGD_table[, ncol(h5_GsGD_table) + 1] =  cladematch
-  
-  colnames( h5_GsGD_table )[ ncol( h5_GsGD_table ) ] =
-    sub(".txt", "", list.files("./Clade/updated/")[ k ] )
-}
-
-# NA 
-
-for(i in 1: length( grep("_n1", list.files("./Clade/updated/") ) ) )
-{
-  
-  k = grep("_n1", list.files("./Clade/updated/") )[ i ]
-  
-  cladename_i   <- read.table( file = 
-                               paste0("./Clade/updated/", list.files("./Clade/updated/")[ k ]),
-                               stringsAsFactors = FALSE)
-  
-  cladematch    <- as.numeric( n1_table$name %in% cladename_i[,1] )
-  
-  n1_table[, ncol(n1_table) + 1] =  cladematch
-  
-  colnames( n1_table )[ ncol( n1_table ) ] =
-    sub(".txt", "", list.files("./Clade/updated/")[k] )
-}
-
-
-
-
-### Export table --------------------------------
-
-write.csv(h5_GsGD_table, "h5_GsGD_table.csv")
-write.csv(n1_table, "n1_table.csv")
 
 # stratified by geo
 
@@ -303,7 +136,9 @@ clade232_HA_cnhk <-
   ggtitle("clade232_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
-  xlab("") + ylab("Root-to-tip divergence")
+  xlab("") + ylab("Root-to-tip divergence") 
+  # + geom_text(aes(label=name), size = 1)
+  
 
 
 
