@@ -307,7 +307,55 @@ for(k in 1: length(s_clads232) )
 }
 
 
+### stratification by time --------------------------------
 
+fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
+                     list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
+
+for(i in 1: length(fas_sample))
+{
+  # 2006  
+  subfastaSeq( time_e = 2006, 
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2006, 
+               filedir = fas_sample[i] )
+  # 2008
+  subfastaSeq( time_e = 2008, 
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2008, 
+               filedir = fas_sample[i] )
+  
+  # per 2 year  
+  
+  subfastaSeq( time_e = 2004, 
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2004, time_e = 2006,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2006, time_e = 2008,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2008, time_e = 2010,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2010, time_e = 2014,
+               filedir = fas_sample[i] )
+}
+
+
+for(i in 1: length(fas_sample))
+{
+  # 2007  
+  subfastaSeq( time_e = 2007, 
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2007, 
+               filedir = fas_sample[i] )
+ 
+}
 
 
 
