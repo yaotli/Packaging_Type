@@ -785,6 +785,35 @@ subfastaSeq <- function(subtype = "H5N1",
 }
 
 
+### nucleotide partition --------------------------------
+
+ntpartition <- function(position   = c(1:100), 
+                        filedir    = file.choose(), 
+                        no         = NULL)
+{
+  library(seqinr)
+  library(stringr)
+  
+  file      = read.fasta(filedir)
+  seq_name0 = attributes(file)$names
+  seq0      = getSequence(file)
+  
+  seq_matrix <- do.call( rbind, seq0 )
+  
+  cut_matrix <- seq_matrix[, position]
+  cut_list   <- as.list( data.frame( t(cut_matrix), stringsAsFactors = FALSE) )
+  
+  filename   <- str_match( filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
+  
+  write.fasta(sequences = cut_list, 
+              file.out  = paste0("./p-", filename, no),
+              names     = seq_name0)
+  
+  print( dim(cut_matrix)[2] )
+  
+  #v20170803
+}
+
 
 
 
