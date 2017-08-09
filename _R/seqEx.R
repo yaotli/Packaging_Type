@@ -134,7 +134,7 @@ for(i in 7: 9)
   subfastaSeq(filedir = "./align_trim/trim_h5_pool_lth1683.fasta", 
               AC      = TRUE,
               AC_list = h5_GsGD_table$ac[ index ], 
-              no      = colnames(h5_GsGD_table)[i])
+              no      = colnames(h5_GsGD_table)[i] )
 }
 
   
@@ -289,7 +289,7 @@ for(i in 10: ncol(n1_table) )
 
 # batch rename 
 #
-# cd cd ~/Desktop/data_souce/Clade/sampled_clade_tree_CNHK/sampled_fas/
+# cd ~/Desktop/data_souce/Clade/sampled_clade_tree_CNHK/sampled_fas/
 # for f in *.fasta; do mv "$f" "${f/ac/}"; done
 # for f in *.fasta; do mv "$f" "${f/_trim_h5_pool_lth1683/}"; done
 # for f in *.fasta; do mv "$f" "${f/_trim_nu_pool_H5N1_lth1347/}"; done
@@ -314,25 +314,9 @@ fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/",
 
 for(i in 1: length(fas_sample))
 {
-  # 2006  
-  subfastaSeq( time_e = 2006, 
-               filedir = fas_sample[i] )
-  
-  subfastaSeq( time_s = 2006, 
-               filedir = fas_sample[i] )
-  # 2008
-  subfastaSeq( time_e = 2008, 
-               filedir = fas_sample[i] )
-  
-  subfastaSeq( time_s = 2008, 
-               filedir = fas_sample[i] )
-  
   # per 2 year  
   
-  subfastaSeq( time_e = 2004, 
-               filedir = fas_sample[i] )
-  
-  subfastaSeq( time_s = 2004, time_e = 2006,
+  subfastaSeq( time_e = 2006,
                filedir = fas_sample[i] )
   
   subfastaSeq( time_s = 2006, time_e = 2008,
@@ -341,23 +325,46 @@ for(i in 1: length(fas_sample))
   subfastaSeq( time_s = 2008, time_e = 2010,
                filedir = fas_sample[i] )
   
-  subfastaSeq( time_s = 2010, time_e = 2014,
+  subfastaSeq( time_s = 2010,
                filedir = fas_sample[i] )
 }
 
 
-for(i in 1: length(fas_sample))
+# trim name 
+# for f in *.fasta; do sed -i "" "s/\\./_/g" $f; done
+# for f in *.fasta; do sed -i "" "s/~/-/g" $f; done
+# for f in *.fasta; do mv "$f" "${f/s_/}"; done
+# for f in *.fasta; do mv "$f" "${f/_CNHK_H5N1/}"; done
+
+
+## HA1/ HA2 (hyphy) ----------------
+
+fas_sample <- paste0("~/Desktop/data_souce/seq_2yr_CNHK/full/", 
+                     list.files("~/Desktop/data_souce/seq_2yr_CNHK/full/") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_HA) )
 {
-  # 2007  
-  subfastaSeq( time_e = 2007, 
-               filedir = fas_sample[i] )
+  ntpartition( position = c(1:1017), filedir = fas_sample_HA[k], no = "-ha1.fasta")
+  ntpartition( position = c(1018:1683), filedir = fas_sample_HA[k], no = "-ha2.fasta")
   
-  subfastaSeq( time_s = 2007, 
-               filedir = fas_sample[i] )
- 
 }
 
 
+## NAh/ NAs (hyphy) ----------------
+
+fas_sample <- paste0("~/Desktop/data_souce/seq_2yr_CNHK/full/", 
+                     list.files("~/Desktop/data_souce/seq_2yr_CNHK/full/") )
+
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_NA) )
+{
+  ntpartition( position = c(211:1347), filedir = fas_sample_NA[k], no = "-nah.fasta")
+  ntpartition( position = c(1:210), filedir = fas_sample_NA[k], no = "-nas.fasta")
+  
+}
 
 
 

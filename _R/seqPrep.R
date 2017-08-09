@@ -387,6 +387,8 @@ subtreseq(seq_filedir = "./align_trim/trim_h5_pool_lth1683.fasta",
 # re-fasttree
 # 
 # ~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./tree/sub_6072.fasta> ./tree/h5_GsGD.tre
+#
+# check by RAxML
 # ./raxml -f a -p 123 -s sub_6072.fasta -x 616 -#autoMRE -m GTRGAMMAI -n GsGDra
 
 ## NA ----------------
@@ -415,6 +417,7 @@ subfastaSeq(subtype = "H5N1", filedir = "./curateSeq-1_cleanID_nu_pool.fasta")
 trimtool(propblank = 0.9, filedir = "./align_trim/align_nu_pool_H5N1.fasta")
 
 # Fasttree 
+#
 # ~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./align_trim/trim_nu_pool_H5N1_lth1347.fasta> ./tree/N1_pool.tre
 
 
@@ -486,4 +489,16 @@ ggtree(h5_GsGDfile, size = 0.2)
 ggtree(h5_GsGDfile_clade, size = 0.2) + geom_tiplab(size = 0.8, col = "RED")
 
 # viewClade(g, node = identify(g)) + geom_tiplab(size = 0.5)
+
+
+### test coevolution of HA and NA --------------------------------
+
+tree           <- read.tree("./Tree/N1_pool")
+tree$tip.label <- gsub("EPI[0-9]+_|[A-Z]{1,2}[0-9]{5,6}_", "", tree$tip.label)
+dup            <- which( duplicated(tree$tip.label) == TRUE) 
+
+tree$tip.label[dup] = paste0(tree$tip.label[dup], "_1")
+
+write.tree(tree, "./n1clean.tre")
+
 

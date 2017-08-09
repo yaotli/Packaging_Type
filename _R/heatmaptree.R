@@ -218,3 +218,4 @@ sub571_maptree <-
   write.fasta(seq4, names = seq.name4, file.out = "~/Desktop/out.fasta")
   
   msaplot(T_h5tree_annotate, "~/Desktop/out.fasta", width = 0.25)
+  
