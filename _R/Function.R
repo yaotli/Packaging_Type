@@ -787,9 +787,9 @@ subfastaSeq <- function(subtype = "H5N1",
 
 ### nucleotide partition --------------------------------
 
-ntpartition <- function(position   = c(1:100), 
-                        filedir    = file.choose(), 
-                        no         = NULL)
+ntpartition <- function( position   = c(1:100), 
+                         filedir    = file.choose(), 
+                         no         = NULL)
 {
   library(seqinr)
   library(stringr)
@@ -800,8 +800,17 @@ ntpartition <- function(position   = c(1:100),
   
   seq_matrix <- do.call( rbind, seq0 )
   
-  cut_matrix <- seq_matrix[, position]
-  cut_list   <- as.list( data.frame( t(cut_matrix), stringsAsFactors = FALSE) )
+  if( nrow(seq_matrix)[1] == 1 )
+  {
+    seq0[[1]] <- seq0[[1]][position]
+    cut_list  <- seq0
+    
+  }else
+  {
+    cut_matrix <- seq_matrix[, position]
+    cut_list   <- as.list( data.frame( t(cut_matrix), stringsAsFactors = FALSE) )  
+  }
+  
   
   filename   <- str_match( filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
   
@@ -811,8 +820,39 @@ ntpartition <- function(position   = c(1:100),
   
   print( dim(cut_matrix)[2] )
   
-  #v20170803
+  #v20170812
 }
+
+
+
+### remove ambiguous nucleotide --------------------------------
+
+rmAMBnt <- function( filedir = file.choose() )
+{
+  require(seqinr)
+  
+  filein <- read.fasta( filedir )
+  name   <- attributes( filein )$names
+  seq0   <- getSequence( filein )
+  
+  seq    <- lapply(seq0, 
+                   function(y)
+                   {
+                     amb    <- grep(pattern = "a|t|c|g|-", 
+                                    x = y, invert = TRUE, ignore.case = TRUE)
+                     y[amb] <- "-"
+                     
+                     return(y)
+                   })
+  
+  write.fasta(seq, 
+              name, 
+              file.out = filedir)
+  #v20170812 
+}
+
+
+
 
 
 
