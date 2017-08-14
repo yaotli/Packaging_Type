@@ -66,7 +66,7 @@ clade234_HA_cnhk <-
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
   stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2008, size = 1, color = "black") + 
+  # geom_vline(xintercept = 2008, size = 1, color = "black") + 
   ggtitle("clade234_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
@@ -99,7 +99,7 @@ clade7_HA_cnhk <-
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
   stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2006, size = 1, color = "black") + 
+  # geom_vline(xintercept = 2006, size = 1, color = "black") + 
   ggtitle("clade7_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
@@ -132,7 +132,7 @@ clade232_HA_cnhk <-
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
   stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2012, size = 1, color = "black") + 
+  # geom_vline(xintercept = 2012, size = 1, color = "black") + 
   ggtitle("clade232_HA_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
@@ -167,7 +167,7 @@ clade234_N1_cnhk <-
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
   stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2008, size = 1, color = "black") + 
+  # geom_vline(xintercept = 2008, size = 1, color = "black") + 
   ggtitle("clade234_N1_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
@@ -203,7 +203,7 @@ clade7_N1_cnhk <-
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
   stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2006, size = 1, color = "black") + 
+  # geom_vline(xintercept = 2006, size = 1, color = "black") + 
   ggtitle("clade7_N1_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +
@@ -237,7 +237,7 @@ clade232_N1_cnhk <-
              shape = 21, color = "black", fill = "red", size = 2, stroke = 0.5 ,alpha = 0.8) +
   
   stat_smooth(method = "glm", colour = "#008B00", fill = "#008B00" ) + 
-  geom_vline(xintercept = 2012, size = 1, color = "black") + 
+  # geom_vline(xintercept = 2012, size = 1, color = "black") + 
   ggtitle("clade232_N1_CN+HK") + 
   
   scale_x_continuous(limits = c(2000, 2016), breaks = seq(2000, 2016, by = 2), labels = seq(2000, 2016, by = 2) ) +

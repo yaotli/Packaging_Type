@@ -307,7 +307,7 @@ for(k in 1: length(s_clads232) )
 }
 
 
-### stratification by time --------------------------------
+### stratification by time (2yr) --------------------------------
 
 fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
                      list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
@@ -366,6 +366,69 @@ for(k in 1: length(fas_sample_NA) )
   
 }
 
+
+### stratification by time (1yr) --------------------------------
+
+fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
+                     list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
+
+for(i in 1: length(fas_sample))
+{
+  # per 1 year  
+  yr_seq <- seq(2002, 2014)
+  
+  for (k in 1: (length(yr_seq)-1) )
+  {
+    subfastaSeq( time_s = yr_seq[k],
+                 time_e = yr_seq[k+1],
+                 filedir = fas_sample[i] )
+  }
+}
+
+
+# trim name 
+# for f in *.fasta; do sed -i "" "s/\\./_/g" $f; done
+# for f in *.fasta; do sed -i "" "s/~/-/g" $f; done
+# for f in *.fasta; do mv "$f" "${f/s_/}"; done
+# for f in *.fasta; do mv "$f" "${f/_CNHK_H5N1/}"; done
+
+
+## remove ambiguous nt -----------------
+
+fas_sample <- paste0("./pool_seq_pyr_CNHK/", 
+                     list.files("./pool_seq_pyr_CNHK/") )
+
+for(k in  1: length(fas_sample) ){
+  rmAMBnt(fas_sample[k])  }
+
+
+
+## HA1/ HA2 ----------------
+
+fas_sample <- paste0("./pool_seq_pyr_CNHK/", 
+                     list.files("./pool_seq_pyr_CNHK/") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_HA) )
+{
+  ntpartition( position = c(1:1017), filedir = fas_sample_HA[k], no = "-ha1.fasta")
+  ntpartition( position = c(1018:1683), filedir = fas_sample_HA[k], no = "-ha2.fasta")
+  
+}
+
+
+## NAh/ NAs ----------------
+
+
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_NA) )
+{
+  ntpartition( position = c(211:1347), filedir = fas_sample_NA[k], no = "-nah.fasta")
+  ntpartition( position = c(1:210), filedir = fas_sample_NA[k], no = "-nas.fasta")
+  
+}
 
 
 
