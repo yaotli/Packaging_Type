@@ -47,7 +47,7 @@ curateSeq(maxamb = 150, minseq = 1500, mode = 1, filedir = "./Nx/cleanID_h5_n_no
 
 
 # check by raxml tree
-# ./raxml_AVX2 -f a -p 666 -s h5_n5.fasta.fasta -x 616 -#autoMRE -m GTRGAMMAI --HKY85 -n h5n5
+# ~/Raxmldata/raxml_AVX2 -f a -p 666 -s h5_n5.fasta.fasta -x 616 -#autoMRE -m GTRGAMMAI --HKY85 -n h5n5
 # 
 # check substitution model
 # java -jar /Volumes/EDGE\ 2/Apps/jmodeltest-2.1.10/jModelTest.jar -d /Users/yaosmacbook/Desktop/data_souce/Nx/h5_n5_phy -f -i -g 4 -s 5 -BIC -a -S SPR

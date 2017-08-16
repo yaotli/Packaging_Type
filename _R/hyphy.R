@@ -4,9 +4,10 @@ library(stringr)
 library(ggtree)
 library(ggplot2)
 library(readr)
+library(dplyr)
 
 setwd("~/Desktop/Hyphy/")
-
+source("~/Packaging_Type/_R/Function.R")
 
 ### SLAC  --------------------------------
 
@@ -112,7 +113,10 @@ slac_0810   <- data.frame( gene, clade, year, w, w_ciu, w_cil,
                            dn_mean, ds_mean, po_site, ne_site, dn_ds_mean, dn_ds_sd,
                            stringsAsFactors = FALSE )
 
+# write.csv(slac_0810, "./slac_0810.csv")
+
 slac_0810_p <- slac_0810[ - which( slac_0810$gene == "h5" | slac_0810$gene  == "n1" ),]
+
 
 ## plot ----------------
 
@@ -212,7 +216,6 @@ theme(
 gene  <- c()
 clade <- c()
 year  <- c()
-codon <- c()
 po    <- c()
 ne    <- c()
 dS    <- c()
@@ -261,15 +264,17 @@ for(g in 1: 5)
 }    
   
   
-  fubar_0810   <- data.frame(gene, clade, year, po, ne, 
-                             dS, dN, dN_dS, stringsAsFactors = FALSE)
-  
-  fubar_0810_p <- fubar_0810[ - which( fubar_0810$gene == "h5" | fubar_0810$gene  == "n1" ), ]
+fubar_0810   <- data.frame(gene, clade, year, po, ne, 
+                           dS, dN, dN_dS, stringsAsFactors = FALSE)
+
+# write.csv(fubar_0810, "./fubar_0810.csv")
+
+fubar_0810_p <- fubar_0810[ - which( fubar_0810$gene == "h5" | fubar_0810$gene  == "n1" ), ]
 
   
 ## plot ----------------  
 
-  # ne_count 
+# ne_count 
 
 ggplot(data = fubar_0810_p, aes(x = year, y = ne, colour = clade, group = clade)) + 
   geom_point( size = 2 ) +
@@ -287,7 +292,7 @@ ggplot(data = fubar_0810_p, aes(x = year, y = ne, colour = clade, group = clade)
     strip.text = element_text(size = 12, face = "bold")
   )
   
-  # po_count
+# po_count
   
 ggplot(data = fubar_0810_p, aes(x = year, y = po, colour = clade, group = clade)) + 
   geom_point( size = 2 ) +
@@ -417,11 +422,298 @@ ggplot(data = testsamplesize, aes(x = year, y = n, colour = clade, group = clade
     strip.text = element_text(size = 12, face = "bold")
   )
 
+### Sampling 2344 2nd time point --------------------------------
+
+setwd("~/Desktop/data_souce/")
+
+# ha1 (n = 112)
+rSeq(n = 28, s_times = 10, 
+     filedir = "./seq_2yr_CNHK/ha1/p-clade234_h5-2006-2008-ha1.fasta")
+
+
+# nah (n = 97)
+rSeq(n = 24, s_times = 10, 
+     filedir = "./seq_2yr_CNHK/nah/p-clade234_n1-2006-2008-nah.fasta")
+
+
+# ha2 
+rSeq(n = 28, s_times = 10, 
+     filedir = "./seq_2yr_CNHK/ha2/p-clade234_h5-2006-2008-ha2.fasta")
+
+
+# nas 
+rSeq(n = 24, s_times = 10, 
+     filedir = "./seq_2yr_CNHK/nas/p-clade234_n1-2006-2008-nas.fasta")
+
+
+## SLAC result ----------------
+
+gene       <- c() 
+rp         <- c() 
+w          <- c()  
+w_ciu      <- c()  
+w_cil      <- c()
+dn_mean    <- c()  
+ds_mean    <- c() 
+dn_ds_mean <- c() 
+dn_ds_sd   <- c() 
+
+po_site    <- c()  
+ne_site    <- c()  
+
+log_ls  <- list.files("./result/s_2344_06_08/sampling_slac/log/")
+log_dir <- paste0("./result/s_2344_06_08/sampling_slac/log/", log_ls) 
+txt_ls  <- list.files("./result/s_2344_06_08/sampling_slac/txt/")
+txt_dir <- paste0("./result/s_2344_06_08/sampling_slac/txt/", txt_ls)
+
+for(i in 1: length(log_ls) )
+{
+  str_i   <- str_match(log_ls[i], 
+                       "([0-9]{1,3})_([a-z0-9]+)-([0-9]{4}-[0-9]{4})-([a-z0-9]{3,4})_(r[0-9]{1,2})" )
+  
+  
+  file_log <- read_file(log_dir[i])
+  file_txt <- read.table(txt_dir[i], sep = "\t", header = T)
+  
+  mean  <- str_match(file_log, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,2]
+  U     <- str_match(file_log, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,3]
+  L     <- str_match(file_log, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,4]
+  
+  mean  <- as.numeric(mean)
+  U     <- as.numeric(U)
+  L     <- as.numeric(L)
+  
+  N        <- mean( file_txt[,8] ) 
+  S        <- mean( file_txt[,7] )
+  dnds     <- mean( file_txt[, 9] ) 
+  dnds_sd  <- sd( file_txt[,9] )
+  po       <- sum( file_txt[,10][ which(file_txt[,10] != 0) ] < 0.1)  
+  ne       <- sum( file_txt[,11][ which(file_txt[,11] != 0) ] < 0.1)  
+  
+  
+  gene  <- append(gene, str_i[,5] )  
+  rp    <- append(rp, str_i[,6] )  
+  
+  w     <- append(w, mean)    
+  w_ciu <- append(w_ciu, U)  
+  w_cil <- append(w_cil, L) 
+  
+  dn_mean    <- append(dn_mean, N)    
+  ds_mean    <- append(ds_mean, S)      
+  po_site    <- append(po_site, po)      
+  ne_site    <- append(ne_site, ne) 
+  dn_ds_mean <- append(dn_ds_mean, dnds) 
+  dn_ds_sd   <- append(dn_ds_sd, dnds_sd)
+  
+}
+
+sampling_2344_0608_slac <- data.frame(gene, rp, w, w_ciu, w_cil, 
+                                       dn_mean, ds_mean, po_site, ne_site, dn_ds_mean, dn_ds_sd)
+
+
+## FUBAR result ----------------
+
+
+gene  <- c()
+rp    <- c()
+po    <- c()
+ne    <- c()
+dS    <- c()
+dN    <- c()
+dN_dS <- c()
+
+
+csv_ls  <- list.files("./result/s_2344_06_08/sampling_fubar/csv/")
+log_dir <- paste0("./result/s_2344_06_08/sampling_fubar/csv/", csv_ls) 
+
+
+for(i in 1: length(csv_ls))
+{
+  str_i    <- str_match( csv_ls[i], 
+                        "([0-9]{1,3})_([a-z0-9]+)-([0-9]{4}-[0-9]{4})-([a-z0-9]{3,4})_(r[0-9]{1,2})" )
+  
+  file_csv <- read.csv( log_dir[i] )
+  
+  gene  <- append(gene, str_i[,5] )  
+  rp    <- append(rp, str_i[,6] )  
+  
+  po      <- append( po, sum( file_csv[, 5] >= 0.9 ) )
+  ne      <- append( ne, sum( file_csv[, 6] >= 0.9 ) )
+  dS      <- append( dS, mean( file_csv[, 2] ) )
+  dN      <- append( dN, mean( file_csv[, 3] ) )
+  dN_dS   <- append( dN_dS, mean( file_csv[, 4] ) )
+  
+}
+
+sampling_2344_0608_fubar <- data.frame(gene, rp, 
+                                       po, ne, dS, dN, dN_dS, stringsAsFactors = FALSE)
+
+
+## curate the potential biased results ----------------
+
+sum_sampling_2344_0608_slac = 
+sampling_2344_0608_slac %>%
+group_by(gene)          %>%
+summarise(m.w          = median(w), 
+          m.u          = median(w_ciu),
+          m.l          = median(w_cil),
+          m.dn_mean    = median(dn_mean),
+          m.ds_mean    = median(ds_mean),
+          m.po         = median(po_site),
+          m.ne         = median(ne_site),
+          m.dn_ds_mean = median(dn_ds_mean))
+
+
+sum_sampling_2344_0608_fubar = 
+sampling_2344_0608_fubar %>%
+group_by(gene)           %>%
+summarise( m.po         = median(po),
+           m.ne         = median(ne),
+           m.ds_mean    = median(dS),
+           m.dn_mean    = median(dN),
+           m.dn_ds_mean = median(dN_dS))  
+  
+## fixed version ----------------
+
+F_slac_0810_p = slac_0810_p
+
+F_slac_0810_p[which(F_slac_0810_p$year == "2006-2008" & F_slac_0810_p$clade == "234"), ][, c(4:11)] = 
+  sum_sampling_2344_0608_slac[c(2:9)]
+
+F_fubar_0810_p = fubar_0810_p
+  
+F_fubar_0810_p[which(F_fubar_0810_p$year == "2006-2008" & F_fubar_0810_p$clade == "234"), ][, c(4:8)] = 
+  sum_sampling_2344_0608_fubar[c(2, 6)]
+
+## plot: SLAC ----------------
+
+# dN - dS
+ggplot(data = F_slac_0810_p, aes(x = year, y = dn_ds_mean, colour = clade, group = clade)) + 
+  geom_point( size = 2 ) +
+  geom_line( size = 1.5 ) +
+  facet_wrap(~gene, ncol = 2) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank() ) + 
+  xlab("") + ylab("dN - dS") +
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 1), 
+    strip.background = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+# dN
+ggplot(data = F_slac_0810_p, aes(x = year, y = dn_mean, colour = clade, group = clade)) + 
+  geom_point( size = 2 ) +
+  geom_line( size = 1.5 ) +
+  facet_wrap(~gene, ncol = 2) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank() ) + 
+  xlab("") + ylab("dN") +
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 1), 
+    strip.background = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+# dS
+ggplot(data = F_slac_0810_p, aes(x = year, y = ds_mean, colour = clade, group = clade)) + 
+  geom_point( size = 2 ) +
+  geom_line( size = 1.5 ) +
+  facet_wrap(~gene, ncol = 2) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank() ) + 
+  xlab("") + ylab("dS") +
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 1), 
+    strip.background = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+
+# w 
+
+ggplot(data = F_slac_0810_p, aes(x = year, y = w, colour = clade)) +
+  geom_point( position = position_dodge(0.8) ) +
+  geom_errorbar( aes(ymin = w_cil, ymax = w_ciu), 
+                 position = position_dodge(0.8), width = 0.1) +
+  
+  scale_y_continuous(limits = c(0,1.5) ) +
+  facet_wrap(~gene, ncol = 2) + 
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  xlab("") +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 12, face = "bold")) 
+
+# ne_count 
+
+ggplot(data = F_slac_0810_p, aes(x = year, y = ne_site, colour = clade, group = clade)) + 
+  geom_point( size = 2 ) +
+  geom_line( size = 1.5 ) +
+  facet_wrap(~gene, ncol = 2) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank() ) + 
+  xlab("") + ylab("site under ne. selection") +
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 1), 
+    strip.background = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12, face = "bold") )
 
 
 
+## plot: FUBAR ----------------
 
+# ne_count 
 
+ggplot(data = F_fubar_0810_p, aes(x = year, y = ne, colour = clade, group = clade)) + 
+  geom_point( size = 2 ) +
+  geom_line( size = 1.5 ) +
+  facet_wrap(~gene, ncol = 2) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank() ) + 
+  xlab("") + ylab("site under ne. selection") +
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 1), 
+    strip.background = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
+
+# po_count
+
+ggplot(data = F_fubar_0810_p, aes(x = year, y = po, colour = clade, group = clade)) + 
+  geom_point( size = 2 ) +
+  geom_line( size = 1.5 ) +
+  facet_wrap(~gene, ncol = 2) + 
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank() ) + 
+  xlab("") + ylab("site under po. selection") +
+  scale_color_manual(values = c("#228B22", "#EE2C2C", "#000000") ) + 
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, size = 1), 
+    strip.background = element_rect(fill = "white", color = "white"),
+    strip.text = element_text(size = 12, face = "bold")
+  )
 
 
 

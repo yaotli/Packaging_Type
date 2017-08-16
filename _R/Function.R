@@ -851,7 +851,38 @@ rmAMBnt <- function( filedir = file.choose() )
   #v20170812 
 }
 
+### random sampling of sequence --------------------------------
 
+rSeq <- function(n       = 10, 
+                 seed    = 1, 
+                 s_times = 1,
+                 filedir = file.choose())
+{
+  library(seqinr)
+  library(stringr)
+  
+  file      <- read.fasta( filedir )
+  seq_name0 <- attributes( file )$names
+  seq0      <- getSequence( file )
+  filename  <- str_match( filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
+  
+  for (k in 1: s_times )
+  {
+    set.seed( seed*k )     
+    y            <- sample( 1: length(seq0), n )  
+    y            <- sort( unique(y) )
+    out_seq      <- seq0[y]
+    out_seq_name <- seq_name0[y]
+    
+    write.fasta( out_seq, 
+                 names = out_seq_name, 
+                 file.out = paste0("./", filename, "_r", k, ".fasta") )
+  }
+  
+  print("DONE") 
+  
+  #v20170815
+}
 
 
 
