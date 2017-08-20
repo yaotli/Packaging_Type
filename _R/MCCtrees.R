@@ -42,12 +42,32 @@ g234_ha_grid <-
   geom_ribbon(data = c234_ha_grid, 
               aes(x = Time, ymin = log(Lower)*10 + 50, ymax = log(Upper)*10 + 50),  
               inherit.aes=FALSE, fill = "gray", alpha = 0.2) + ggtitle("HA - Clade 234*") + 
-  geom_vline(xintercept = 2008, size = 1, color = "black", linetype = "dotted")
-
+  geom_vline(xintercept = 2008, size = 1, color = "black", linetype = "dotted") +
+  geom_point(x = 2007.044, y = 0, size = 0.8, color = "blue") + 
+  geom_errorbarh( aes(y = 0, 
+                     xmax = 2007.849, 
+                     xmin = 2005.558), color = "blue")
 
   #geom_rect(data = rects, 
   #          aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf, fill = col), 
   #          alpha = 0.4) 
+  
+
+## MRCA of Nx virus (rate_0818) ----------------
+
+rate_0818_log <- data.frame( method = c("strict_exp", "strict_skyride", "relaxed_exp", "relaxed_skyride"),
+                             median = c(3.0269, 3.0468, 2.9611, 3.0233),
+                             hpd_l  = c(2.2218, 2.2994, 1.7829, 1.9933),
+                             hpd_u  = c(4.5126, 4.2755, 10.0257, 5.2335), stringsAsFactors = FALSE)
+
+ggplot(data = rate_0818_log, aes( x= method, y = 2010.071-median )) +
+  geom_point() +
+  geom_errorbar( aes( ymin = 2010.071-hpd_l, ymax = 2010.071-hpd_u), width = 0.1) +
+  coord_flip() + 
+  xlab("") + ylab("") +
+  scale_y_continuous(breaks = seq(2000,2008, by = 1)) +
+  theme_bw() + ggtitle("Inferred MRCA of Nx viruses") + 
+  theme( panel.grid.minor = element_blank(), panel.grid.major.y = element_blank() ) 
   
 
 ## 234 NA ----------------
