@@ -8,7 +8,7 @@ source("~/Packaging_Type/_R/Function.R")
 
 h5_raw_ncbi <- "./raw/H5_N_7412_20170815.fasta"
 
-### seq name cleaning --------------------------------
+### seq name cleaning (result are not used)--------------------------------
 
 # readin
 ha_n_seq    <- fastaEx(h5_raw_ncbi)$seq
@@ -43,12 +43,17 @@ curateSeq(maxamb = 150, minseq = 1500, mode = 1, filedir = "./Nx/cleanID_h5_n_no
 # manually trim in BioEdit (remove stop codon & ~, lth = 1683)
 
 
-## extract sequences ----------------
+### extract sequences ----------------
 
+subtreseq(seq_filedir  = "./align_trim/trim_h5_pool_lth1683.fasta", 
+          list_filedir = "./Nx/h5n5.txt")
+
+# check substitution model
+# java -jar /Volumes/EDGE\ 2/Apps/jmodeltest-2.1.10/jModelTest.jar -d /Users/yaosmacbook/Desktop/data_souce/Nx/h5_n5_8.phy -f -i -g 4 -s 5 -BIC -a -S SPR
+# HKY
 
 # check by raxml tree
-# ~/Raxmldata/raxml_AVX2 -f a -p 666 -s h5_n5.fasta.fasta -x 616 -#autoMRE -m GTRGAMMAI --HKY85 -n h5n5
+# ~/Raxmldata/raxml_AVX2 -f a -p 666 -s h5_n5_8.fasta -x 616 -#autoMRE -m GTRGAMMAI --HKY85 -n h5n5
 # 
-# check substitution model
-# java -jar /Volumes/EDGE\ 2/Apps/jmodeltest-2.1.10/jModelTest.jar -d /Users/yaosmacbook/Desktop/data_souce/Nx/h5_n5_phy -f -i -g 4 -s 5 -BIC -a -S SPR
+ 
 
