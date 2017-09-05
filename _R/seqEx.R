@@ -18,7 +18,6 @@ h5_GsGD_table_dir <- "./h5_GsGD_table.csv"
 n1_table_dir      <- "./n1_table.csv"   
 
 ### Clade info ----------------------------------
-
 ## HA ----------------
 
 # tree file import and data retrive 
@@ -293,6 +292,7 @@ for(i in 10: ncol(n1_table) )
 # for f in *.fasta; do mv "$f" "${f/ac/}"; done
 # for f in *.fasta; do mv "$f" "${f/_trim_h5_pool_lth1683/}"; done
 # for f in *.fasta; do mv "$f" "${f/_trim_nu_pool_H5N1_lth1347/}"; done
+# for f in *.fasta; do sed -i "" "s/~/-/g" $f; done
 
 ### Sampled seq of clade 232 before 2014 --------------------------------
 
@@ -307,7 +307,7 @@ for(k in 1: length(s_clads232) )
 }
 
 
-### stratification by time (2yr) --------------------------------
+## stratification by time (2yr) ----------------
 
 fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
                      list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
@@ -337,7 +337,7 @@ for(i in 1: length(fas_sample))
 # for f in *.fasta; do mv "$f" "${f/_CNHK_H5N1/}"; done
 
 
-## HA1/ HA2 (hyphy) ----------------
+# HA1/ HA2 
 
 fas_sample <- paste0("~/Desktop/data_souce/seq_2yr_CNHK/full/", 
                      list.files("~/Desktop/data_souce/seq_2yr_CNHK/full/") )
@@ -352,7 +352,7 @@ for(k in 1: length(fas_sample_HA) )
 }
 
 
-## NAh/ NAs (hyphy) ----------------
+# NAh/ NAs
 
 fas_sample <- paste0("~/Desktop/data_souce/seq_2yr_CNHK/full/", 
                      list.files("~/Desktop/data_souce/seq_2yr_CNHK/full/") )
@@ -367,7 +367,7 @@ for(k in 1: length(fas_sample_NA) )
 }
 
 
-### stratification by time (1yr) --------------------------------
+## stratification by time (1yr) ----------------
 
 fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
                      list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
@@ -403,7 +403,7 @@ for(k in  1: length(fas_sample) ){
 
 
 
-## HA1/ HA2 ----------------
+# HA1/ HA2
 
 fas_sample <- paste0("./pool_seq_pyr_CNHK/", 
                      list.files("./pool_seq_pyr_CNHK/") )
@@ -418,7 +418,7 @@ for(k in 1: length(fas_sample_HA) )
 }
 
 
-## NAh/ NAs ----------------
+# NAh/ NAs
 
 
 fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
@@ -429,6 +429,304 @@ for(k in 1: length(fas_sample_NA) )
   ntpartition( position = c(1:210), filedir = fas_sample_NA[k], no = "-nas.fasta")
   
 }
+
+
+## cutoffpoint 2007 ----------------
+
+fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
+                     list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
+
+for(i in 1: length(fas_sample))
+{
+  
+  subfastaSeq( time_s = 2002, 
+               time_e = 2007,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2007, 
+               time_e = 2010,
+               filedir = fas_sample[i] )
+}
+
+
+# trim name 
+# for f in *.fasta; do sed -i "" "s/\\./_/g" $f; done
+# for f in *.fasta; do sed -i "" "s/~/-/g" $f; done
+# for f in *.fasta; do mv "$f" "${f/s_/}"; done
+# for f in *.fasta; do mv "$f" "${f/_CNHK_H5N1/}"; done
+
+
+# HA1/ HA2
+
+fas_sample <- paste0("./str_time_CNHK_H5N1/cut2007_bird/", 
+                     list.files("./str_time_CNHK_H5N1/cut2007_bird/") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_HA) )
+{
+  ntpartition( position = c(1:1017), filedir = fas_sample_HA[k], no = "-ha1.fasta")
+  ntpartition( position = c(1018:1683), filedir = fas_sample_HA[k], no = "-ha2.fasta")
+  
+}
+
+
+# NAh/ NAs
+
+
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_NA) )
+{
+  ntpartition( position = c(211:1347), filedir = fas_sample_NA[k], no = "-nah.fasta")
+  ntpartition( position = c(1:210), filedir = fas_sample_NA[k], no = "-nas.fasta")
+  
+}
+
+
+
+
+
+## stratification by time (060810) ----------------
+
+fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
+                     list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
+
+for(i in 1: length(fas_sample))
+{
+  # per 2 year  
+  
+  subfastaSeq( time_s = 2004, time_e = 2006,
+               filedir = fas_sample[i] )
+
+  subfastaSeq( time_s = 2006, time_e = 2008,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2008, time_e = 2010,
+               filedir = fas_sample[i] )
+  
+}
+
+
+# trim name 
+# for f in *.fasta; do sed -i "" "s/\\./_/g" $f; done
+# for f in *.fasta; do sed -i "" "s/~/-/g" $f; done
+# for f in *.fasta; do mv "$f" "${f/s_/}"; done
+# for f in *.fasta; do mv "$f" "${f/_CNHK_H5N1/}"; done
+
+
+
+
+# HA1/ HA2
+
+fas_sample <- paste0("./seq_2yr_060810_CNHK/avian/", 
+                     list.files("./seq_2yr_060810_CNHK/avian/") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_HA) )
+{
+  ntpartition( position = c(1:1017), filedir = fas_sample_HA[k], no = "-ha1.fasta")
+  ntpartition( position = c(1018:1683), filedir = fas_sample_HA[k], no = "-ha2.fasta")
+  
+}
+
+
+# NAh/ NAs
+
+
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+for(k in 1: length(fas_sample_NA) )
+{
+  ntpartition( position = c(211:1347), filedir = fas_sample_NA[k], no = "-nah.fasta")
+  ntpartition( position = c(1:210), filedir = fas_sample_NA[k], no = "-nas.fasta")
+  
+}
+
+
+
+
+
+
+### host + geo + time (20170825) --------------------------------
+
+# full-gene | host | all-time
+
+fas_sample <- paste0("./Clade/sampled_clade_tree_CNHK/sampled_fas/", 
+                     list.files("./Clade/sampled_clade_tree_CNHK/sampled_fas/") )
+
+for(i in 1: length(fas_sample))
+{
+  subfastaSeq( filedir = fas_sample[i], host = "nomammal")
+  subfastaSeq( filedir = fas_sample[i], host = "nomammal", inverse.host = TRUE, no = "mammal")
+}
+
+
+
+# full-gene + domain | geo | all-time
+
+fas_sample <- paste0( "./seq_CNHK_H5N1_str_0825/host/nomam/", 
+                      list.files("./seq_CNHK_H5N1_str_0825/host/nomam") )
+
+for(i in 1: length(fas_sample))
+{
+  subfastaSeq( filedir = fas_sample[i], geo = "SW")
+  subfastaSeq( filedir = fas_sample[i], geo = "SW", inverse.geo = TRUE, no = "nSW")
+}
+
+
+# HA1/NA1
+
+fas_sample    <- paste0("./seq_CNHK_H5N1_str_0825/avian_SW/", 
+                        list.files("./seq_CNHK_H5N1_str_0825/avian_SW/") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ]  
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+
+for(k in 1: length(fas_sample) )
+{
+  if( grepl(pattern = "h5", fas_sample[k] ) == TRUE )
+  {
+    ntpartition( position = c(1:1017), filedir = fas_sample[k], no = "-ha1.fasta")
+    ntpartition( position = c(1018:1683), filedir = fas_sample[k], no = "-ha2.fasta")
+    
+  }else
+  {
+    ntpartition( position = c(211:1347), filedir = fas_sample[k], no = "-nah.fasta")
+    ntpartition( position = c(1:210), filedir = fas_sample[k], no = "-nas.fasta")   
+    }
+}
+
+
+
+# full-gene + domain | avian | time-course (4) | SW
+
+# SW/nSW (only keep 2344)
+fas_sample    <- paste0("./seq_CNHK_H5N1_str_0825/avian_SW/", 
+                        list.files("./seq_CNHK_H5N1_str_0825/avian_SW/") )
+
+for(i in 1: length(fas_sample))
+{
+  # per 2 year  
+  
+  subfastaSeq( time_s = 2004, time_e = 2006,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2006, time_e = 2008,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2008, time_e = 2010,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2010, time_e = 2014,
+               filedir = fas_sample[i] )
+}
+
+
+# combine
+
+fas_sample    <- paste0("./seq_CNHK_H5N1_str_0825/host/nomam/", 
+                        list.files("./seq_CNHK_H5N1_str_0825/host/nomam/") )
+
+for(i in 1: length(fas_sample))
+{
+  # per 2 year  
+  
+  subfastaSeq( time_s = 2004, time_e = 2006,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2006, time_e = 2008,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2008, time_e = 2010,
+               filedir = fas_sample[i] )
+  
+}
+
+
+# HA1/NA1
+
+fas_sample    <- paste0("./seq_CNHK_H5N1_str_0825/avian_2yr/", 
+                        list.files("./seq_CNHK_H5N1_str_0825/avian_2yr//") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ]  
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+
+for(k in 1: length(fas_sample) )
+{
+  if( grepl(pattern = "h5", fas_sample[k] ) == TRUE )
+  {
+    ntpartition( position = c(1:1017), filedir = fas_sample[k], no = "-ha1.fasta")
+    ntpartition( position = c(1018:1683), filedir = fas_sample[k], no = "-ha2.fasta")
+    
+  }else
+  {
+    ntpartition( position = c(211:1347), filedir = fas_sample[k], no = "-nah.fasta")
+    ntpartition( position = c(1:210), filedir = fas_sample[k], no = "-nas.fasta")   
+  }
+}
+
+
+# full-gene + domain | avian | time-course (1yr) | SW | 234 only
+
+
+fas_sample    <- c("./seq_CNHK_H5N1_str_0825/avian_SW/fasta_all/clade234_h5_nSW.fasta",
+                    "./seq_CNHK_H5N1_str_0825/avian_SW/fasta_all/clade234_h5_SW.fasta", 
+                    "./seq_CNHK_H5N1_str_0825/avian_SW/fasta_all/clade234_n1_nSW.fasta",
+                    "./seq_CNHK_H5N1_str_0825/avian_SW/fasta_all/clade234_n1_SW.fasta")
+
+
+for(i in 1: length(fas_sample))
+{
+  # per 2 year  
+  
+  subfastaSeq( time_s = 2004, time_e = 2006,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2006, time_e = 2007,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2007, time_e = 2008,
+               filedir = fas_sample[i] )
+  
+  subfastaSeq( time_s = 2008, time_e = 2010,
+               filedir = fas_sample[i] )
+ 
+}
+
+# domain
+
+fas_sample    <- paste0("./seq_CNHK_H5N1_str_0825/avian_SW_1yr_234/full/", 
+                        list.files("./seq_CNHK_H5N1_str_0825/avian_SW_1yr_234/full/") )
+
+fas_sample_HA <- fas_sample[ grep(pattern = "h5", x = fas_sample) ]  
+fas_sample_NA <- fas_sample[ grep(pattern = "n1", x = fas_sample) ] 
+
+
+for(k in 1: length(fas_sample) )
+{
+  if( grepl(pattern = "h5", fas_sample[k] ) == TRUE )
+  {
+    ntpartition( position = c(1:1017), filedir = fas_sample[k], no = "-ha1.fasta")
+    ntpartition( position = c(1018:1683), filedir = fas_sample[k], no = "-ha2.fasta")
+    
+  }else
+  {
+    ntpartition( position = c(211:1347), filedir = fas_sample[k], no = "-nah.fasta")
+    ntpartition( position = c(1:210), filedir = fas_sample[k], no = "-nas.fasta")   
+  }
+}
+
+
+
+
+
+
+
+
 
 
 

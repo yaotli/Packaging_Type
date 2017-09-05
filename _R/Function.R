@@ -702,14 +702,18 @@ fastaEx <- function(filedir = file.choose())
 
 ### subfastaSeq --------------------------------
 
-subfastaSeq <- function(subtype = "H5N1", 
-                        time_s  =  1000,
-                        time_e  =  3000,
-                        filedir = file.choose(),
-                        invertedsubtype = FALSE, 
-                        AC      = FALSE, 
-                        AC_list = NA, 
-                        no = "")
+subfastaSeq <- function(subtype         = "H5N1", 
+                        time_s          =  1000,
+                        time_e          =  3000,
+                        filedir         = file.choose(),
+                        inverse.subtype = FALSE, 
+                        AC              = FALSE, 
+                        AC_list         = NA, 
+                        geo             = "all",
+                        inverse.geo     = FALSE, 
+                        host            = "all",
+                        inverse.host    = FALSE, 
+                        no              = "")
 {
   require(seqinr)
   require(stringr)
@@ -718,6 +722,40 @@ subfastaSeq <- function(subtype = "H5N1",
   
   seq_name0 <- attributes(file)$names
   seq0      <- getSequence(file)
+  
+  # terms ----------------
+  
+  nohuman  <- 
+    "avian|bird|wildbird|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|magpie|munia|myna|kestrel|peregrine|crow|sparrow|mesia|gull|egret|swan|shrike|buzzard|heron|Ph|quail|pheasant|grebe|starling|swallow|white_eye|swine|tiger"
+  
+  nomammal <- 
+    "avian|bird|wildbird|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|magpie|munia|myna|kestrel|peregrine|crow|sparrow|mesia|gull|egret|swan|shrike|buzzard|heron|Ph|quail|pheasant|grebe|starling|swallow|white_eye"
+  
+  N    <- 
+    "Shanxi|Hebei|Beijing|Jilin|Sheny|Liaoning|Heilongjiang|North_China"
+  
+  E    <-
+    "Shandong|Jiangsu|Huadong|Eastern_China|Fujian|Anhui|Shanghai|Zhejiang|Jiangxi|Nanchang"
+  
+  C    <- 
+    "Hunan|Hubei|Henan"
+  
+  S    <- 
+    "Hong_Kong|Shantou|Guangdong|GD|ST|Shenzhen|Guangzhou"
+  
+  SW   <- 
+    "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing"
+  
+  NW   <- 
+    "Ningxia|Xinjiang|Gansu|Qinghai|Shaanxi"
+  
+  host_string <- c( "nohuman", "nomammal", "all")
+  host_v      <- c( nohuman, nomammal, "")
+  geo_string  <- c( "N", "E", "C", "S", "SW", "NW", "all")
+  geo_v       <- c( N, E, C, S, SW, NW, "")
+  
+  host_key    <- grep( host, host_string )
+  geo_key     <- grep( geo, geo_string )
   
   # subtype 
   
@@ -747,15 +785,15 @@ subfastaSeq <- function(subtype = "H5N1",
   }else
   {
     
-    if( invertedsubtype == TRUE )
+    if( inverse.subtype == TRUE )
     {
-      subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
-                        x       = seq_name0, 
-                        invert  = TRUE)   
+      subtype_i <- grep( pattern = paste0("_", subtype, "_"), 
+                         x       = seq_name0, 
+                         invert  = TRUE)   
     }else
     {
-      subtype_i <- grep(pattern = paste0("_", subtype, "_"), 
-                        x       = seq_name0)        
+      subtype_i <- grep( pattern = paste0("_", subtype, "_"), 
+                         x       = seq_name0)        
     }
     
     
@@ -765,23 +803,45 @@ subfastaSeq <- function(subtype = "H5N1",
     
     time_i <- which(T_iso < time_e & T_iso > time_s)
     
+    # host & geo
+    
+    if (inverse.geo == TRUE)
+    {
+      g_i    <- grep( pattern = geo_v[ geo_key ], x = seq_name0, invert = TRUE)
+      
+    }else
+    {
+      g_i    <- grep( pattern = geo_v[ geo_key ], x = seq_name0)
+      
+    }
+    
+    if( inverse.host == TRUE ){
+      
+      h_i    <- grep( pattern = host_v[ host_key ], x = seq_name0, invert = TRUE, ignore.case = TRUE)
+      
+    }else
+    {
+      h_i    <- grep( pattern = host_v[ host_key ], x = seq_name0, ignore.case = TRUE) 
+      
+    }
+    
     # output 
     
-    remain   <- sort( intersect( subtype_i, time_i ) )
+    remain   <- sort( Reduce( intersect, list( subtype_i, time_i, h_i, g_i ) ) )
     
     filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fasta)")[,2]
     
     write.fasta(sequences = seq0[remain], 
                 names     = seq_name0[remain],
-                file.out  = paste0("./", filename, "_", subtype, "-", time_s, "-", time_e, ".fasta") )
+                file.out  = paste0("./", filename, "_", subtype, "-", time_s, "-", time_e,"_", host,"_", geo, "_", no, ".fasta") )
     
-    print( seq_name0[remain] )
+    print( paste0("no: ",length( remain ) ) )
     
     
   }
   
   
-  #v20170729
+  #v20170825
 }
 
 

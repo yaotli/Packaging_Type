@@ -3,6 +3,8 @@ library(stringr)
 library(ggtree)
 library(ape)
 library(dplyr)
+library(tidyr)
+
 
 source("~/Packaging_Type/_R/Function.R")
 setwd("/Volumes/EDGE 2/LoVE/ReassortSubtype/Ne/")
@@ -48,11 +50,6 @@ g234_ha_grid <-
                      xmax = 2007.849, 
                      xmin = 2005.558), color = "blue")
 
-  #geom_rect(data = rects, 
-  #          aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf, fill = col), 
-  #          alpha = 0.4) 
-  
-
 ## MRCA of Nx virus (rate_0818) ----------------
 
 rate_0818_log <- data.frame( method = c("strict_exp", "strict_skyride", "relaxed_exp", "relaxed_skyride"),
@@ -60,14 +57,18 @@ rate_0818_log <- data.frame( method = c("strict_exp", "strict_skyride", "relaxed
                              hpd_l  = c(2.2218, 2.2994, 1.7829, 1.9933),
                              hpd_u  = c(4.5126, 4.2755, 10.0257, 5.2335), stringsAsFactors = FALSE)
 
-ggplot(data = rate_0818_log, aes( x= method, y = 2010.071-median )) +
-  geom_point() +
+ggplot(data = rate_0818_log[-3,], aes( x= method, y = 2010.071-median, color = method)) +
+  geom_point(size = 4) +
   geom_errorbar( aes( ymin = 2010.071-hpd_l, ymax = 2010.071-hpd_u), width = 0.1) +
   coord_flip() + 
   xlab("") + ylab("") +
+  scale_color_manual(values = c("black", "blue", "black") ) + 
   scale_y_continuous(breaks = seq(2000,2008, by = 1)) +
-  theme_bw() + ggtitle("Inferred MRCA of Nx viruses") + 
-  theme( panel.grid.minor = element_blank(), panel.grid.major.y = element_blank() ) 
+  theme_bw() + #ggtitle("Inferred MRCA of Nx viruses") + 
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         text = element_text(size = 28, face = "bold"), 
+         legend.position = "none") 
   
 
 ## 234 NA ----------------
@@ -261,5 +262,193 @@ ggplot(data = na_meanRate, aes(x=c("232", "234", "7"), y = mean)) +
   theme_bw() + ggtitle("NA substitution rate")
 
 
+### prepare combined tree --------------------------------
+
+c("#FF4040", "#66CD00", "#000000")
+c("#4F94CD")
+rectdf <- data.frame( xstart = seq(2001, 2014, 2), xend = seq(2002, 2014, 2))
+
+ggtree(c234_ha_mcc, mrsd = "2012-12-21", color = "#FF4040", size = 1)  + theme_tree2() + 
+  scale_x_continuous(breaks = seq(2001, 2014, by=1), limit = c(2001, 2014)) + 
+  geom_rect(data = rectdf, 
+            aes(xmin = xstart, xmax = xend, 
+                ymin = -Inf, ymax = Inf), fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+ggtree(c232_ha_mcc, mrsd = "2013-11-18", color = "#66CD00", size = 1)  + theme_tree2() + 
+  scale_x_continuous(breaks = seq(2001, 2014, by=1), limit = c(2001, 2014)) + 
+  geom_rect(data = rectdf, 
+            aes(xmin = xstart, xmax = xend, 
+                ymin = -Inf, ymax = Inf), fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+ggtree(c7_ha_mcc, mrsd = "2013-02-26", size = 1)  + theme_tree2() + 
+  scale_x_continuous(breaks = seq(2001, 2014, by=1), limit = c(2001, 2014)) + 
+  geom_rect(data = rectdf, 
+            aes(xmin = xstart, xmax = xend, 
+                ymin = -Inf, ymax = Inf), fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+  
+### combined grid / ride --------------------------------
+
+c234_ha_grid <- read.table("./skygrid_0810/result_0810/clade234_h5_grid.csv", sep = "\t", header = T)
+c234_na_grid <- read.table("./skygrid_0810/result_0810/clade234_n1_grid.csv", sep = "\t", header = T)
+
+c232_ha_grid <- read.table("./skygrid_0810/result_0810/clade232_h5_grid.csv", sep = "\t", header = T)
+c232_na_grid <- read.table("./skygrid_0810/result_0810/clade232_n1_grid.csv", sep = "\t", header = T)
+
+c7_ha_grid   <- read.table("./skygrid_0810/result_0810/clade7_h5_grid.csv", sep = "\t", header = T)
+c7_na_grid   <- read.table("./skygrid_0810/result_0810/clade7_n1_grid.csv", sep = "\t", header = T)
+
+N5_8_ride    <- read.table("./rate_0818/result/strict_gmrf_n5", sep = "\t", header = T) 
 
 
+# HA 
+combined_ride_ha <- 
+ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 18), 
+         axis.title=element_text(size = 16,face="bold") ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  
+  xlab("") + ylab("Relative population size") +
+  
+  geom_line( data = c234_ha_grid, 
+             aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
+  geom_line( data = c232_ha_grid, 
+             aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+  geom_line( data = N5_8_ride, 
+             aes(x = Time, y = log(Median) ), color = "darkblue", size = 1) +
+  
+  #geom_line( data = c7_ha_grid, 
+  #           aes(x = Time, y = log(Median) ), color = "gray", size = 1.5) +
+  
+
+  geom_ribbon( data = c234_ha_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
+  geom_ribbon( data = c232_ha_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) +
+  
+  geom_ribbon( data = N5_8_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "blue", alpha = 0.1) 
+  
+  #geom_ribbon( data = c7_ha_grid, 
+  #             aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "gray", alpha = 0.1) 
+  
+
+# NA
+combined_ride_na <- 
+ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 18), 
+         axis.title=element_text(size = 16,face="bold") ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  scale_y_continuous(breaks = seq(-3, 5, by=2) ) +
+  
+  xlab("") + ylab("Relative population size") +
+  
+  geom_line( data = c234_na_grid, 
+             aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
+  geom_line( data = c232_na_grid, 
+             aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+  
+  #geom_line( data = c7_na_grid, 
+  #           aes(x = Time, y = log(Median) ), color = "gray", size = 1.5) +
+  
+  
+  geom_ribbon( data = c234_na_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
+  geom_ribbon( data = c232_na_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
+  
+  #geom_ribbon( data = c7_na_grid, 
+  #             aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "gray", alpha = 0.1) 
+
+
+
+multiplot(combined_ride_ha, combined_ride_na, ncol = 1)
+
+
+
+### mean rate dist --------------------------------
+
+rate_dist_234ha <- read.table("./skygrid_0810/result_0810/ratedist_ha_234.csv", sep = "\t", header = T)
+rate_dist_232ha <- read.table("./skygrid_0810/result_0810/ratedist_ha_232.csv", sep = "\t", header = T)
+rate_dist_7ha   <- read.table("./skygrid_0810/result_0810/ratedist_ha_7.csv", sep = "\t", header = T)
+rate_dist_n5    <- read.table("./skygrid_0810/result_0810/ratedist_ha_n5_strict_gmrf.csv", sep = "\t", header = T)
+
+rate_dist_234n1 <- read.table("./skygrid_0810/result_0810/ratedist_n1_234.csv", sep = "\t", header = T)
+rate_dist_232n1 <- read.table("./skygrid_0810/result_0810/ratedist_n1_232.csv", sep = "\t", header = T)
+rate_dist_7n1   <- read.table("./skygrid_0810/result_0810/ratedist_n1_7.csv", sep = "\t", header = T)
+
+# HA 
+
+ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         axis.ticks.y = element_blank(), 
+         panel.border = element_blank(),
+         axis.text.y = element_blank(), 
+         axis.text.x = element_text(size = 20)) +
+  
+  scale_x_continuous(limit = c(0., 0.008)) +
+  
+  xlab("") + 
+  
+  geom_ribbon( data = rate_dist_7ha, 
+               aes(x = clade7_h5, ymin = 0 , ymax = meanRate ), 
+               fill = "gray", alpha = 0.4) + 
+    
+  geom_ribbon( data = rate_dist_232ha, 
+               aes(x = clade232_h5, ymin = 0 , ymax = meanRate ), 
+               fill = "#2ca02c", alpha = 0.4) + 
+  
+  geom_ribbon( data = rate_dist_234ha, 
+               aes(x = clade234_h5, ymin =  0, ymax = meanRate ), 
+               fill = "#d62728", alpha = 0.4) + 
+  
+  geom_ribbon( data = rate_dist_n5, 
+               aes(x = h5_n5, ymin =  0, ymax = meanRate ), 
+               fill = "blue", alpha = 0.1) 
+  
+# NA 
+
+ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         axis.ticks.y = element_blank(), 
+         panel.border = element_blank(),
+         axis.text.y = element_blank(), 
+         axis.text.x = element_text(size = 20)) +
+  
+  scale_x_continuous(limit = c(0., 0.008)) +
+  
+  xlab("") + 
+  
+  geom_ribbon( data = rate_dist_7n1, 
+               aes(x = clade7_n1, ymin = 0 , ymax = meanRate ), 
+               fill = "gray", alpha = 0.4) + 
+  
+  geom_ribbon( data = rate_dist_232n1, 
+               aes(x = clade232_n1, ymin = 0 , ymax = meanRate ), 
+               fill = "#2ca02c", alpha = 0.4) + 
+  
+  geom_ribbon( data = rate_dist_234n1, 
+               aes(x = clade234_n1, ymin =  0, ymax = meanRate ), 
+               fill = "#d62728", alpha = 0.4)
+  
+  
+
+
+
+
+
+
+
+  

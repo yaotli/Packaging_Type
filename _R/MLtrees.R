@@ -128,6 +128,6 @@ c7_t <-
   geom_tippoint(aes(fill = region), color = "black", size = 2.5, stroke = 0.5, shape = 21) + 
   scale_fill_manual(values = c("darkorange4", "darkorange", "gray60", "forestgreen", "chartreuse2") ) + 
   theme(legend.position = "right") + 
-  geom_treescale(x = 0, y = 20, offset = 1.5) +
+  geom_treescale(x = 0, y = 10, offset = 1.5) +
   geom_text( aes(label = host_i), color = "white")
 
