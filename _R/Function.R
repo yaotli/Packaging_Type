@@ -23,12 +23,12 @@ phylo_date <- function(x)
                                )/365
   
   # bug?
-  if ( is.na(daydifference) )
+  if ( TRUE %in% is.na(daydifference) )
   {
-    x   <- sub(pattern = "01", replacement = "02", x)
+    x   <- sub(pattern = "01$", replacement = "02", x)
     
-    daydifference <- as.numeric( difftime( strptime(x, format = "%Y-%m-%d"),
-                                           strptime(yr.0, format = "%Y-%m-%d"), 
+    daydifference <- as.numeric( difftime( strptime( x, format = "%Y-%m-%d"),
+                                           strptime( yr.0, format = "%Y-%m-%d"), 
                                            units = "days"
                                            )
                                  )/365
@@ -39,7 +39,7 @@ phylo_date <- function(x)
   
   return(yr.daydifference)
   
-  #v20170614
+  #v20170908
 }
   
 
@@ -636,7 +636,7 @@ keepLongSeq <- function(seq_0,
 {
   library(seqinr)
   
-  if( length( which( duplicated(id_0) == TRUE) ) )
+  if( length( which( duplicated(id_0) == TRUE) ) > 0  )
   {
     toberemove <- c()
     dup        <- which( duplicated(id_0) == TRUE)
@@ -663,7 +663,8 @@ keepLongSeq <- function(seq_0,
       toberemove <- c(toberemove, id_dup_k[-SeqL])  
     }
     
-    remain <- seq(1, length(seq_0))[-toberemove]
+    toberemove <- unique( sort(toberemove) )
+    remain     <- seq(1, length(seq_0))[-toberemove]
     
     if (showRemain == TRUE)
     {
@@ -681,7 +682,7 @@ keepLongSeq <- function(seq_0,
     print("No identical ID here")
   }
   
-  #v201706
+  #v20170907
 }
 
 ### fastaEx --------------------------------
