@@ -2,6 +2,8 @@ library(seqinr)
 library(stringr)
 library(ggtree)
 library(ape)
+library(tidyverse)
+library(ggjoy)
 
 
 setwd("~/Desktop/data_souce/")
@@ -100,7 +102,7 @@ allh5_n_id  <- fastaEx( fas_allh5_n )$id
 a.string.n   <- "[A-Z]{1,2}[0-9]{5,6}"
 s.g.string.n <- "_(H5[N0-9]{0,2})_\\|([a-zA-Z_\\']+)\\|"
 y.string.n   <- "_[0-9]{4}-[0-9]{2}-[0-9]{2}|_[0-9]{4}-[0-9]{2}-|_[0-9]{4}--|_--"
-n.Nstring.g  <- "[A-Z]{1,2}[0-9]{5,6}_|_(H5[N0-9]{0,2})_\\|([a-zA-Z_\\']+)\\||_([0-9]{4}[-0-9]{2,6})"
+n.Nstring.n  <- "[A-Z]{1,2}[0-9]{5,6}_|_(H5[N0-9]{0,2})_\\|([a-zA-Z_\\']+)\\||_([0-9]{4}[-0-9]{2,6})"
 
 # accession number
 allh5_n_id_ac   <- str_match( string = allh5_n_id, 
@@ -131,7 +133,7 @@ allh5_n_id_year <- gsub( pattern = "^_",
                          
 
 # strain name 
-allh5_n_id_name <- gsub( pattern = n.Nstring.g, x = allh5_n_id, 
+allh5_n_id_name <- gsub( pattern = n.Nstring.n, x = allh5_n_id, 
                          replacement = "")
 
 allh5_n_id_name[ which( startsWith(allh5_n_id_name, "A/") == FALSE) ] <- 
@@ -262,9 +264,9 @@ gsub( pattern     = "_\\(Day_unknown\\)",
 c_allh5_year <-
 gsub( pattern     = "-$", 
       replacement = "-15", 
-      x           = gsub( pattern = "--$", 
-                      replacement = "-07-01", 
-                      x           = c_allh5_year)   ) 
+      x           = gsub( pattern     = "--$", 
+                          replacement = "-07-01", 
+                          x           = c_allh5_year)   ) 
 
 
           
@@ -355,17 +357,212 @@ write.fasta( sequences = u_allh5_seq,
 
 ### tree and clade annotation --------------------------------
 
-system("mafft curated_allh5_7368.fasta > align_allh5_7368.fasta")
+# mafft
 
-system("mkdir aligntrim_allh5")
-system("mv align_allh5_7368.fasta aligntrim_allh5/align_allh5_7368.fasta")
+system("mafft --reorder curated_allh5_7368.fasta > o_align_allh5_7368.fasta")
 
-# manuall trim in BioEdit (lth = 1677)
+# manuall trim in BioEdit & Seqotron (final lth. = 1683)
 # Fasttree
 
-system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./aligntrim_allh5/trim_allh5_7368_lth1677.fasta> ./tree/allh5_7368.tre")
+system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./aligntrim_allh5/o_trim2_allh5_7368_lth1683.fasta> ./tree/allh5_7368_lth1683.tre")
 
-# manual extract GsGD 
+
+# manual extract GsGD lineages
+# eliminate 2 sequence with apparent wrong phylogenetic inferences
+# KT936697_common_teal_Shanghai_PD1108_8_2013_China_H5N1_2013.852
+# KT936701_common_teal_Shanghai_PD1108_4_2013_China_H5N1_2013.852
+
+
+subtreseq( seq_filedir  = "./aligntrim_allh5/o_trim2_allh5_7368_lth1683.fasta", 
+           list_filedir = "./Tree/allh5_GsGDlike_6324_2.txt" )
+
+# re-Fasttree
+
+system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./tree/allh5_GsGDlike_6322.fasta> ./tree/allh5_GsGDlike_6322.tre")
+
+
+
+### GsGD global circulation --------------------------------
+
+trefile_GsGDlike_clade <- "./Tree/allh5_GsGDlike_6322_clade.tre"
+
+# readin
+
+GsGDlike_raw <- read.csv( trefile_GsGDlike_clade, stringsAsFactors = FALSE)
+
+taxa.s <- grep( x = GsGDlike_raw[,1], pattern = "taxlabels" ) + 1
+ntax   <- 
+  as.numeric( str_match( grep( x       = GsGDlike_raw[,1], 
+                               pattern = "ntax", value = TRUE) , "(ntax=)([0-9]+)")[,3] 
+            )
+
+taxa.e <- taxa.s + ntax - 1
+
+GsGDlike_name <- str_match( string = GsGDlike_raw[, 1][taxa.s: taxa.e], 
+                            pattern = "\'([0-9A-Za-z_.]+)\'")[,2]
+
+GsGDlike_tag  <- str_match( string = GsGDlike_raw[, 1][taxa.s: taxa.e], 
+                            pattern = "color=#([a-z0-9]{6})")[, 2]
+
+temp.tag      <- as.data.frame( table(GsGDlike_tag), stringsAsFactors = FALSE )[,1]
+temp.c        <- c( "8-9", "2.3.4", "1", "2.3.2", "7",
+                    "2.3.1", "pGSGD", "2.4", "2.3.3", "0",
+                    "5-6", "2.5", "2.3", "3", "4",
+                    "2.1", "2", "2.2")
+  
+GsGDlike_clade = c()
+
+for( i in 1: length(GsGDlike_tag) )
+{
+  GsGDlike_clade[i] <- temp.c[ match( GsGDlike_tag[ i ], temp.tag ) ]
+}
+
+
+clade.string.gsy   <- "_([A-Z]+[a-zA-Z_]+)_(H5N[0-9]{1,2})_([0-9]{4}\\.[0-9]{1,3})"
+clade.string.ac    <- "[A-Z]{1,2}[0-9]{5,6}|EPI[0-9]+"
+
+GsGDlike_name_geo  <- str_match( string = GsGDlike_name, pattern = clade.string.gsy )[, 2]
+GsGDlike_name_geo[which(GsGDlike_name_geo == "Unknown")] = 
+gsub(pattern = "Unknown", replacement = "Egypt",  x = GsGDlike_name_geo[which(GsGDlike_name_geo == "Unknown")])
+
+
+GsGDlike_name_sero <- str_match( string = GsGDlike_name, pattern = clade.string.gsy )[, 3]
+GsGDlike_name_year <- as.numeric( str_match(string = GsGDlike_name, pattern = clade.string.gsy )[, 4] )
+GsGDlike_name_ac   <- str_match( string = GsGDlike_name, pattern = clade.string.ac )[,1]
+
+GsGDlike_table     <- data.frame( GsGDlike_name_ac, GsGDlike_name_sero, GsGDlike_name_geo, 
+                                  GsGDlike_name_year, GsGDlike_clade, GsGDlike_name,
+                                  stringsAsFactors = FALSE)
+
+
+## joy plot  ----------------
+
+# prepare data 
+
+GsGDlike_table_t = 
+GsGDlike_table                                                                             %>% 
+  filter( GsGDlike_clade != "pGSGD" )                                                      %>%
+  filter( GsGDlike_name_sero != "H5N0" )                                                   %>%
+  select( GsGDlike_name_sero, GsGDlike_name_year, GsGDlike_name_geo, GsGDlike_clade)       %>%
+  mutate( China = ifelse( GsGDlike_name_geo == "China" | GsGDlike_name_geo == "Hong_Kong", 
+                          "China", "Other countries") )                                    %>%
+  mutate( Serotype = ifelse( GsGDlike_name_sero == "H5N1", "N1", "Nx") )                   
+  
+  Clade = GsGDlike_table_t$GsGDlike_clade
+
+  for(k in 1: length(Clade))
+  {
+    if( Clade[k] == "2.4" ){ Clade[k] = "2"}
+    if( Clade[k] == "2.5" ){ Clade[k] = "2"}
+    if( Clade[k] == "2.3" ){ Clade[k] = "2"}
+    
+    if( Clade[k] == "2.3.3" ){ Clade[k] = "2.3.4" }
+    if( Clade[k] == "2.3.1" ){ Clade[k] = "2.3.2" }
+    
+    if( Clade[k] == "3" ){ Clade[k] = "Old" }
+    if( Clade[k] == "4" ){ Clade[k] = "Old" }
+    if( Clade[k] == "5-6" ){ Clade[k] = "Old" }
+    if( Clade[k] == "8-9" ){ Clade[k] = "Old"}
+  }
+    
+GsGDlike_table_f <- data.frame( Serotype = GsGDlike_table_t$Serotype, 
+                                Geo      = GsGDlike_table_t$China, 
+                                Clade    = Clade, 
+                                Year     = GsGDlike_table_t$GsGDlike_name_year )
+
+
+GsGDlike_table_f$Year = str_match( GsGDlike_table_f$Year, pattern = "[0-9]{4}" )[,1]
+
+GsGDlike_table_f <- data.frame( table( GsGDlike_table_f), stringsAsFactors = FALSE)
+GsGDlike_table_f$Year  = as.numeric( as.character( GsGDlike_table_f$Year ) )
+GsGDlike_table_f$Clade = factor(GsGDlike_table_f$Clade, 
+                                levels = c("0", "Old", "1", "2", "2.1", 
+                                           "2.2", "7","2.3.2", "2.3.4") )
+
+GsGDlike_table_f$Clade <- gsub( pattern = "Old", replacement = "3", x = GsGDlike_table_f$Clade)
+GsGDlike_table_f$Clade = factor(GsGDlike_table_f$Clade, 
+                                levels = c("0", "3", "1", "2", "2.1", 
+                                           "2.2", "7","2.3.2", "2.3.4") )
+
+
+# ggjoy
+
+ggplot( GsGDlike_table_f, aes(x = Year-1996, y = Clade, height = Freq, fill = Serotype) ) + 
+geom_joy( stat = "identity", scale = 3, alpha = 0.8 ) + 
+facet_wrap(~ Geo) +
+scale_x_continuous( breaks = seq(0, 21, by = 2), labels = seq(1996, 2017, by = 2), 
+                    limit = c(0, 21)) + 
+  
+scale_y_discrete( expand = c(0.001, 0)) +
+scale_fill_cyclical( values = c("#2ca02c", "#d62728"), guide = "legend") + 
+theme_minimal() + 
+theme( panel.grid.major.y =  element_blank(), 
+       panel.grid.minor.x =  element_blank(), 
+       strip.background = element_rect(fill="white", color = "white"), 
+       text = element_text(family = "Helvetica"),
+       strip.text.x     = element_text(size = 20), 
+       axis.text.y      = element_text(size = 20), 
+       legend.position = c(0,1) ) +
+labs(x = "", y = "")
+
+# ggsave("a.pdf", width = 8, height = 6)
+
+
+## Root-to-tip plot ----------------
+
+trefile_GsGDlike_nwk <- "./Tree/allh5_GsGDlike_6322_nwk"
+  
+GsGDlike_tree     <- read.tree( trefile_GsGDlike_nwk )
+GsGDlike_treedata <- fortify( GsGDlike_tree )
+rootnode          <- length( GsGDlike_tree$tip.label ) + 1
+
+GsGDlike_dis      <- dist.nodes( GsGDlike_tree )[rootnode, 1: (rootnode - 1)]
+GsGDlike_tree_id  <- gsub("'", "", GsGDlike_treedata$label[1: rootnode - 1 ])
+
+GsGDlike_table    <- cbind( GsGDlike_table, 
+                            Divergence = GsGDlike_dis[ match(GsGDlike_table$GsGDlike_name, GsGDlike_tree_id) ] )
+
+
+# plot 
+
+ggplot() + 
+  theme_bw() + 
+  xlab("") + ylab("Root-to-tip divergence (sub./site)") + 
+  
+  scale_x_continuous( limits = c(2000, 2016),
+                      breaks = seq(2000, 2016, by = 2),
+                      labels = seq(2000, 2016, by = 2) ) +
+  # all
+  geom_point( data = GsGDlike_table[ which(GsGDlike_table$GsGDlike_name_geo == "China" | 
+                                             GsGDlike_table$GsGDlike_name_geo == "Hong_Kong"), ],
+              
+              aes(x = GsGDlike_name_year, y = Divergence), color = "gray", size = 3, alpha = 0.2, stroke = 0) + 
+  
+  # 2.3.4
+  geom_point( data = GsGDlike_table[ which( ( GsGDlike_table$GsGDlike_name_geo   == "China" | 
+                                              GsGDlike_table$GsGDlike_name_geo   == "Hong_Kong") &
+                                              GsGDlike_table$GsGDlike_clade      == "2.3.4" & 
+                                              GsGDlike_table$GsGDlike_name_sero  == "H5N1" ), ],
+              
+              aes(x = GsGDlike_name_year, y = Divergence), color = "#d62728", size = 3, alpha = 0.8, stroke = 0) +
+  
+  # 2.3.2
+  geom_point( data = GsGDlike_table[ which( ( GsGDlike_table$GsGDlike_name_geo   == "China" | 
+                                              GsGDlike_table$GsGDlike_name_geo   == "Hong_Kong") &
+                                              GsGDlike_table$GsGDlike_clade      == "2.3.2" ), ],
+              
+              aes(x = GsGDlike_name_year, y = Divergence), color = "#2ca02c", size = 3, alpha = 0.4, stroke = 0) + 
+  
+  # 2.2
+  geom_point( data = GsGDlike_table[ which( ( GsGDlike_table$GsGDlike_name_geo   == "China" | 
+                                              GsGDlike_table$GsGDlike_name_geo   == "Hong_Kong") &
+                                              GsGDlike_table$GsGDlike_clade      == "2.2" ), ],
+              
+              aes(x = GsGDlike_name_year, y = Divergence), color = "#ff7f0e", size = 3, alpha = 0.4, stroke = 0) 
+
+
+
+
 
 
 
