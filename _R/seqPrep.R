@@ -502,3 +502,7 @@ tree$tip.label[dup] = paste0(tree$tip.label[dup], "_1")
 write.tree(tree, "./n1clean.tre")
 
 
+
+
+
+
