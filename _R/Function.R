@@ -310,7 +310,7 @@ findtaxa <- function(type,
                      tree, 
                      targetid, 
                      target)
-  {
+{
   
   # type 1 = branch coloring 
   # type 0 = tip shape
@@ -328,103 +328,94 @@ findtaxa <- function(type,
   # for tip shape
   
   if (type == 0)
+  {
+    
+    shapetaxa <- data.frame( node   = c( 1:length( tree.d$isTip ) ), 
+                             shapee = NA)
+    
+    for (i in 1: length(targetid) )
     {
-    
-    shapetaxa <- data.frame(node = c(1:length(tree.d$isTip)), shapee = NA)
-    
-    for (i in 1: length(targetid))
-      {
       shapetaxa$shapee[  grep(  tolower( targetid[i] ), tolower(tree.d$taxaid) ) ] <- target[i]
-  
-      }
+    }
     
     return(shapetaxa)
     
-    }else {
+  }else {
     
     # for branch colorring  
-      
-    # new column
     
+    # new column
     tree.d[, ncol(tree.d) + 1]     <- "black"
     colnames(tree.d)[ncol(tree.d)] <- "colorr"
     
     # for branch extension
-    
-    edgematrix <- as.matrix(tree.d[,c(2,1)])
+    edgematrix <- as.matrix( tree.d[,c(2,1)] )
     
     # color grouping 
+    group_color <- unique( target )
     
-    group_color <- unique(target)
-    
-    for (i in 1: length(group_color) )
-      {
+    for ( i in 1: length( group_color ) )
+    {
       
       # color as group to combine key word to targetno
-      
-      sub_color <- which(target == group_color[i] )
+      sub_color <- which( target == group_color[i] )
       targetno  <- c()
       
-      for (t in 1: length(sub_color) )
-        {
-        
+      for ( t in 1: length( sub_color ) )
+      {
         targetno <- 
-          unique( c(targetno, grep( tolower( targetid[ sub_color[t] ] ), tolower(tree.d$taxaid) )) )
+          unique( c( targetno, grep( tolower( targetid[ sub_color[t] ] ), 
+                                     tolower( tree.d$taxaid ) )
+          ) )
+      }
       
-        }
-      
-      tobecolor     <- c()
-      pre_targetno  <- length(targetno)
+      pre_targetno  <- length( targetno )
       post_targetno = 0
       
       # while loop 
       
       while( pre_targetno != post_targetno )
+      {
+        
+        pre_targetno = length( targetno )
+        
+        for( k in 1: length(targetno) )
         {
-        
-        pre_targetno = length(targetno)
-        
-        for(k in 1:length(targetno))
-          {
-          
           # all sibiling 
-          sibs <- edgematrix[
-            which(edgematrix[,1] == 
-                    edgematrix[which(edgematrix[,2] == targetno[k]),][1]),][,2]
+          sibs <- as.integer( edgematrix[ 
+            which( edgematrix[,1] == 
+                     edgematrix[ which( edgematrix[,2] == targetno[k] ), ][1] ),][,2] )
           
-          if (length(sibs) == 1)
+          if ( length( sibs ) == 1 )
+          {
+            targetno = c( targetno, as.integer( edgematrix[which( edgematrix[,2] == targetno[k]), ][1] ) )
+            
+          }else{
+            
+            if ( length( which(! sibs %in% targetno ) ) == 0 )
             {
-            
-            targetno = c(targetno, edgematrix[which(edgematrix[,2] == targetno[k]),][1])
-            
-            }else{
-            
-            if (length(which(sibs %in% targetno == "FALSE")) == 0){
-              
-              tobecolor = c(edgematrix[which(edgematrix[,2] == targetno[k]),][1], tobecolor)
-              targetno  = c(targetno, edgematrix[which(edgematrix[,2] == targetno[k]),][1])
+              # add parent no
+              targetno = c( targetno, as.integer( edgematrix[which( edgematrix[,2] == targetno[k]),][1] ) )
             }
-            
           }
-          targetno  = unique(targetno)
-          tobecolor = unique(c(targetno, tobecolor))
-        
-          }
+          
+          targetno = unique( targetno )
+        }
         
         post_targetno = length(targetno)
         
-        }
+      }
       
       # coloring
       
-      tree.d$colorr[tobecolor] <- group_color[i]
+      tree.d$colorr[targetno] <- group_color[i]
       
-      }
+    }
     return(tree.d)    
     
   }
-  #v201706
-  }
+  #v20170929
+}
 
 
 ### subtreeseq --------------------------------
