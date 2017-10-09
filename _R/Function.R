@@ -723,16 +723,16 @@ subfastaSeq <- function( subtype         = "H5N1",
     "Shanxi|Hebei|Beijing|Jilin|Sheny|Liaoning|Heilongjiang|North_China"
   
   E    <-
-    "Shandong|Jiangsu|Huadong|Eastern_China|Fujian|Anhui|Shanghai|Zhejiang|Jiangxi|Nanchang"
+    "Shandong|Jiangsu|Huadong|Eastern_China|Fujian|Anhui|Shanghai|Zhejiang|Jiangxi|JX|Nanchang|Zaozhuang|Dongtai|Xuzhou|Danyang|Yangzhou"
   
   C    <- 
-    "Hunan|Hubei|Henan"
+    "Hunan|Hubei|Henan|Changsha"
   
   S    <- 
     "Hong_Kong|Shantou|Guangdong|GD|ST|Shenzhen|Guangzhou"
   
   SW   <- 
-    "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing"
+    "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing|Anning|Dali|TongHai"
   
   NW   <- 
     "Ningxia|Xinjiang|Gansu|Qinghai|Shaanxi"
@@ -831,7 +831,7 @@ subfastaSeq <- function( subtype         = "H5N1",
   }
   
   
-  #v20170926
+  #v20171009
 }
 
 
@@ -967,7 +967,9 @@ idInfo <- function( rawid,
     id.a <- gsub("_ISL_", "", str_match( rawid, a.string.g )[, 1] )
     
     id.s <- str_match( rawid, s.string.g )[,2] 
-    id.s[ which(id.s == "H5|H5Nx|H5NX")  ] = "H5N0"
+    id.s[ which( id.s == "H5"|
+                 id.s == "H5Nx"|
+                 id.s == "H5NX")  ] = "H5N0"
     
     id.y <- str_match( rawid, y.string.g )
     id.y <- gsub( "^_", "", x = id.y)[,1]
@@ -998,7 +1000,9 @@ idInfo <- function( rawid,
     id.a <- str_match( rawid, a.string.n)[,1]
     
     id.s <- str_match( rawid, s.g.string.n)[,2]
-    id.s[ which(id.s == "H5|H5Nx|H5NX")  ] = "H5N0"
+    id.s[ which( id.s == "H5"|
+                 id.s == "H5Nx"|
+                 id.s == "H5NX")  ] = "H5N0"
     
     id.g <- str_match( rawid, s.g.string.n)[,3]
     id.g[ which( id.g == "Viet_Nam") ] = "Vietnam"
@@ -1037,7 +1041,7 @@ idInfo <- function( rawid,
   
   return(infolist)
   
-  #v20170920b
+  #v20171003
 }
 
 
@@ -1379,9 +1383,10 @@ rmDup <- function( fasfile = file.choose(),
 
 ### extract id info --------------------------------
 
-taxaInfo <- function( file    = file.choose(), 
-                      useTree = FALSE, 
-                      makecsv = FALSE )
+taxaInfo <- function( file     = file.choose(), 
+                      useTree  = FALSE, 
+                      makecsv  = FALSE, 
+                      root2tip = FALSE)
 {
   # input: 
   # 1 colored .tre file
@@ -1389,10 +1394,14 @@ taxaInfo <- function( file    = file.choose(),
   
   require(seqinr)
   require(stringr)
+  require(ape)
+  require(ggtree)
   
   if ( useTree )
   {
     anno.tre <- read.csv( file, stringsAsFactors = FALSE)
+    nex      <- read.nexus( file )
+    
     taxa.s   <- grep( "taxlabels", anno.tre[,1] ) + 1
     
     ntax     <- as.numeric( str_match( grep( "ntax", anno.tre[,1],  value = TRUE ), 
@@ -1409,12 +1418,48 @@ taxaInfo <- function( file    = file.choose(),
     id.y <- as.numeric( str_match( id, "_([0-9]{4}.[0-9]{3})$")[,2] )  
     id.n <- gsub("^[A-Z]{1,2}[0-9]{5,6}_|^EPI[0-9]+_|_\\|[A-Za-z_]+\\|_|H5N[0-9]{1,2}_[0-9]{4}.[0-9]{3}$", "", id)
     
-    
     ls <- list( id.a, id.g, id.s, id.y, id.n, id, tag)
     df <- data.frame( id.a, id.g, id.s, id.y, id.n, id, tag )
     
+    if( TRUE %in% is.na(unlist( ls[c(1:6)] ) ) ){ stop() }
     
-    if( TRUE %in% is.na(unlist( ls[c(1:6)] ) ) ){ Stop() }
+    if( root2tip )
+    {
+      # distance max
+      
+      nexdata   <- fortify( nex )
+      root.node <- length( nex$tip.label ) + 1
+      root.dist <- dist.nodes( nex )[ root.node, 1: (root.node - 1) ]
+      tre.id    <- gsub("'", "", nex$tip.label[ 1: root.node - 1])
+      
+      m <- match( tre.id, id )
+      
+      dist.df <- data.frame( name = id[m], geo = id.g[m], sero = id.s[m], year = id.y[m], 
+                             root.dist, stringsAsFactors = FALSE)
+      
+      lm.tre <- lm( dist.df$root.dist ~ dist.df$year) 
+      
+      plot( dist.df$year, dist.df$root.dist ) 
+      abline(lm.tre) 
+      text( x = dist.df$year, y = dist.df$root.dist, labels = rownames(dist.df), cex = 0.5, pos = 3)
+      
+      out <- sort( lm.tre$residuals, index.return = TRUE, decreasing = TRUE )$ix[1: floor(1/10*( ntax) ) ]
+      
+      nexdata[, ncol(nexdata) + 1]             = NA
+      colnames( nexdata )[ length( nexdata ) ] = "shapee"
+      nexdata$shapee[ out ] = colorRampPalette( c("red", "white") )( length(out) )
+      
+      p = ggtree(nex, right = TRUE) %<+% nexdata + geom_tippoint( aes(color = I(shapee)), size = 3, alpha = 0.9) 
+      print(p)
+      lm.max <- list( R.sq    = summary( lm.tre )$r.squared, 
+                      slope   = summary( lm.tre )$coefficients[2,1],
+                      outlier = data.frame(o1 = dist.df$name[out], o2 = out),
+                      df      = dist.df
+      )
+      
+      ls[[ length(ls) + 1 ]] = lm.max
+      
+    }
     
     
   }else
@@ -1435,7 +1480,7 @@ taxaInfo <- function( file    = file.choose(),
                        y = c2s(x)
                        z = gsub("-|~", "", y)
                        z = grep( pattern = "a|t|c|g", 
-                                 x = y, 
+                                 x = z, 
                                  ignore.case = TRUE, value = TRUE )
                        l = length( s2c(z) )
                        
@@ -1445,7 +1490,7 @@ taxaInfo <- function( file    = file.choose(),
     ls <- list( id.a, id.g, id.s, id.y, id.n, id, seq.l)
     df <- data.frame( id.a, id.g, id.s, id.y, id.n, id, seq.l )
     
-    if( TRUE %in% is.na(unlist( ls[c(1:6)] ) ) ){ Stop() }
+    if( TRUE %in% is.na(unlist( ls[c(1:6)] ) ) ){ stop() }
     
   }
   
@@ -1453,5 +1498,228 @@ taxaInfo <- function( file    = file.choose(),
   
   return( ls )
   
-  #v20170928v
+  #v20171006v
 }
+
+### cladeSampling --------------------------------
+
+cladeSampling <- function( trefile      = file.choose(),
+                           fasfile      = file.choose(),
+                           listinput    = list(),
+                           seed         = 666,
+                           grid         = 1,
+                           minBranchlth = TRUE, 
+                           showTree     = FALSE, 
+                           saveFasta    = FALSE,  
+                           suppList     = FALSE,
+                           list.x       = c("id", "y", "geo") )
+{
+  require( ape )
+  require( seqinr )
+  require( ggtree )
+  require( stringr )
+  
+  # getdescendants
+  getDes <- function( node, curr = NULL )
+  {
+    if( is.null(curr) ){ curr <- vector() }
+    
+    edgemax   <- tre.d[ c(2,1) ]
+    daughters <- edgemax[which( edgemax[,1] == node ), 2]
+    
+    curr <- c(curr, daughters)
+    nd   <- which( daughters >= length( which( tre.d$isTip )) )
+    
+    if( length(nd) > 0)
+    {
+      for(i in 1:length(nd) ){ curr <- getDes( daughters[ nd[i] ], curr ) }
+    }
+    return(curr)
+  }
+  
+  
+  nex <- read.nexus( trefile )
+  fas <- read.fasta( fasfile )
+  seq <- getSequence( fas )
+  id  <- attributes( fas )$names
+  
+  tre.d   <- fortify( nex )
+  N.tip   <- length( which( tre.d$isTip ) )
+  N.node  <- nwk$Nnode
+  edgemax <- tre.d[ c(2,1) ]
+  
+  
+  t.id <- gsub("'", "", tre.d$label)
+  
+  if( suppList )
+  {
+    
+    tem.m  <- match( t.id[ 1:  N.tip], listinput[[ list.x[1] ]])
+    
+    if( TRUE %in% is.na(tem.m) ){stop()}
+    
+    i.id.y <- listinput[[ list.x[2] ]][ tem.m ]
+    i.id.g <- listinput[[ list.x[3] ]][ tem.m ]
+    
+  }else
+  {
+    i.id.y <- as.numeric( str_match( t.id, "_([0-9]{4}\\.[0-9]+)$")[,2] )
+    i.id.g <- str_match( t.id, "\\|([A-Za-z_]+)\\|")[,2]  
+  }
+  
+  # 1st search for node with homogeneous descendants 
+  inner.node <- seq( 1, dim(tre.d )[1])[ - seq(1, N.tip+1) ]
+  c1.node    <- inner.node[ which( sapply( as.list(inner.node), 
+                                           function(x)
+                                           {
+                                             all <- getDes(x)[ getDes(x) <= N.tip ]
+                                             r   <- range( i.id.y[all])[2] - range(i.id.y[all] )[1]
+                                             g   <- unique( i.id.g[all] )
+                                             return( (r <= grid) & ( length( g ) == 1 ) )
+                                           } )) 
+                            ]
+  # reduce redndant nodes
+  c2.node    <- c1.node[ which( sapply( as.list(c1.node), 
+                                        function(x)
+                                        {
+                                          if( edgemax[,1][ which( edgemax[,2] == x) ] %in% c1.node )
+                                          {
+                                            return( FALSE )
+                                            
+                                          }else
+                                          {
+                                            return( TRUE )
+                                          }
+                                          
+                                        } )
+  )  
+  ] 
+  
+  c2.node_des <- c( c2.node, unlist( sapply( as.list(c2.node), getDes) ) )
+  c2.node_tip <- c2.node_des[ c2.node_des <= N.tip ]
+  nogroup_tip <- seq(1, N.tip)[ - c2.node_tip ]
+  
+  # sample within a group
+  if( minBranchlth )
+  {
+    selected_tip <- sapply( as.list(c2.node), 
+                            function(x)
+                            {
+                              alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              m      <- which.min( tre.d$x[ alltip ] )
+                              
+                              if( length( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ) )  > 1 )
+                              {
+                                set.seed( seed ) 
+                                s = sample( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ), 1 )
+                                
+                              }else
+                              {
+                                s = m
+                              }
+                              return( alltip[s] )
+                            })
+    
+  }else
+  {
+    selected_tip <- sapply( as.list(c2.node), 
+                            function(x)
+                            {
+                              set.seed( seed ) 
+                              s = sample( getDes(x)[ getDes(x) <= N.tip ], 1)
+                              return(s)
+                              
+                            } 
+    )
+  }  
+  
+  if( showTree )
+  {
+    # view the result
+    tre.d[, ncol(tre.d) + 1 ] = "gray"
+    colnames(tre.d)[ ncol(tre.d) ] = "colorr"
+    tre.d$colorr[c2.node_des] = "red"
+    
+    tre.d[, ncol(tre.d) + 1 ] = NA
+    colnames(tre.d)[ ncol(tre.d) ] = "shapee"
+    tre.d$shapee[selected_tip] = 16
+    
+    g1 <- ggtree( nwk ) %<+% tre.d + aes(color = I(colorr)) + geom_tiplab(size = 1)
+    g1 + geom_tippoint(aes( shape = factor(shapee) ), size = 2)
+  }
+  
+  remain <- c( nogroup_tip, selected_tip )
+  seq.o  <- seq[ match( t.id[ sort(remain) ], id) ]
+  id.o   <- id[ match( t.id[ sort(remain) ], id) ]
+  
+  if( saveFasta )
+  {
+    write.fasta( seq.o, id.o, 
+                 file.out = gsub( ".fasta", "_s.fasta", fasfile) )
+  }
+  
+  print( paste0("sampled n = ", length(remain), " from ", length(id) ) )
+  print( table( floor( i.id.y[remain] ), i.id.g[remain]) )
+  
+  
+  #v20171005b
+}
+
+
+
+### geoID --------------------------------
+
+
+geoID <- function( strings, 
+                   SEA  = SEA,
+                   nA   = nA,
+                   E    = E, 
+                   host = FALSE)
+{
+  cn.N  <- "Shanxi|Hebei|Beijing|Jilin|Sheny|Liaoning|Heilongjiang|North_China|Huabei"
+  cn.E  <- "Shandong|Jiangsu|Huadong|Eastern_China|Fujian|Anhui|Shanghai|Zhejiang|Jiangxi|Nanchang|Gaoyou|Zhaozhuang|Dongtai|Xuzhou|Danyang|Yangzhou"
+  cn.C  <- "Hunan|Hubei|Henan|Changsha|Chang_Sha"
+  cn.S  <- "Hong_Kong|Shantou|Guangdong|Shenzhen|Guangzhou"
+  cn.SW <- "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing|Anning|Dali|TongHa"
+  cn.NW <- "Ningxia|Xinjiang|Gansu|Qinghai|Shaanxi"
+  SEA   <- "Bangladesh|Laos|Malaysia|Myanmar|Thailand|Vietnam|India|Nepal"
+  nA    <- "Japan|Mongolia|Russia|South_Korea"
+  E     <- "Bulgaria"
+  
+  nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane"
+  
+  
+  geo.key <- c( cn.N, cn.E, cn.C, cn.S, cn.SW, cn.NW, SEA, nA, E)
+  geo     <- c("cnN", "cnE", "cnC", "cnS", "cnSW", "cnNW", "SEA", "nA", "E","Unknown")
+  
+  if( host )
+  {
+    geo.key <- c(nonML) 
+    geo     <- c("nonML", "Unknown")
+  }  
+  
+  y =
+  geo[
+    sapply( as.list( strings ), 
+            function(x)
+            {
+              g = c()
+              for(i in 1: length(geo.key) )
+              {
+                g[ length(g) + 1] <- ifelse( grepl( geo.key[i], x, ignore.case = TRUE), i, NA) 
+              }
+              
+              if( length( which( !is.na(g) ) ) == 1 ){ return( which( !is.na(g) ) ) }else{ return( length(geo.key) + 1 ) }
+            }
+    ) ]
+  
+  print( strings[ which(y == "Unknown")  ]  )
+  return( y )
+  
+  #v20171004
+}
+
+
+
+
+
