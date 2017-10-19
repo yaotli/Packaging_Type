@@ -1730,4 +1730,79 @@ ggplot(data = str_0826_avian_SW_1yr_234_slac_h5, aes(x = year, y = w, colour = r
 
 
 
+### allh5: slac_1008 --------------------------------
 
+
+df_slac_1008 <- hyphy_slac( "~/Desktop/Hyphy/slac_1008/")
+
+# ac.hyphy1007a
+  ggplot(data = df_slac_1008[c(16,17,21),], aes(x = geo, y = w, color = geo) ) +
+  geom_point( size = 4 ) +
+  geom_errorbar( aes(ymin = w.l, ymax = w.u), width = 0.01, size = 1.2) +
+  scale_color_manual( values = c("black", "black", "chartreuse2") ) + 
+  xlab("") + ylab(expression(omega)) +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.ticks = element_blank(), 
+        panel.border = element_blank(),
+        axis.text.x = element_text(size = 25), 
+        axis.title.y = element_text(size = 30), 
+        legend.position = "none") + 
+   # annotate(geom = "text", x = c(1,2,3), y = c(0.35, 0.25, 0.25), label = c("2004-2011 (128)", "2005-2011 (255)", "2005-2009 (68)"), size = 2)
+  ggsave("slac1008a.pdf", width = 4, height = 3)
+
+
+# ac.hyphy1007b
+  
+  ggplot(data = df_slac_1008[c(1,2,3,8,9,10), ], aes(x = year, y = w, colour = clade)) +
+    geom_point( size = 4, position = position_dodge(0.8) ) +
+    geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                   position = position_dodge(0.8), width = 0.01, size = 1.2) +
+
+    scale_y_continuous(limits = c(0.1,0.35) ) +
+    scale_color_manual(values = c("#228B22", "#EE2C2C" ), labels = c("232", "234")) +
+    scale_x_discrete(labels = c("2004-2005", "2006-2007", "2008-2009")) +
+    xlab("") + ylab(expression(omega)) +
+    theme_bw() + 
+    theme(panel.grid.minor = element_blank(), 
+          panel.grid.major.y = element_blank(), 
+          panel.grid.major.x = element_blank(), 
+          axis.text.x = element_text(size = 18), 
+          axis.title.y = element_text(size = 22), 
+          panel.border = element_rect(color = "black", fill = NA, size = 1), 
+          legend.text = element_text(size = 20), 
+          legend.title = element_blank() )
+          # legend.position = c(0.99,0.99), legend.justification = c(1,1)  
+
+  ggsave("slac1008b.pdf", width = 5, height = 3)
+  
+  
+# ac.hyphy1007c
+  
+  ggplot(data = df_slac_1008[c(12,13,14,15,18,19,20),], aes(x = year, y = w, colour = geo, group = geo)) +
+    geom_point( size = 4, position = position_dodge(0.8) ) +
+    geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                   position = position_dodge(0.8), width = 0.01, size = 1.2) +
+    
+    scale_x_discrete(labels = c("2004-2005", "2006", "2007", "2008-2009")) +
+    #geom_line(position = position_dodge(0.8)) +
+    scale_y_continuous(limits = c(0,0.5) ) +
+    scale_color_manual(values = c("black", "chartreuse2") ) + 
+    xlab("") + ylab(expression(omega)) +
+    theme_bw() + 
+    theme(panel.grid.minor = element_blank(), 
+          panel.grid.major.y = element_blank(), 
+          panel.grid.major.x = element_blank(), 
+          axis.text.x = element_text(size = 18), 
+          axis.title.y = element_text(size = 20), 
+          panel.border = element_rect(color = "black", fill = NA, size = 1), 
+          legend.text = element_text(size = 20),
+          legend.title = element_blank() )
+          # legend.position = c(0.99,0.99), legend.justification = c(1,1)
+  
+  ggsave("slac1008c.pdf", width = 5.5, height = 3)
+  
+  
+ 

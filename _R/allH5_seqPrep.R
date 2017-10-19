@@ -167,8 +167,9 @@ rmDup( fasfile = "./Clade_allh5/234/c234_1930.fasta",
 
 faslist.234 <- taxaInfo( file = "./Clade_allh5/234/rmdup/c234_508.fasta" )
 
-
+## primary data ----------------
 # geo
+
 faslist.234[[8]] <- geoID( strings = faslist.234[[6]] )
 faslist.234[[8]][ which( faslist.234[[8]] == "Unknown" ) ] = 
   c("cnN", "cnE", "cnE", "Unknown", "cnS", "cnS")
@@ -206,29 +207,53 @@ faslist.234[[8]][ which( faslist.234[[8]] == "cnNW" ) ]    = "cnN"
 # tree
 # system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./Clade_allh5/234/c234_508.fasta> ./Clade_allh5/234/c234_508.tre")
 
+
+# simple curate for phylogeo.
+trelist.234_508     <- taxaInfo( file = "./Clade_allh5/234/rmdup/c234_508_clade.tre", useTree = TRUE, root2tip = TRUE)
+trelist.234_508.r2t <- trelist.234_508[[8]]
+
+# View( trelist.234_508.r2t$outlier )
+# to remove: 
+# EF624256_China_2006_ ( unknown isolation place )
+# KC709802_chicken_Shandong_K0701_2010_ (304, divergence)
+# KF169906_chicken_Hong_Kong_8825_2_2008_ (305, divergence)
+
+ac.505 <- trelist.234_508[[1]][-which( trelist.234_508[[1]] %in% c("EF624256", "KC709802", "KF169906") ) ]
+subfastaSeq( AC = TRUE, AC_list = ac.505, filedir = "./Clade_allh5/234/rmdup/c234_508.fasta")
+
+# prepare table for beast
+
+
+b.trait.234_505  <- data.frame( id  = taxaInfo( file = "./Clade_allh5/234/rmdup/c234_505.fasta")[[6]], 
+                                geo = faslist.234[[8]][ match(taxaInfo( file = "./Clade_allh5/234/rmdup/c234_505.fasta")[[6]], faslist.234[[6]]) ], 
+                                stringsAsFactors = FALSE )
+
+write.table( x = b.trait.234_505, file = "b.trait.234_505", sep = "\t", quote = FALSE, row.names = FALSE)
+
+## secondary data ----------------
 # downsampling
 
-cladeSampling( trefile   = "Clade_allh5/234/c234_508_clade.tre", 
-               fasfile   = "Clade_allh5/234/c234_508.fasta", 
+cladeSampling( trefile   = "Clade_allh5/234/rmdup/c234_508_clade.tre", 
+               fasfile   = "Clade_allh5/234/rmdup/c234_508.fasta", 
                suppList  = TRUE, 
                listinput = faslist.234,
                grid      = 1, 
                list.x    = c(6, 4, 8), 
                saveFasta = TRUE)
 
-# remove over-divergence 
+# remove over-divergence and reassortant
 
-trelist.234     <- taxaInfo( file = "./Clade_allh5/234/c234_208_e.tre", useTree = TRUE, root2tip = TRUE)
+trelist.234     <- taxaInfo( file = "./Clade_allh5/234/downsample_int/c234_208_e.tre", useTree = TRUE, root2tip = TRUE)
 trelist.234.r2t <- trelist.234[[8]]
 
 # View( trelist.234.r2t$outlier )
 # to remove: 
 # EF624256_China_2006_ ( unknown isolation place )
 # KC709802_chicken_Shandong_K0701_2010_ (151, divergence)
-# KP735806_goose_Shandong_k1201_2009_ (18, reassortant Nx)
-# JX534565_wild_duck_Shandong_628_2011_ (19, reassortant Nx)
+# KP735806_goose_Shandong_k1201_2009_ (18, divergence, reassortant Nx)
+# JX534565_wild_duck_Shandong_628_2011_ (19, divergence, reassortant Nx)
 # KF169906_chicken_Hong_Kong_8825_2_2008_ (152, divergence)
-# EPI80661_chicken_Vietnam_NCVD_008_2008_ (185, EPI80661_chicken_Vietnam_NCVD_008_2008_)
+# EPI80661_chicken_Vietnam_NCVD_008_2008_ (185, divergence)
 
 # prepare table for BEAST
 
@@ -236,7 +261,6 @@ b.trait.234.id <- taxaInfo( file = "./Clade_allh5/234/c234_202_e.tre", useTree =
 b.trait.234    <- data.frame( id  = b.trait.234.id, 
                               geo = faslist.234[[8]][ match( b.trait.234.id, faslist.234[[6]] ) ],
                               stringsAsFactors = FALSE )
-
 write.table( x = b.trait.234, file = "b.trait.234", sep = "\t", quote = FALSE, row.names = FALSE)
 
 
@@ -249,6 +273,7 @@ rmDup( fasfile = "./Clade_allh5/232/c232_1187.fasta",
 faslist.232 <- taxaInfo( file = "./Clade_allh5/232/rmdup/c232_446.fasta" )
 
 
+## primary data ----------------
 # geo
 faslist.232[[8]] <- geoID( strings = faslist.232[[6]] )
 faslist.232[[8]][ which( faslist.232[[8]] == "Unknown" ) ] = 
@@ -288,10 +313,36 @@ faslist.232[[8]][ which( faslist.232[[8]] == "cnNW" ) ] = "cnN"
 # tree
 # system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./Clade_allh5/232/c232_446.fasta> ./Clade_allh5/232/c232_446.tre")
 
+
+# simple curate for phylogeo.
+trelist.232_446     <- taxaInfo( file = "./Clade_allh5/232/rmdup/c232_446_clade.tre", useTree = TRUE, root2tip = TRUE)
+trelist.232_446.r2t <- trelist.232_446[[8]]
+
+# View( trelist.232_446.r2t$outlier )
+# to remove: 
+# CY110854_common_buzzard_Bulgaria_38WB_2010_ (Europe)
+# JN807989_eurasian_eagle_owl_Korea_Q133_2011_ (431, divergence)
+# JN807991_eurasian_sparrowhawk_Korea_Q94_2011_ (432, divergence)
+
+ac.443 <- trelist.232_446[[1]][-which( trelist.232_446[[1]] %in% c("CY110854", "JN807989", "JN807991") ) ]
+subfastaSeq( AC = TRUE, AC_list = ac.443, filedir = "./Clade_allh5/232/rmdup/c232_446.fasta")
+
+# prepare table for beast
+
+
+b.trait.232_443  <- data.frame( id  = taxaInfo( file = "./Clade_allh5/232/rmdup/c232_443.fasta")[[6]], 
+                                geo = faslist.232[[8]][ match(taxaInfo( file = "./Clade_allh5/232/rmdup/c232_443.fasta")[[6]], faslist.232[[6]]) ], 
+                                stringsAsFactors = FALSE )
+write.table( x = b.trait.232_443, file = "b.trait.232_443", sep = "\t", quote = FALSE, row.names = FALSE)
+
+
+
+
+## secondary data ----------------
 # downsampling
 
-cladeSampling( trefile   = "Clade_allh5/232/c232_446_clade.tre", 
-               fasfile   = "Clade_allh5/232/c232_446.fasta", 
+cladeSampling( trefile   = "Clade_allh5/232/rmdup/c232_446_clade.tre", 
+               fasfile   = "Clade_allh5/232/rmdup/c232_446.fasta", 
                suppList  = TRUE, 
                listinput = faslist.232,
                grid      = 1, 
@@ -300,7 +351,7 @@ cladeSampling( trefile   = "Clade_allh5/232/c232_446_clade.tre",
 
 # remove over-divergence 
 
-trelist.232     <- taxaInfo( file = "./Clade_allh5/232/c232_152_e.tre", useTree = TRUE, root2tip = TRUE)
+trelist.232     <- taxaInfo( file = "./Clade_allh5/232/downsample_int/c232_152_e.tre", useTree = TRUE, root2tip = TRUE)
 trelist.232.r2t <- trelist.232[[8]]
 
 # View( trelist.232.r2t$outlier )
@@ -315,6 +366,7 @@ b.trait.232    <- data.frame( id  = b.trait.232.id,
                               stringsAsFactors = FALSE )
 
 write.table( x = b.trait.232, file = "b.trait.232", sep = "\t", quote = FALSE, row.names = FALSE)
+
 
 
 ## joy plot  ----------------
@@ -447,11 +499,28 @@ ggplot() +
 
 
 
+### 2344 H5Nx -------------------------------- 
+
+subtreseq( list_filedir = "./Nx/taxalist_2344.txt", seq_filedir = "./Tree/allh5_GsGDlike_6322.fasta")
+
+rmDup( fasfile = "./Nx/c2344_1365.fasta", 
+       year    = c(1000, 2012) )
+
+# system("~/Raxmldata/raxml_AVX2 -f a -p 666 -s /Users/yaosmacbook/Desktop/data_souce/Nx/c2344_21.fasta -x 616 -#autoMRE -m GTRGAMMA --HKY85 -n h5nx")
+# check in TempEst & taxaInfo(useTree = TRUE, file = "./Nx/c2344_21_e.tre", root2tip = TRUE)
+# remove : KP735813_goose_Yangzhou_ZG60_2009_|China|_H5N5_2009.929
+
+
+
+
 
 
 ### hyphy output  --------------------------------
 
-## 1007 ----------------
+# FORM: clade(+host)_geo_time_gene
+
+
+## 1007 ( NEED re-do ) ----------------
 
 # t.hyphy1007a = c( "c234a_SW_T", "c234a_nSW_T", "c234a_SEA_T", "c232a_SW_T", "c232a_nSW_T", "c232a_SEA_T" ) 
 ac.hyphy1007a <- list(t.hyphy1007a)
@@ -517,6 +586,43 @@ for(i in 1: 3)
   }
 }
 
+
+## 1019 ----------------
+
+
+# t.hyphy1019 = c( "c232a_CN_0406", "c232a_CN_0711", "c234a_nSW_0406", "c234a_nSW_0711", "c234a_SW_0406", "c234a_SW_0711" ) 
+
+ac.hyphy1019 <- list(t.hyphy1019)
+
+c232.nonML_CN <- intersect( which( faslist.232[[9]] == "nonML" ), which( faslist.232[[2]] == "China"| faslist.232[[2]] == "Hong_Kong" ) ) 
+ac.hyphy1019[[2]] <- faslist.232[[1]][ intersect( c232.nonML_CN, which( floor( faslist.232[[4]] ) == 2004 | floor( faslist.232[[4]] ) == 2005 | floor( faslist.232[[4]] ) == 2006 )  ) ] 
+ac.hyphy1019[[3]] <- faslist.232[[1]][ intersect( c232.nonML_CN, which( floor( faslist.232[[4]] ) == 2007 | floor( faslist.232[[4]] ) == 2008 | floor( faslist.232[[4]] ) == 2009 | floor( faslist.232[[4]] ) == 2010 | floor( faslist.232[[4]] ) == 2011 )  ) ] 
+
+c234.nonML_nSW <- intersect( which( faslist.234[[9]] == "nonML" ), setdiff( which( faslist.234[[2]] == "China"| faslist.234[[2]] == "Hong_Kong" ), which( faslist.234[[8]] == "cnSW" ) )  ) 
+c234.nonML_SW  <- intersect( which( faslist.234[[9]] == "nonML" ),  which( faslist.234[[8]] == "cnSW") ) 
+
+ac.hyphy1019[[4]] <- faslist.234[[1]][ intersect( c234.nonML_nSW, which( floor( faslist.234[[4]] ) == 2004 | floor( faslist.234[[4]] ) == 2005 | floor( faslist.234[[4]] ) == 2006 )  ) ] 
+ac.hyphy1019[[5]] <- faslist.234[[1]][ intersect( c234.nonML_nSW, which( floor( faslist.234[[4]] ) == 2007 | floor( faslist.234[[4]] ) == 2008 | floor( faslist.234[[4]] ) == 2009 | floor( faslist.234[[4]] ) == 2010 | floor( faslist.234[[4]] ) == 2011 )  ) ] 
+
+ac.hyphy1019[[6]] <- faslist.234[[1]][ intersect( c234.nonML_SW, which( floor( faslist.234[[4]] ) == 2004 | floor( faslist.234[[4]] ) == 2005 | floor( faslist.234[[4]] ) == 2006 )  ) ] 
+ac.hyphy1019[[7]] <- faslist.234[[1]][ intersect( c234.nonML_SW, which( floor( faslist.234[[4]] ) == 2007 | floor( faslist.234[[4]] ) == 2008 | floor( faslist.234[[4]] ) == 2009 | floor( faslist.234[[4]] ) == 2010 | floor( faslist.234[[4]] ) == 2011 )  ) ] 
+
+
+
+for(k in 2: length(ac.hyphy1019) )
+{
+  subfastaSeq( AC = TRUE, AC_list = ac.hyphy1019[[k]], filedir = "Tree/allh5_GsGDlike_6322.fasta", no = ac.hyphy1019[[1]][k-1] )
+  
+}
+
+pat_sample <- paste0( "~/Desktop/data_souce/Clade_allh5/hyphy1019/HA/", 
+                      list.files( "~/Desktop/data_souce/Clade_allh5/hyphy1019/HA/" ))
+
+for(k in 1: length(pat_sample) )
+{
+  ntpartition( position = c(1: 1017), filedir = pat_sample[k], no = "-HA1.fasta")
+  ntpartition( position = c(1018: 1683), filedir = pat_sample[k], no = "-HA2.fasta")
+}
 
 
 
