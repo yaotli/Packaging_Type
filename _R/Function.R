@@ -1285,11 +1285,12 @@ tagExtra <- function( filedir = file.choose() )
 
 ### remove duplicate and filter seq based on arranged name --------------------------------
 
-rmDup <- function( fasfile = file.choose(), 
-                   year    = c(1000,3000),
-                   geo     = c(),
-                   sero    = "",
-                   rmdup   = TRUE)
+rmDup <- function( fasfile     = file.choose(), 
+                   year        = c(1000,3000),
+                   geo         = c(),
+                   sero        = "",
+                   rmdup       = TRUE, 
+                   sero.invert = FALSE )
 {
   require(seqinr)
   require(stringr)
@@ -1355,7 +1356,7 @@ rmDup <- function( fasfile = file.choose(),
   
   # sero
   
-  s     <- grep( sero, str_match( id, "_(H5N[0-9]{1,2})_" )[,2] )
+  s     <- grep( sero, str_match( id, "_(H5N[0-9]{1,2})_" )[,2], invert = sero.invert )
   
   if ( TRUE %in% is.na( 
     c(str_match( id, "_([0-9]{4}\\.[0-9]+$)")[,2], 
@@ -1378,7 +1379,8 @@ rmDup <- function( fasfile = file.choose(),
                file.out = sub(".fasta", "_cr.fasta", fasfile) )
   
   print( length( remain ) )
-  #v20170927v
+  
+  #v20171019
 }
 
 ### extract id info --------------------------------
@@ -1545,7 +1547,7 @@ cladeSampling <- function( trefile      = file.choose(),
   
   tre.d   <- fortify( nex )
   N.tip   <- length( which( tre.d$isTip ) )
-  N.node  <- nwk$Nnode
+  N.node  <- nex$Nnode
   edgemax <- tre.d[ c(2,1) ]
   
   
@@ -1644,7 +1646,7 @@ cladeSampling <- function( trefile      = file.choose(),
     colnames(tre.d)[ ncol(tre.d) ] = "shapee"
     tre.d$shapee[selected_tip] = 16
     
-    g1 <- ggtree( nwk ) %<+% tre.d + aes(color = I(colorr)) + geom_tiplab(size = 1)
+    g1 <- ggtree( nex ) %<+% tre.d + aes(color = I(colorr)) + geom_tiplab(size = 1)
     g1 + geom_tippoint(aes( shape = factor(shapee) ), size = 2)
   }
   
@@ -1662,7 +1664,7 @@ cladeSampling <- function( trefile      = file.choose(),
   print( table( floor( i.id.y[remain] ), i.id.g[remain]) )
   
   
-  #v20171005b
+  #v20171016b
 }
 
 
@@ -1717,6 +1719,73 @@ geoID <- function( strings,
   return( y )
   
   #v20171004
+}
+
+
+### hyphy_slac -------------------------------
+
+hyphy_slac <- function( folder = getwd() )
+{
+  require(stringr)
+  require(readr)
+  
+  # prep space 
+  gene  <- c()
+  clade <- c()
+  year  <- c()
+  geo   <- c()
+  
+  w          <- c()
+  w.u        <- c()
+  w.l        <- c()
+  dn.mean    <- c() 
+  ds.mean    <- c() 
+  dn_ds.mean <- c()
+  dn_ds.sd   <- c()
+  
+  po.site <- c()
+  ne.site <- c()
+  
+  file.log <- paste0( folder, list.files( folder )[ grep( "t.log", list.files( folder ) ) ] )
+  file.txt <- paste0( folder, list.files( folder )[ grep( "t.txt", list.files( folder ) ) ] )
+  
+  if( !length(file.log) == length(file.txt) ){ stop("inconsistent .log and .txt number") }else
+  {
+    
+    for(i in 1: length( file.log ) )
+    {
+      
+      str_i <- str_match( list.files( folder )[ grep( "t.log", list.files( folder ) ) ][i], "([0-9]+[a-z])_([a-zA-Z]+)_([0-9T]+)_([a-zA-Z0-9]{2-3})" )
+      
+      log.i <- read_file( file.log[i] )
+      txt.i <- read.table( file.txt[i], sep = "\t", header = T)
+      
+      gene  <- c( gene, str_i[1,5] ) 
+      clade <- c( clade, str_i[1,2] )
+      year  <- c( year, str_i[1,4] )
+      geo   <- c( geo, str_i[1,3] )
+      
+      w          <- c( w, as.numeric( str_match(log.i, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,2] ) )
+      w.u        <- c( w.u, as.numeric( str_match(log.i, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,4] ) )
+      w.l        <- c( w.l, as.numeric( str_match(log.i, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,3] ) )
+      
+      dn.mean    <- c( dn.mean, mean( txt.i[,8] ) ) 
+      ds.mean    <- c( ds.mean, mean( txt.i[,7] )  ) 
+      dn_ds.mean <- c( dn_ds.mean, mean( txt.i[,9] ) )
+      dn_ds.sd   <- c( dn_ds.sd, sd( txt.i[,9] ) )  
+      
+      po.site <- c( sum( txt.i[,10][ which( txt.i[,10] != 0 ) ] < 0.1 ), po.site )
+      ne.site <- c( sum( txt.i[,11][ which( txt.i[,11] != 0 ) ] < 0.1 ), ne.site )
+      
+      
+    }
+  }
+  
+  df.slac <- data.frame( gene, clade, year, geo, w, w.u, w.l, dn.mean, ds.mean, dn_ds.mean, dn_ds.sd, po.site, ne.site, 
+                         stringsAsFactors = FALSE)
+  return(df.slac)
+  
+  #v20171009
 }
 
 
