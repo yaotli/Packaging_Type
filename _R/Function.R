@@ -1755,7 +1755,7 @@ hyphy_slac <- function( folder = getwd() )
     for(i in 1: length( file.log ) )
     {
       
-      str_i <- str_match( list.files( folder )[ grep( "t.log", list.files( folder ) ) ][i], "([0-9]+[a-z])_([a-zA-Z]+)_([0-9T]+)_([a-zA-Z0-9]{2-3})" )
+      str_i <- str_match( list.files( folder )[ grep( "t.log", list.files( folder ) ) ][i], "([0-9]+[a-z])_([a-zA-Z]+)_([0-9T]+)-([a-zA-Z0-9]{2,3})" )
       
       log.i <- read_file( file.log[i] )
       txt.i <- read.table( file.txt[i], sep = "\t", header = T)
@@ -1785,7 +1785,7 @@ hyphy_slac <- function( folder = getwd() )
                          stringsAsFactors = FALSE)
   return(df.slac)
   
-  #v20171009
+  #v20171023
 }
 
 
