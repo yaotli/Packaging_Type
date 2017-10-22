@@ -508,8 +508,8 @@ rmDup( fasfile = "./Nx/c2344_1365.fasta",
 
 # system("~/Raxmldata/raxml_AVX2 -f a -p 666 -s /Users/yaosmacbook/Desktop/data_souce/Nx/c2344_21.fasta -x 616 -#autoMRE -m GTRGAMMA --HKY85 -n h5nx")
 # check in TempEst & taxaInfo(useTree = TRUE, file = "./Nx/c2344_21_e.tre", root2tip = TRUE)
-# remove : KP735813_goose_Yangzhou_ZG60_2009_|China|_H5N5_2009.929
-
+# I remove : KP735813_goose_Yangzhou_ZG60_2009_|China|_H5N5_2009.929
+# II keep 8 as previous 
 
 
 

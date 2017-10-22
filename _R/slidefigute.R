@@ -38,7 +38,7 @@ for( i in 1: length(targetna) )
 
 p = 
 ggtree(trefile, color = "gray", alpha = 0.6, size = 1.1) %<+% shapetaxa + 
-  geom_tippoint( aes(color = I(Nx)), alpha = 0.7, size = 4, stoke = 0)
+  geom_tippoint( aes(color = I(Nx)), alpha = 0.7, size = 4, stroke = 0)
 
 # clade 2344
 viewClade(p, node = 6347 )
@@ -57,7 +57,8 @@ tredata$geo[ which(tredata$geo == "cnNW" ) ] <- "cnN"
 
 table(tredata$geo)
 
-col.geo <- c("#8c564b", "#ff7f0e", "#7f7f7f", "#d62728", "#76ee00", "#17becf")
+col.geo <- c("#8c564b", "#2ca02c", "#7f7f7f", "#d62728", "#1f77b4", "#17becf")
+#c("#8c564b", "#ff7f0e", "#7f7f7f", "#d62728", "#76ee00", "#17becf")
 #76ee00
 ml.234 <- 
 ggtree( rawtre, right = TRUE, ladderize = FALSE) %<+% tredata +
@@ -69,21 +70,21 @@ flip(ml.234, 299, 339)
 
 
 
-b_tre.234    <- "~/Desktop/b_geo/234/c234_202_1011-ann.trees"
+b_tre.234    <- "~/Desktop/b_geo/234/1012/c234_202_10101012-ann.tre"
 rawbeast.234 <- read.beast( b_tre.234 )
 tredata.234  <-  fortify( rawbeast.234 )
 
 g <- 
-ggtree( rawbeast.234, right = TRUE, size = 0.6,mrsd = "2011-11-18") + 
+ggtree( rawbeast.234, right = TRUE, size = 1, mrsd = "2011-11-18") + 
   aes( color = geo ) + 
   scale_color_manual( values = col.geo ) + 
   scale_fill_manual( values = col.geo ) +
   theme_tree2( axis.text.x = element_text( size = 16  ), legend.position = c(0,0), legend.justification = c(0,0)) + 
   scale_y_continuous( expand = c(0,5) ) + 
-  geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  geom_tippoint(aes(fill = geo), shape = 21, color = "black", stroke = 0.5 ) + 
   scale_x_continuous( breaks = seq(2002.5, 2012.5, by = 2), 
                       labels = seq(2002, 2012, by = 2) )  + 
-  theme( axis.ticks  = element_blank() )
+  theme( axis.ticks  = element_blank(), legend.title = element_blank(), legend.text = element_text(size = 18))
 
 
 rectdf <- data.frame( xstart = seq( 2002, 2011, 2), 
@@ -142,7 +143,50 @@ k + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax =
 ggsave("232.pdf", height = 5, width = 4)  
 
 
+### re-pH5 ML tree ----------------------------------
 
+# 234
+c234_ha_raxml <- read.tree("Clade/sampled_clade_tree_CNHK/sampled_besttree/234_ha")
+geo_region    <- read.csv("./tree_info/geo.csv")
+
+colnames(geo_region)[1] <-  "taxa"
+row.names(geo_region)   <-   NULL
+geo_region$taxa         <-   paste0("'", geo_region$taxa, "'")
+
+temp_t <- 
+  ggtree( c234_ha_raxml, ladderize = FALSE, size = 1.1) %<+% geo_region +
+  geom_tippoint( aes(fill = region), 
+                 color = "black", size = 3, stroke = 0.5, shape = 21 ) + 
+  scale_fill_manual( values = c("#8c564b", "#2ca02c", "#7f7f7f", "#d62728", "#1f77b4") ) 
+
+
+b2344like <- findtaxa(type     = 1, 
+                      tree     = c234_ha_raxml, 
+                      targetid = c("EU195400_mallard_Huadong_lk_2005_H5N1_2005.496", 
+                                   "KP233704_duck_Hunan_316_2005_H5N1_2005.301",
+                                   "HM172100_duck_Jiangxi_80_2005_H5N1_2005.496",
+                                   "DQ992838_crested_myna_Hong_Kong_540_2006_H5N1_2006.496",
+                                   "DQ992790_duck_Hunan_324_2006_H5N1_2006.496"), 
+                      target   = rep("dotted", 5) )
+c234_t <- 
+  temp_t %<+% b2344like + aes(linetype = colorr) + geom_treescale(offset = 4)
+
+
+# 232
+c232_ha_raxml  <- read.tree("Clade/sampled_clade_tree_CNHK/sampled_besttree/232_ha")
+geo_region_232 <- read.csv("./tree_info//geo_232.csv")
+
+colnames(geo_region_232)[1] <-  "taxa"
+row.names(geo_region_232)   <-   NULL
+geo_region_232$taxa         <-   paste0("'", geo_region_232$taxa, "'")
+
+geo_region_232$region[ which(geo_region_232$region == "NW" ) ] = "N"
+
+c232_t <- 
+  ggtree(c232_ha_raxml, ladderize = FALSE, size = 1.1 ) %<+% geo_region_232 +
+  geom_tippoint(aes(fill = region), color = "black", size = 3, stroke = 0.5, shape = 21) + 
+  scale_fill_manual( values = c("#8c564b", "#2ca02c", "#7f7f7f", "#d62728", "#1f77b4") ) +
+  geom_treescale(x = 0, y = 20, offset = 4) + theme(legend.position = "right") 
 
 
 
