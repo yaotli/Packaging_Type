@@ -273,10 +273,10 @@ root.node1        <- length( tre_GsGD_pH5_6084$tip.label ) + 1
 Root.dis1         <- dist.nodes( tre_GsGD_pH5_6084 )[ root.node1, 1: (root.node1 - 1) ]
 tre.id1           <- gsub("'", "", trefile_GsGD_pH5$label[ 1: root.node1- 1 ] )
 
-tre.id1.a <- str_match(tre.id1, "[A-Z]{1,2}[0-9]{5,6}|EPI[0-9]+")[,1]
-tre.id1.g <- str_match(tre.id1, "\\|([A-Za-z_]+)\\|")[,2]
-tre.id1.s <- str_match(tre.id1, "_(H5N[0-9]{1,2})_")[,2]
-tre.id1.y <- as.numeric( str_match(tre.id1, "_([0-9]{4}.[0-9]{3})$")[,2] )
+tre.id1.a <- str_match( tre.id1, "[A-Z]{1,2}[0-9]{5,6}|EPI[0-9]+" )[,1]
+tre.id1.g <- str_match( tre.id1, "\\|([A-Za-z_]+)\\|" )[,2]
+tre.id1.s <- str_match( tre.id1, "_(H5N[0-9]{1,2})_" )[,2]
+tre.id1.y <- as.numeric( str_match(tre.id1, "_([0-9]{4}.[0-9]{3})$" )[,2] )
 
 
 # use labeled .tre
@@ -309,7 +309,7 @@ for (i in 1: 4)
 
 # extract N1
 tre_pN1_4428 <- read.tree( nwk_pN1_4428 )
-paired_table <- read.csv(pairedcsv, stringsAsFactors = FALSE)
+paired_table <- read.csv( pairedcsv, stringsAsFactors = FALSE )
 
 for (i in 1: 4)
 {
@@ -326,42 +326,155 @@ for (i in 1: 4)
                filedir = fas_pN1_4428)
 }
 
-# system("for f in $(ls ~/Desktop/data_souce/Clade_pH5NA/*.fasta); do ~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <$f> $f.tre ; done")
+# system( "for f in $(ls ~/Desktop/data_souce/Clade_pH5NA/*.fasta); do ~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <$f> $f.tre ; done" )
 
 
 ### clade-wise --------------------------------
 
-# 234
+annlth <- function( seqfile, trefile )
+{
+  seq.s <- getSequence( read.fasta( seqfile ) )
+  seq.n <- attributes( read.fasta( seqfile ) )$names
+  tre   <- read.tree( trefile )
 
-rmDup( fasfile = "./Clade_pH5NA/234/c234_pH5_2311.fasta", 
-       sero    = "H5N1")
-rmDup( fasfile = "./Clade_pH5NA/234/c234_pN1_610.fasta", 
-       sero    = "H5N1")
+  seq.s.l <- sapply( seq.s , 
+                     function(x)
+                     {
+                       y = gsub( "-|~", "", c2s(x) )
+                       return( length( s2c(y) ) ) 
+                     } )
 
-# 232
+  tre$tip.label <- paste0( tre$tip.label, "___", seq.s.l[ match( tre$tip.label, seq.n ) ] )
+  
+  write.tree( tre, file = gsub( ".tre", ".lth.tre", trefile ) )
+} 
 
-rmDup( fasfile = "./Clade_pH5NA/232/c232_pH5_1255.fasta", 
-       sero    = "H5N1")
-rmDup( fasfile = "./Clade_pH5NA/232/c232_pN1_1244.fasta", 
-       sero    = "H5N1")
+## 234 ----------------
 
-# 22
+pH5_234            <- "./Clade_pH5NA/234/raw/c234_pH5_2311.fasta"
+pN1_234            <- "./Clade_pH5NA/234/raw/c234_pN1_610.fasta"
+pH5_234.s1.tre     <- "./Clade_pH5NA/sampled/pH5_c234_s1.tre"
+pN1_234.s1.tre     <- "./Clade_pH5NA/sampled/pN1_c234_s1.tre"
+pH5_234.s2.tre     <- "./Clade_pH5NA/ml_phyml/c234_pH5_176.phy_phyml_tree.tre"
+pN1_234.s2.tre     <- "./Clade_pH5NA/ml_phyml/c234_pN1_164.phy_phyml_tree.tre"
+pH5_234.lthann.tre <- "./Clade_pH5NA/ml_phyml/c234_pH5_176.phy_phyml.lth.tree.lth.tre"
+pN1_234.lthann.tre <- "./Clade_pH5NA/ml_phyml/c234_pN1_164.phy_phyml.lth.tree.lth.tre"
 
-rmDup( fasfile = "./Clade_pH5NA/22/c22_pH5_1129.fasta", 
-       sero    = "H5N1")
-rmDup( fasfile = "./Clade_pH5NA/22/c22_pN1_1129.fasta", 
-       sero    = "H5N1")
+# s1 to elimicate re-introduction
+AC_pH5_234_s1 <- str_match( tagExtra( pH5_234.s1.tre )[, 1][ which( is.na( tagExtra( pH5_234.s1.tre )[, 2] ) ) ], "^[A-Z00-9]+" )[, 1]
+AC_pN1_234_s1 <- str_match( tagExtra( pN1_234.s1.tre )[, 1][ which( is.na( tagExtra( pN1_234.s1.tre )[, 2] ) ) ], "^[A-Z00-9]+" )[, 1]
 
+subfastaSeq( AC = TRUE, AC_list = AC_pH5_234_s1, filedir = pH5_234 )
+subfastaSeq( AC = TRUE, AC_list = AC_pN1_234_s1, filedir = pN1_234 )
+
+# rmDup
+rmDup( fasfile = "./Clade_pH5NA/234/c234_pH5_s2.fasta", year = c(1000, 2012), rmdup = TRUE )
+rmDup( fasfile = "./Clade_pH5NA/234/c234_pN1_s2.fasta", year = c(1000, 2012), rmdup = TRUE )
+
+# ann. tree with sequence length 
+annlth( seqfile = pH5_234, trefile = pH5_234.s2.tre )
+annlth( seqfile = pN1_234, trefile = pN1_234.s2.tre )        
+
+# extract tag taxa
+AC_pH5_234_rmLead <-         
+  str_match( tagExtra( pH5_234.lthann.tre )[,1][ grep( "ff0000", tagExtra( pH5_234.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+AC_pN1_234_rmLead <-         
+  str_match( tagExtra( pN1_234.lthann.tre )[,1][ grep( "ff0000", tagExtra( pN1_234.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+
+subfastaSeq( AC = TRUE, AC_list = AC_pH5_234_rmLead, filedir = pH5_234 )
+subfastaSeq( AC = TRUE, AC_list = AC_pN1_234_rmLead, filedir = pN1_234 )
+
+pH5.trelist.234 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c234_pH5_156e.tre", useTree = TRUE, root2tip = TRUE)
+pH5.r2t.234     <- pH5.trelist.234[[ 8 ]]
+pN1.trelist.234 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c234_pN1_149e.tre", useTree = TRUE, root2tip = TRUE)
+pN1.r2t.234     <- pN1.trelist.234[[ 8 ]]
+
+
+## 232 ----------------
+
+pH5_232            <- "./Clade_pH5NA/232/raw/c232_pH5_1255.fasta"
+pN1_232            <- "./Clade_pH5NA/232/raw/c232_pN1_1244.fasta"
+pH5_232.s1.tre     <- "./Clade_pH5NA/sampled/pH5_c232_s1.tre"
+pN1_232.s1.tre     <- "./Clade_pH5NA/sampled/pN1_c232_s1.tre"
+pH5_232.s2.tre     <- "./Clade_pH5NA/ml_phyml/c232_pH5_126.phy_phyml_tree.tre"
+pN1_232.s2.tre     <- "./Clade_pH5NA/ml_phyml/c232_pN1_121.phy_phyml_tree.tre"
+pH5_232.lthann.tre <- "./Clade_pH5NA/ml_phyml/c232_pH5_126.phy_phyml.lth.tree.lth.tre"
+pN1_232.lthann.tre <- "./Clade_pH5NA/ml_phyml/c232_pN1_121.phy_phyml.lth.tree.lth.tre"
+
+# s1 for re-intro.
+AC_pH5_232_s1 <- str_match( tagExtra( pH5_232.s1.tre )[, 1][ which( is.na( tagExtra( pH5_232.s1.tre )[, 2] ) ) ], "^[A-Z00-9]+" )[, 1]
+AC_pN1_232_s1 <- str_match( tagExtra( pN1_232.s1.tre )[, 1][ which( is.na( tagExtra( pN1_232.s1.tre )[, 2] ) ) ], "^[A-Z00-9]+" )[, 1]
+
+subfastaSeq( AC = TRUE, AC_list = AC_pH5_232_s1, filedir = pH5_232)
+subfastaSeq( AC = TRUE, AC_list = AC_pN1_232_s1, filedir = pN1_232)
+
+# rmDup
+rmDup( fasfile = "./Clade_pH5NA/232/c232_pH5_s2.fasta", year = c(1000, 2012), rmdup = TRUE)
+rmDup( fasfile = "./Clade_pH5NA/232/c232_pN1_s2.fasta", year = c(1000, 2012), rmdup = TRUE)
+
+# ann. tree with sequence length 
+annlth( seqfile = pH5_232, trefile = pH5_232.s2.tre )
+annlth( seqfile = pN1_232, trefile = pN1_232.s2.tre )      
+
+AC_pH5_232_rmLead <-         
+  str_match( tagExtra( pH5_232.lthann.tre )[,1][ grep( "ff0000", tagExtra( pH5_232.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+AC_pN1_232_rmLead <-         
+  str_match( tagExtra( pN1_232.lthann.tre )[,1][ grep( "ff0000", tagExtra( pN1_232.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+
+subfastaSeq( AC = TRUE, AC_list = AC_pH5_232_rmLead, filedir = pH5_232)
+subfastaSeq( AC = TRUE, AC_list = AC_pN1_232_rmLead, filedir = pN1_232)
+
+pH5.trelist.232 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c232_pH5_120e.tre", useTree = TRUE, root2tip = TRUE)
+pH5.r2t.232     <- pH5.trelist.232[[ 8 ]]
+pN1.trelist.232 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c232_pN1_115e.tre", useTree = TRUE, root2tip = TRUE)
+pN1.r2t.232     <- pN1.trelist.232[[ 8 ]]
+
+
+# 22 ----------------
+
+pH5_22        <- "./Clade_pH5NA/22/raw/c22_pH5_1129.fasta"
+pN1_22        <- "./Clade_pH5NA/22/raw/c22_pN1_1129.fasta"
+pH5_22.s1.tre <- "./Clade_pH5NA/sampled/pH5_c22_s1.tre"
+pN1_22.s1.tre <- "./Clade_pH5NA/sampled/pN1_c22_s1.tre"
+pH5_22.s2.tre <- "./Clade_pH5NA/ml_phyml/c22_pH5_46.phy_phyml_tree.tre"
+pN1_22.s2.tre <- "./Clade_pH5NA/ml_phyml/c22_pN1_39.phy_phyml_tree.tre"
+pH5_22.lthann.tre <- "./Clade_pH5NA/ml_phyml/c22_pH5_46.phy_phyml.lth.tree.lth.tre"
+pN1_22.lthann.tre <- "./Clade_pH5NA/ml_phyml/c22_pN1_39.phy_phyml.lth.tree.lth.tre"
+
+# s1 for re-introduction
+AC_pH5_22_s1 <- str_match( tagExtra( pH5_22.s1.tre )[, 1][ which( is.na( tagExtra( pH5_22.s1.tre )[, 2] ) ) ], "^[A-Z00-9]+" )[, 1]
+AC_pN1_22_s1 <- str_match( tagExtra( pN1_22.s1.tre )[, 1][ which( is.na( tagExtra( pN1_22.s1.tre )[, 2] ) ) ], "^[A-Z00-9]+" )[, 1]
+
+subfastaSeq( AC = TRUE, AC_list = AC_pH5_22_s1, filedir = pH5_22)
+subfastaSeq( AC = TRUE, AC_list = AC_pN1_22_s1, filedir = pN1_22)
+
+# rmDup
+rmDup( fasfile = "./Clade_pH5NA/22/c22_pH5_s2.fasta", year = c(1000, 2012), rmdup = TRUE)
+rmDup( fasfile = "./Clade_pH5NA/22/c22_pN1_s2.fasta", year = c(1000, 2012), rmdup = TRUE)
+
+# ann tree with sequence length 
+annlth( seqfile = pH5_22, trefile = pH5_22.s2.tre )
+annlth( seqfile = pN1_22, trefile = pN1_22.s2.tre )        
+
+AC_pH5_22_rmLead <-         
+  str_match( tagExtra( pH5_22.lthann.tre )[,1][ grep( "ff0000", tagExtra( pH5_22.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+AC_pN1_22_rmLead <-         
+  str_match( tagExtra( pN1_22.lthann.tre )[,1][ grep( "ff0000", tagExtra( pN1_22.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+
+
+subfastaSeq( AC = TRUE, AC_list = AC_pH5_22_rmLead, filedir = pH5_22)
+subfastaSeq( AC = TRUE, AC_list = AC_pN1_22_rmLead, filedir = pN1_22)
+
+pH5.trelist.22 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c22_pH5_41e.tre", useTree = TRUE, root2tip = TRUE)
+pH5.r2t.22     <- pH5.trelist.22[[ 8 ]]
+pN1.trelist.22 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c22_pN1_39e.tre", useTree = TRUE, root2tip = TRUE)
+pN1.r2t.22     <- pN1.trelist.22[[ 8 ]]
+
+
+
+# system( "for f in $(ls *phy); do ~/PhyML-3.1/./phyml -i $f -m GTR -v e -a 4; done" )
 
 # 7
-
-rmDup( fasfile = "./Clade_pH5NA/7/c7_pH5_88.fasta", 
-       sero    = "H5N1")
-rmDup( fasfile = "./Clade_pH5NA/7/c7_pN1_71.fasta", 
-       sero    = "H5N1")
-
-
-
 
 ## Root-to-tip plot ----------------
 
@@ -419,8 +532,102 @@ cleantre_pN1_4428$tip.label =
 write.tree(cleantre_pN1_4428, "cleantre_pN1_4428.tre")
 
 
+## examine reassortment ----------------
+
+cleantxt_pH5       <- fortify( cleantre_GsGD_pH5_6084 )
+cleantxt_pH5       <- cleantxt_pH5[ which( cleantxt_pH5$isTip ), ]
+cleantxt_pH5$label <- gsub( "'", "", cleantxt_pH5$label )
+cleantxt_pH5       <- data.frame( cleantxt_pH5,  gene = "H5", stringsAsFactors = FALSE )
+
+cleantxt_pH5$gene[ which( cleantxt_pH5$y >= 3774 ) ] = "h5_234"
+cleantxt_pH5$gene[ which( cleantxt_pH5$y < 3774 & cleantxt_pH5$y >= 2519 ) ] = "h5_232"
+cleantxt_pH5$gene[ which( cleantxt_pH5$y < 2519 & cleantxt_pH5$y >= 1390 ) ] = "h5_22"
 
 
+cleantxt_pN1       <- fortify( cleantre_pN1_4428 )
+cleantxt_pN1       <- cleantxt_pN1[ which( cleantxt_pN1$isTip ), ]
+cleantxt_pN1$label <- gsub( "'", "", cleantxt_pN1$label )
+cleantxt_pN1       <- data.frame( cleantxt_pN1,  gene = "N1", stringsAsFactors = FALSE )
 
 
+cleantxt <- rbind(cleantxt_pH5, cleantxt_pN1 )
+cleantxt <- data.frame( cleantxt, 
+                        geo  = str_match( cleantxt$label, "\\|([A-Za-z_]+)\\|" )[, 2],
+                        stringsAsFactors = FALSE )
+
+
+# all
+cleantxt %>%
+filter( gene == "h5_22" | gene == "N1" ) %>% 
+#filter( geo == "China" | geo == "Hong_Kong" ) %>% 
+ggplot( aes(x = gene, y = y, group = label) ) + 
+  geom_point( size = 0.01 ) +
+  geom_line() + 
+  theme_bw() + ylab("") + xlab("") + 
+  geom_hline( yintercept = 1505, color = "red" ) + 
+  geom_hline( yintercept = 340, color = "red" ) +
+  geom_hline( yintercept = 2150, color = "red" )
+
+#234
+cleantxt_pHA_234 <- cleantxt_pH5[ which( cleantxt_pH5$gene == "h5_234" ), ]
+tem.match        <- match( cleantxt_pHA_234$label, cleantxt_pN1$label )
+cleantxt_pNA_234 <- cleantxt_pN1[ tem.match[ !is.na( tem.match ) ], ]
+cleantxt_pHA_234 <- cleantxt_pHA_234[ which( cleantxt_pHA_234$label %in% cleantxt_pNA_234$label ), ]
+tem.list         <- 
+intersect(  cleantxt_pHA_234[ which( cleantxt_pHA_234$y < 4500 ), ]$label, 
+            cleantxt_pNA_234[ which( cleantxt_pNA_234$y < 3400 & 
+                                     cleantxt_pNA_234$y > 2500 ), ]$label )
+ls.234 <- 
+grep( "\\|China\\||\\|Hong_Kong\\|", tem.list, value = TRUE, ignore.case = TRUE )
+
+
+#232
+cleantxt_pHA_232 <- cleantxt_pH5[ which( cleantxt_pH5$gene == "h5_232" ), ]
+tem.match        <- match( cleantxt_pHA_232$label, cleantxt_pN1$label )
+cleantxt_pNA_232 <- cleantxt_pN1[ tem.match[ !is.na( tem.match ) ], ]
+cleantxt_pHA_232 <- cleantxt_pHA_232[ which( cleantxt_pHA_232$label %in% cleantxt_pNA_232$label ), ]
+tem.list         <- 
+  c( cleantxt_pNA_232[ which( cleantxt_pNA_232$y > 3200 ), ]$label, 
+     cleantxt_pNA_232[ which( cleantxt_pNA_232$y < 2800 & 
+                              cleantxt_pNA_232$y > 2150 ), ]$label )
+ls.232 <- 
+  grep( "\\|China\\||\\|Hong_Kong\\|", tem.list, value = TRUE, ignore.case = TRUE )
+
+
+#22
+cleantxt_pHA_22 <- cleantxt_pH5[ which( cleantxt_pH5$gene == "h5_22" ), ]
+tem.match       <- match( cleantxt_pHA_22$label, cleantxt_pN1$label )
+cleantxt_pNA_22 <- cleantxt_pN1[ tem.match[ !is.na( tem.match ) ], ]
+cleantxt_pHA_22 <- cleantxt_pHA_22[ which( cleantxt_pHA_22$label %in% cleantxt_pNA_22$label ), ]
+tem.list        <- cleantxt_pNA_22[ which( cleantxt_pNA_22$y < 1505 & cleantxt_pNA_22$y > 340 ), ]$label 
+ls.22 <- 
+  grep( "\\|China\\||\\|Hong_Kong\\|", tem.list, value = TRUE, ignore.case = TRUE )
+
+
+# extract the seq 
+
+ha.id <- fastaEx( fas_GsGD_pH5_6084 )$id
+na.id <- fastaEx( fas_pN1_4428 )$id
+
+
+sampled.ls <- c( "ls.234", "ls.232", "ls.22" )
+for( k in 1: 3 )
+{
+  
+  sampled       <- get( sampled.ls[k] )
+  tem.strain.ha <- c()
+  tem.strain.na <- c()
+  
+  for( j in 1: length(sampled) )
+  {
+    tem.strain.ha <- c( tem.strain.ha, grep( sampled[j], ha.id, value = TRUE, fixed = TRUE ) ) 
+    tem.strain.na <- c( tem.strain.na, grep( sampled[j], na.id, value = TRUE, fixed = TRUE ) ) 
+  }
+  
+  subfastaSeq( AC = TRUE, filedir = fas_GsGD_pH5_6084, 
+               AC_list = str_match( tem.strain.ha, "^[A-Z00-9]+")[, 1], no = sampled.ls[k] )
+  subfastaSeq( AC = TRUE, filedir = fas_pN1_4428, 
+               AC_list = str_match( tem.strain.na, "^[A-Z00-9]+")[, 1], no = sampled.ls[k] )
+  
+}
 
