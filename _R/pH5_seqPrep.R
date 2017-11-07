@@ -375,7 +375,7 @@ rmDup( fasfile = "./Clade_pH5NA/234/c234_pN1_s2.fasta", year = c(1000, 2012), rm
 annlth( seqfile = pH5_234, trefile = pH5_234.s2.tre )
 annlth( seqfile = pN1_234, trefile = pN1_234.s2.tre )        
 
-# extract tag taxa
+# remove tag taxa
 AC_pH5_234_rmLead <-         
   str_match( tagExtra( pH5_234.lthann.tre )[,1][ grep( "ff0000", tagExtra( pH5_234.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
 AC_pN1_234_rmLead <-         
@@ -388,6 +388,17 @@ pH5.trelist.234 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c234_pH5_156e.tre"
 pH5.r2t.234     <- pH5.trelist.234[[ 8 ]]
 pN1.trelist.234 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c234_pN1_149e.tre", useTree = TRUE, root2tip = TRUE)
 pN1.r2t.234     <- pN1.trelist.234[[ 8 ]]
+
+
+# prepare faslist 
+
+faslist.h5.234      <- taxaInfo( file = "./Clade_pH5NA/234/c234_pH5_156.fasta" )
+faslist.h5.234[[8]] <- geoID( strings = faslist.h5.234[[6]], host = TRUE )
+faslist.h5.234[[8]][ which( faslist.h5.234[[8]] == "Unknown") ] = "ML"
+
+faslist.n1.234      <- taxaInfo( file = "./Clade_pH5NA/234/c234_pN1_149.fasta" )
+faslist.n1.234[[8]] <- geoID( strings = faslist.n1.234[[6]], host = TRUE )
+faslist.n1.234[[8]][ which( faslist.n1.234[[8]] == "Unknown") ] = "ML"
 
 
 ## 232 ----------------
@@ -416,6 +427,7 @@ rmDup( fasfile = "./Clade_pH5NA/232/c232_pN1_s2.fasta", year = c(1000, 2012), rm
 annlth( seqfile = pH5_232, trefile = pH5_232.s2.tre )
 annlth( seqfile = pN1_232, trefile = pN1_232.s2.tre )      
 
+# remove tag taxa
 AC_pH5_232_rmLead <-         
   str_match( tagExtra( pH5_232.lthann.tre )[,1][ grep( "ff0000", tagExtra( pH5_232.lthann.tre )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
 AC_pN1_232_rmLead <-         
@@ -428,6 +440,19 @@ pH5.trelist.232 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c232_pH5_120e.tre"
 pH5.r2t.232     <- pH5.trelist.232[[ 8 ]]
 pN1.trelist.232 <- taxaInfo( file = "./Clade_pH5NA/ml_phyml_2/c232_pN1_115e.tre", useTree = TRUE, root2tip = TRUE)
 pN1.r2t.232     <- pN1.trelist.232[[ 8 ]]
+
+
+# prepare faslist 
+
+faslist.h5.232      <- taxaInfo( file = "./Clade_pH5NA/232/c232_pH5_120.fasta" )
+faslist.h5.232[[8]] <- geoID( strings = faslist.h5.232[[6]], host = TRUE )
+faslist.h5.232[[8]][ which( faslist.h5.232[[8]] == "Unknown") ] <- 
+  c( "nonML", "nonML", "nonML", "nonML", "ML", "ML", "ML", "ML" )
+
+faslist.n1.232      <- taxaInfo( file = "./Clade_pH5NA/232/c232_pN1_115.fasta" )
+faslist.n1.232[[8]] <- geoID( strings = faslist.n1.232[[6]], host = TRUE )
+faslist.n1.232[[8]][ which( faslist.n1.232[[8]] == "Unknown") ] <- 
+  c( "nonML", "nonML", "nonML", "nonML", "ML", "ML", "ML", "ML" )
 
 
 # 22 ----------------
@@ -630,4 +655,53 @@ for( k in 1: 3 )
                AC_list = str_match( tem.strain.na, "^[A-Z00-9]+")[, 1], no = sampled.ls[k] )
   
 }
+
+### hyphy input --------------------------------
+
+# FORM: clade(+host)_geo_time_gene
+
+## 1107 ----------------
+
+# t.hyphy1107 = c( "c232a_CN_0406_H5", "c232a_CN_0711_H5", "c232a_CN_0406_N1", "c232a_CN_0711_N1", "c234a_CN_0406_H5", "c234a_CN_0711_H5", "c234a_CN_0406_N1", "c234a_CN_0711_N1")
+
+ac.hyphy1107 <- list( t.hyphy1107 )
+
+ac.hyphy1107[[2]] <- faslist.h5.232[[1]][ intersect( which( faslist.h5.232[[8]] == "nonML" ), which( floor( faslist.h5.232[[4]] ) == 2004 | floor( faslist.h5.232[[4]] ) == 2005 | floor( faslist.h5.232[[4]] ) == 2006 )  ) ] 
+ac.hyphy1107[[3]] <- faslist.h5.232[[1]][ intersect( which( faslist.h5.232[[8]] == "nonML" ), which( floor( faslist.h5.232[[4]] ) == 2007 | floor( faslist.h5.232[[4]] ) == 2008 | floor( faslist.h5.232[[4]] ) == 2009 | floor( faslist.h5.232[[4]] ) == 2010 | floor( faslist.h5.232[[4]] ) == 2011 )  ) ] 
+ac.hyphy1107[[4]] <- faslist.n1.232[[1]][ intersect( which( faslist.n1.232[[8]] == "nonML" ), which( floor( faslist.n1.232[[4]] ) == 2004 | floor( faslist.n1.232[[4]] ) == 2005 | floor( faslist.n1.232[[4]] ) == 2006 )  ) ] 
+ac.hyphy1107[[5]] <- faslist.n1.232[[1]][ intersect( which( faslist.n1.232[[8]] == "nonML" ), which( floor( faslist.n1.232[[4]] ) == 2007 | floor( faslist.n1.232[[4]] ) == 2008 | floor( faslist.n1.232[[4]] ) == 2009 | floor( faslist.n1.232[[4]] ) == 2010 | floor( faslist.n1.232[[4]] ) == 2011 )  ) ] 
+
+ac.hyphy1107[[6]] <- faslist.h5.234[[1]][ intersect( which( faslist.h5.234[[8]] == "nonML" ), which( floor( faslist.h5.234[[4]] ) == 2004 | floor( faslist.h5.234[[4]] ) == 2005 | floor( faslist.h5.234[[4]] ) == 2006 )  ) ] 
+ac.hyphy1107[[7]] <- faslist.h5.234[[1]][ intersect( which( faslist.h5.234[[8]] == "nonML" ), which( floor( faslist.h5.234[[4]] ) == 2007 | floor( faslist.h5.234[[4]] ) == 2008 | floor( faslist.h5.234[[4]] ) == 2009 | floor( faslist.h5.234[[4]] ) == 2010 | floor( faslist.h5.234[[4]] ) == 2011 )  ) ] 
+ac.hyphy1107[[8]] <- faslist.n1.234[[1]][ intersect( which( faslist.n1.234[[8]] == "nonML" ), which( floor( faslist.n1.234[[4]] ) == 2004 | floor( faslist.n1.234[[4]] ) == 2005 | floor( faslist.n1.234[[4]] ) == 2006 )  ) ] 
+ac.hyphy1107[[9]] <- faslist.n1.234[[1]][ intersect( which( faslist.n1.234[[8]] == "nonML" ), which( floor( faslist.n1.234[[4]] ) == 2007 | floor( faslist.n1.234[[4]] ) == 2008 | floor( faslist.n1.234[[4]] ) == 2009 | floor( faslist.n1.234[[4]] ) == 2010 | floor( faslist.n1.234[[4]] ) == 2011 )  ) ] 
+
+
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[2]], filedir = "./Tree/GsGD_pH5_6084.fasta", no = ac.hyphy1107[[1]][1] )
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[3]], filedir = "./Tree/GsGD_pH5_6084.fasta", no = ac.hyphy1107[[1]][2] )
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[6]], filedir = "./Tree/GsGD_pH5_6084.fasta", no = ac.hyphy1107[[1]][5] )
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[7]], filedir = "./Tree/GsGD_pH5_6084.fasta", no = ac.hyphy1107[[1]][6] )
+
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[4]], filedir = "./aligntrim_pH5NA/trim_pN1_4428_lth1347.fasta", no = ac.hyphy1107[[1]][3] )
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[5]], filedir = "./aligntrim_pH5NA/trim_pN1_4428_lth1347.fasta", no = ac.hyphy1107[[1]][4] )
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[8]], filedir = "./aligntrim_pH5NA/trim_pN1_4428_lth1347.fasta", no = ac.hyphy1107[[1]][7] )
+subfastaSeq( AC = TRUE, AC_list = ac.hyphy1107[[9]], filedir = "./aligntrim_pH5NA/trim_pN1_4428_lth1347.fasta", no = ac.hyphy1107[[1]][8] )
+
+
+pat_sample1 <- paste0( "~/Desktop/data_souce/Clade_pH5NA/hyphy_1107/HA/", 
+                       list.files( "~/Desktop/data_souce/Clade_pH5NA/hyphy_1107/HA/" ))
+for(k in 1: length( pat_sample1 ) )
+{
+  ntpartition( position = c(1: 1017), filedir = pat_sample1[k], no = "-HA1.fasta")
+  ntpartition( position = c(1018: 1683), filedir = pat_sample1[k], no = "-HA2.fasta")
+}
+
+pat_sample2 <- paste0( "~/Desktop/data_souce/Clade_pH5NA/hyphy_1107/NA/", 
+                       list.files( "~/Desktop/data_souce/Clade_pH5NA/hyphy_1107/NA/" ))
+for(k in 1: length( pat_sample2 ) )
+{
+  ntpartition( position = c(211: 1347), filedir = pat_sample2[k], no = "-NAh.fasta")
+  ntpartition( position = c(1: 210), filedir = pat_sample2[k], no = "-NAs.fasta")
+}
+
 
