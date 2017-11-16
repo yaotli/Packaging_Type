@@ -1065,13 +1065,12 @@ strainSelect <- function( infolist )
                          
                          function(x)
                          {
-                           y = c2s(x)
-                           z = gsub("-|~", "", y)
+                           
                            z = grep( pattern = "a|t|c|g", 
-                                     x = y, 
+                                     x = x, 
                                      ignore.case = TRUE, value = TRUE )
                            
-                           l = length( s2c(z) )
+                           l = length( z )
                            
                            return(l)
                            
@@ -1126,7 +1125,7 @@ strainSelect <- function( infolist )
   
   return( newlist )
   
-  #v20170920b
+  #v20171108
 }
 
 
@@ -1479,12 +1478,11 @@ taxaInfo <- function( file     = file.choose(),
     seq.l <- sapply( seq,
                      function(x)
                      {
-                       y = c2s(x)
-                       z = gsub("-|~", "", y)
                        z = grep( pattern = "a|t|c|g", 
-                                 x = z, 
+                                 x = x, 
                                  ignore.case = TRUE, value = TRUE )
-                       l = length( s2c(z) )
+                       
+                       l = length( z )
                        
                        return(l)
                      } )
@@ -1500,7 +1498,7 @@ taxaInfo <- function( file     = file.choose(),
   
   return( ls )
   
-  #v20171006v
+  #v20171108
 }
 
 ### cladeSampling --------------------------------
@@ -1570,14 +1568,20 @@ cladeSampling <- function( trefile      = file.choose(),
   }
   
   # 1st search for node with homogeneous descendants 
-  inner.node <- seq( 1, dim(tre.d )[1])[ - seq(1, N.tip+1) ]
+  inner.node <- seq( 1, dim( tre.d )[1])[ - seq(1, N.tip+1) ]
   c1.node    <- inner.node[ which( sapply( as.list(inner.node), 
                                            function(x)
                                            {
                                              all <- getDes(x)[ getDes(x) <= N.tip ]
-                                             r   <- range( i.id.y[all])[2] - range(i.id.y[all] )[1]
-                                             g   <- unique( i.id.g[all] )
-                                             return( (r <= grid) & ( length( g ) == 1 ) )
+                                             
+                                             if( length( all[ !is.na( i.id.g[all] ) ] ) < 1 ){ return( TRUE ) }else
+                                             {
+                                               r   <- range( i.id.y[ all[ !is.na( i.id.g[all] ) ] ] )[2] - range( i.id.y[ all[ !is.na( i.id.g[all] ) ] ] )[1]
+                                               g   <- unique( i.id.g[ all[ !is.na( i.id.g[all] ) ] ] )
+                                               
+                                               return( ( r <= grid ) & ( length( g ) == 1 ) )    
+                                               
+                                             } 
                                            } )) 
                             ]
   # reduce redndant nodes
@@ -1600,6 +1604,7 @@ cladeSampling <- function( trefile      = file.choose(),
   c2.node_des <- c( c2.node, unlist( sapply( as.list(c2.node), getDes) ) )
   c2.node_tip <- c2.node_des[ c2.node_des <= N.tip ]
   nogroup_tip <- seq(1, N.tip)[ - c2.node_tip ]
+  nogroup_tip <- nogroup_tip[ !is.na( i.id.g[ nogroup_tip ] ) ]
   
   # sample within a group
   if( minBranchlth )
@@ -1608,6 +1613,12 @@ cladeSampling <- function( trefile      = file.choose(),
                             function(x)
                             {
                               alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              
+                              if( TRUE %in% is.na( i.id.g[ alltip ] )  )
+                              {
+                                alltip <- alltip[ - which( is.na( i.id.g[ alltip ] ) ) ]
+                              }
+                              
                               m      <- which.min( tre.d$x[ alltip ] )
                               
                               if( length( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ) )  > 1 )
@@ -1627,8 +1638,15 @@ cladeSampling <- function( trefile      = file.choose(),
     selected_tip <- sapply( as.list(c2.node), 
                             function(x)
                             {
+                              alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              
+                              if( TRUE %in% is.na( i.id.g[ alltip ] )  )
+                              {
+                                alltip <- alltip[ - which( is.na( i.id.g[ alltip ] ) ) ]
+                              }
+                              
                               set.seed( seed ) 
-                              s = sample( getDes(x)[ getDes(x) <= N.tip ], 1)
+                              s = sample( alltip, 1)
                               return(s)
                               
                             } 
@@ -1647,7 +1665,7 @@ cladeSampling <- function( trefile      = file.choose(),
     tre.d$shapee[selected_tip] = 16
     
     g1 <- ggtree( nex ) %<+% tre.d + aes(color = I(colorr)) + geom_tiplab(size = 1)
-    g1 + geom_tippoint(aes( shape = factor(shapee) ), size = 2)
+    print( g1 + geom_tippoint(aes( shape = factor(shapee) ), size = 2) )
   }
   
   remain <- c( nogroup_tip, selected_tip )
@@ -1661,10 +1679,10 @@ cladeSampling <- function( trefile      = file.choose(),
   }
   
   print( paste0("sampled n = ", length(remain), " from ", length(id) ) )
-  print( table( floor( i.id.y[remain] ), i.id.g[remain]) )
+  print( table( floor( i.id.y[remain] ), i.id.g[remain] ) )
   
   
-  #v20171016b
+  #v20171111b
 }
 
 
@@ -1678,12 +1696,16 @@ geoID <- function( strings,
                    E    = E, 
                    host = FALSE)
 {
-  cn.N  <- "Shanxi|Hebei|Beijing|Jilin|Sheny|Liaoning|Heilongjiang|North_China|Huabei"
-  cn.E  <- "Shandong|Jiangsu|Huadong|Eastern_China|Fujian|Anhui|Shanghai|Zhejiang|Jiangxi|Nanchang|Gaoyou|Zhaozhuang|Dongtai|Xuzhou|Danyang|Yangzhou"
-  cn.C  <- "Hunan|Hubei|Henan|Changsha|Chang_Sha"
-  cn.S  <- "Hong_Kong|Shantou|Guangdong|Shenzhen|Guangzhou"
-  cn.SW <- "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing|Anning|Dali|TongHa"
+  cn.NE <- "Jilin|Sheny|Liaoning|Heilongjiang"
+  cn.BH <- "Beijing|Hebei|Shandong|Zhaozhuang"
+  cn.YZ <- "Jiangsu|Zhejiang|Shanghai|Gaoyou|Dongtai|Xuzhou|Danyang|Yangzhou"
+  
+  cn.C  <- "Hunan|Hubei|Henan|Changsha|Chang_Sha|Anhui|Jiangxi|Shanxi|Nanchang"
+  
+  cn.SW <- "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing|Anning|Dali|TongHai"
   cn.NW <- "Ningxia|Xinjiang|Gansu|Qinghai|Shaanxi"
+  cn.S  <- "Hong_Kong|Shantou|Guangdong|Shenzhen|Guangzhou|Fujian"
+  
   SEA   <- "Bangladesh|Laos|Malaysia|Myanmar|Thailand|Vietnam|India|Nepal"
   nA    <- "Japan|Mongolia|Russia|South_Korea"
   E     <- "Bulgaria"
@@ -1691,8 +1713,8 @@ geoID <- function( strings,
   nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane"
   
   
-  geo.key <- c( cn.N, cn.E, cn.C, cn.S, cn.SW, cn.NW, SEA, nA, E)
-  geo     <- c("cnN", "cnE", "cnC", "cnS", "cnSW", "cnNW", "SEA", "nA", "E","Unknown")
+  geo.key <- c( cn.NE, cn.BH, cn.YZ, cn.C, cn.SW, cn.NW, cn.S, SEA, nA, E)
+  geo     <- c("cnNE", "cnBH", "cnYZ", "cnC", "cnSW", "cnNW", "cnS", "SEA", "nA", "E", "Unknown")
   
   if( host )
   {
@@ -1718,7 +1740,7 @@ geoID <- function( strings,
   print( strings[ which(y == "Unknown")  ]  )
   return( y )
   
-  #v20171004
+  #v20171107
 }
 
 
@@ -1790,5 +1812,43 @@ hyphy_slac <- function( folder = getwd() )
 
 
 
+### temSample --------------------------------
 
+temSample <- function( fasfile    = file.choose(), 
+                       faslist    = list(), 
+                       list.x     = c("id", "time", "chr"), 
+                       samplelist = list( chr1 = c("t1", "n-to-keep") ), 
+                       seed       = 666 )
+{
+  fas.n <- attributes( read.fasta( fasfile ) )$names
+  fas.s <- getSequence( read.fasta( fasfile ) )
+  
+  tem.m <- match( fas.n, faslist[[ list.x[1] ]] )
+  
+  if( TRUE %in% is.na(tem.m) ){stop()}
+  
+  x.y <- floor( faslist[[ list.x[2] ]][ tem.m ] )
+  x.c <- faslist[[ list.x[3] ]][ tem.m ]
+  
+  set.seed( seed )
+  tokill <- c()
+  for( k in 1: length(samplelist) )
+  {
+    for( j in 1: ( length( samplelist[[k]] )/2 ) )
+    {
+      tem.i  <- which(  x.c ==  attributes(samplelist)$names[k] &  x.y == samplelist[[k]][ (j-1)*2 + 1 ] )
+      tokill <- c( tokill, sample( fas.n[tem.i], ( length(tem.i) - samplelist[[k]][ j*2 ] ) ) )
+    }
+  }
+  
+  k.m <- match( tokill, fas.n )
+  r.i <- seq(1, length(fas.n) )[ -k.m ]
+  
+  print( table( x.c[ r.i ] ) )
+  
+  write.fasta( fas.s[ r.i ], fas.n[ r.i ], file.out = gsub( ".fasta", ".ts.fasta", fasfile  ) )
+  
+  
+  #v20171110b
+}
 
