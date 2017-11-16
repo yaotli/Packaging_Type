@@ -1807,9 +1807,7 @@ df_slac_1008 <- hyphy_slac( "~/Desktop/Hyphy/result/slac_1008/")
   
 ### allh5-HA1/HA2: slac_1019 --------------------------------
   
-  
 df_slac_1019 <- hyphy_slac( "~/Desktop/Hyphy/result/slac_1019/")
-  
   
   ggplot(data = df_slac_1019, aes(x = geo, y = w, colour = year)) +
     geom_point( size = 4, position = position_dodge(0.8) ) +
@@ -1817,7 +1815,7 @@ df_slac_1019 <- hyphy_slac( "~/Desktop/Hyphy/result/slac_1019/")
                    position = position_dodge(0.8), width = 0.01, size = 1.2) +
     facet_wrap(~gene, ncol = 2) +
     scale_y_continuous(limits = c(0,0.55) ) +
-    scale_color_manual(values = c( "#00BFC4", "#F8766D" ), labels = c("before 2007", "since 2017")) +
+    scale_color_manual(values = c( "#00BFC4", "#F8766D" ), labels = c("before 2007", "since 2007")) +
     scale_x_discrete(labels = c("232", "234\nnSW", "234\nSW")) +
     xlab("") + ylab(expression(omega)) +
     theme_bw() + 
@@ -1833,6 +1831,37 @@ df_slac_1019 <- hyphy_slac( "~/Desktop/Hyphy/result/slac_1019/")
           strip.text = element_text(size = 18, face = "bold") )
   
 
-    
+
+### ph5-HA1/HA2: slac_1107 --------------------------------
+  
+df_slac_1109 <- hyphy_slac( "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/Hyphy/result/slac_1107/" )  
+  
+ggplot(data = df_slac_1109, aes(x = clade, y = w, colour = year)) +
+  geom_point( size = 4, position = position_dodge(0.8) ) +
+  geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                 position = position_dodge(0.8), width = 0.01, size = 1.2) +
+  facet_wrap(~gene, ncol = 2) + 
+  scale_x_discrete(labels = c("232", "234") ) +
+  xlab("") + ylab(expression(omega)) +
+  scale_color_manual(values = c( "#00BFC4", "#F8766D" ), labels = c("before 2007", "since 2007")) +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.text.x = element_text(size = 18), 
+        axis.title.y = element_text(size = 22), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_blank(), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 18, face = "bold") )
+
+  
+  
+  
+  
+  
+  
+   
   
  

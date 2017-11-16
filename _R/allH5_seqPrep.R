@@ -161,7 +161,7 @@ for(i in 1: 4)
 
 ### 234 --------------------------------
 
-rmDup( fasfile = "./Clade_allh5/234/c234_1930.fasta", 
+rmDup( fasfile = "./Clade_allh5/234/raw/c234_1930.fasta", 
        sero    = "H5N1", 
        year    = c(1000, 2012) )
 
@@ -172,7 +172,10 @@ faslist.234 <- taxaInfo( file = "./Clade_allh5/234/rmdup/c234_508.fasta" )
 
 faslist.234[[8]] <- geoID( strings = faslist.234[[6]] )
 faslist.234[[8]][ which( faslist.234[[8]] == "Unknown" ) ] = 
-  c("cnN", "cnE", "cnE", "Unknown", "cnS", "cnS")
+  c( "cnE", "cnE", "cnE", "cnE", "cnN", 
+     "cnN", "cnE", "cnE", "cnC", "cnE", 
+     "cnE", "cnC", "Unknown", "cnS", "cnS")
+  
 faslist.234[[2]][232] = "China"
 
 # table( floor(faslist.234[[4]]), faslist.234[[8]] )
@@ -184,7 +187,6 @@ faslist.234[[2]][232] = "China"
 #   facet_wrap(~g, ncol = 1) + xlab("")
 
 
-
 # host
 faslist.234[[9]] = geoID( faslist.234[[6]], host = TRUE)
 faslist.234[[9]][ which(faslist.234[[9]] == "Unknown") ] = "ML"
@@ -192,20 +194,77 @@ faslist.234[[9]][ which(faslist.234[[9]] == "Unknown") ] = "ML"
 
 # modification
 # table( faslist.234[[8]] )
-#    cnC     cnE     cnN    cnNW     cnS    cnSW     SEA    Unknown 
-#     39      61       6       3      46      74     278          1
+# cnBH     cnC     cnE     cnN    cnNE    cnNW     cnS 
+# 11      49       8       2       1       3      63 
+# cnSW    cnYZ     SEA Unknown 
+# 74      18     278       1 
 # 
 # remove : Unknown ( EF624256_China_2006_|China|_H5N1_2006.496 ) 
-# merge  : cnNW / cnN
+# merge  : cnE / cnBH / cnYZ
+# merge  : cnN / cnNW / cnNE
 
 faslist.234[[8]][ which( faslist.234[[8]] == "Unknown" ) ] = NA
+
+faslist.234[[8]][ which( faslist.234[[8]] == "cnBH" ) ]    = "cnE"
+faslist.234[[8]][ which( faslist.234[[8]] == "cnYZ" ) ]    = "cnE"
 faslist.234[[8]][ which( faslist.234[[8]] == "cnNW" ) ]    = "cnN"
+faslist.234[[8]][ which( faslist.234[[8]] == "cnNE" ) ]    = "cnN"
 
 # cnC  cnE  cnN  cnS cnSW  SEA 
-#  39   61    9   46   74  278 
+# 49   37    6   63   74  278 
 
-# tree
-# system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./Clade_allh5/234/c234_508.fasta> ./Clade_allh5/234/c234_508.tre")
+# remove duplicated sequence (seq. lth)
+annlth( seqfile = "./Clade_allh5/234/rmdup/c234_508.fasta", 
+        trefile = "./Clade_allh5/234/rmdup/c234_508.phy_phyml_e.tre" )
+
+AC_234_rmLeaf <-         
+  str_match( tagExtra( "./Clade_allh5/234/rmdup/c234_508.phy_phyml_e.lth.tre" )[,1][ grep( "ff0000", tagExtra( "./Clade_allh5/234/rmdup/c234_508.phy_phyml_e.lth.tre" )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+
+subfastaSeq( AC = TRUE, AC_list = AC_234_rmLeaf, filedir = "./Clade_allh5/234/raw/c234_1930.fasta" )
+
+# cladesampling ( 471 )
+# remove : cnN 
+faslist.234[[8]][ which( faslist.234[[8]] == "cnN" ) ] = NA
+
+cladeSampling( trefile   = "Clade_allh5/234/rmdup/c234_471.phy_phyml_e.tre", 
+               fasfile   = "Clade_allh5/234/rmdup/c234_508.fasta", 
+               suppList  = TRUE, 
+               listinput = faslist.234,
+               grid      = 1, 
+               list.x    = c(6, 4, 8), 
+               saveFasta = TRUE, 
+               showTree  = TRUE )
+
+#       cnC cnE cnS cnSW SEA
+# 2004   1   0   0    0   0
+# 2005  10   3   7   11   4
+# 2006  12   2   8   25   2
+# 2007   7   3   6    0  34
+# 2008   1   4   3    3  21
+# 2009   3   4   0    3  12
+# 2010   0   9   0    0  10
+# 2011   1   3   0    0   1
+
+# temSample
+
+temSample( fasfile    = "./Clade_allh5/234/clade_tem_sample/c234_213_cs.fasta", 
+           faslist    = faslist.234, 
+           list.x     = c(6,4,8), 
+           samplelist = list( cnC  = c(2005, 5, 2006, 6), 
+                              cnE  = c(2010, 5),
+                              cnSW = c(2005, 6, 2006, 13),
+                              SEA  = c(2007, 12, 2008, 10, 2009, 6, 2010, 5) ) )
+
+# cnC  cnE  cnS cnSW  SEA 
+# 24   24   24   25   40 
+
+list_c234_ts    <- taxaInfo( file = "./Clade_allh5/234/clade_tem_sample/c234_137.ts.phy_phyml_e.tre", useTree = TRUE, root2tip = TRUE)
+ts.trait.234    <- data.frame( id  = list_c234_ts[[6]], 
+                               geo = faslist.234[[8]][ match( list_c234_ts[[6]], faslist.234[[6]] ) ],
+                               stringsAsFactors = FALSE )
+write.table( x = ts.trait.234, file = "ts.trait.234", sep = "\t", quote = FALSE, row.names = FALSE)
+
+
 
 
 # simple curate for phylogeo.
@@ -266,7 +325,7 @@ write.table( x = b.trait.234, file = "b.trait.234", sep = "\t", quote = FALSE, r
 
 ### 232 --------------------------------
 
-rmDup( fasfile = "./Clade_allh5/232/c232_1187.fasta", 
+rmDup( fasfile = "./Clade_allh5/232/raw/c232_1187.fasta", 
        sero    = "H5N1", 
        year    = c(1000, 2012) )
 
@@ -277,7 +336,7 @@ faslist.232 <- taxaInfo( file = "./Clade_allh5/232/rmdup/c232_446.fasta" )
 # geo
 faslist.232[[8]] <- geoID( strings = faslist.232[[6]] )
 faslist.232[[8]][ which( faslist.232[[8]] == "Unknown" ) ] = 
-  c("cnNW", "SEA", "cnC", "cnC", "cnC", "cnS")
+  c("cnN", "cnNW", "SEA", "cnC", "cnC", "cnC", "cnS")
 
 # epi.
 # df.geo <- data.frame( y = faslist.232[[4]], g = faslist.232[[8]] )
@@ -295,23 +354,75 @@ faslist.232[[9]][ which(faslist.232[[9]] == "Unknown") ]       = "ML"
 
 
 # modification
-
 # table( faslist.232[[8]] )
 # 
-# cnC  cnE  cnN cnNW  cnS cnSW    E   nA  SEA 
-#  39   15    3   18   38   42    1  115  175
+# cnBH  cnC  cnN cnNE cnNW  cnS cnSW cnYZ    E   nA  SEA 
+#    5   39    1    2   18   39   42    9    1  115  175 
 #
 # remove: E ( CY110854_common_buzzard_Bulgaria_38WB_2010_|Bulgaria|_H5N1_2010.200 )
-# merge : cnNW / cnN
+# merge : cnNW / cnN / cnNE
+# merge : cnBH / cnYZ
 
 faslist.232[[8]][ which( faslist.232[[8]] == "E" ) ]    = NA
-faslist.232[[8]][ which( faslist.232[[8]] == "cnNW" ) ] = "cnN"
+faslist.232[[8]][ which( faslist.232[[8]] == "cnNW" | faslist.232[[8]] == "cnN" | faslist.232[[8]] == "cnNE" ) ] = "cnN"
+faslist.232[[8]][ which( faslist.232[[8]] == "cnYZ" | faslist.232[[8]] == "cnBH" ) ] = "cnE"
 
 # cnC  cnE  cnN  cnS cnSW   nA  SEA 
-#  39   15   21   38   42  115  175 
+#  39   14   21   39   42  115  175 
 
-# tree
-# system("~/./FastTree -nt -nni 10 -spr 4 -gtr -cat 20 -gamma -notop <./Clade_allh5/232/c232_446.fasta> ./Clade_allh5/232/c232_446.tre")
+
+# remove duplicated sequence (seq. lth)
+annlth( seqfile = "./Clade_allh5/232/rmdup/c232_446.fasta", 
+        trefile = "./Clade_allh5/232/rmdup/c232_446.phy_phyml_e.tre" )
+
+AC_232_rmLeaf <-         
+  str_match( tagExtra( "./Clade_allh5/232/rmdup/c232_446.phy_phyml_e.lth.tre" )[,1][ grep( "ff0000", tagExtra( "./Clade_allh5/232/rmdup/c232_446.phy_phyml_e.lth.tre" )[,2], invert = TRUE) ], "^[A-Za-z0-9]+" )[,1]
+
+subfastaSeq( AC = TRUE, AC_list = AC_232_rmLeaf, filedir = "./Clade_allh5/232/raw/c232_1187.fasta" )
+
+# cladesampling ( 160 )
+
+cladeSampling( trefile   = "Clade_allh5/232/rmdup/c232_428.phy_phyml_e.tre", 
+               fasfile   = "Clade_allh5/232/rmdup/c232_446.fasta", 
+               suppList  = TRUE, 
+               listinput = faslist.232,
+               grid      = 1, 
+               list.x    = c(6, 4, 8), 
+               saveFasta = TRUE, showTree = TRUE)
+
+
+#       cnC cnE cnN cnS cnSW nA SEA
+# 2003   1   0   0   0    0  0   1
+# 2004   2   0   0   4    3  0   0
+# 2005   2   1   0   1    9  0   4
+# 2006   0   0   0   2    0  0   1
+# 2007   3   0   2   6    0  0   0
+# 2008   4   0   0   6    0  1   2
+# 2009   7   5   2   4    2  9   2
+# 2010   2   1   2   3    0  7  17
+# 2011   5   3   2   2    1  1  27
+
+temSample( fasfile    = "./Clade_allh5/232/clade_tem_sample/c232_159.cs.fasta", 
+           faslist    = faslist.232, 
+           list.x     = c(6,4,8), 
+           samplelist = list( cnC  = c(2008, 2, 2009, 3, 2011, 2), 
+                              cnS  = c(2004, 2, 2007, 3, 2008, 3),
+                              SEA  = c(2005, 2, 2010, 8, 2011, 10 ) ) )
+
+# cnC  cnE  cnN  cnS cnSW   nA  SEA 
+#  17   10    8   20   15   18   26 
+
+list_c232_ts    <- taxaInfo( file = "./Clade_allh5/232/clade_tem_sample/c232_114.ts.phy_phyml_e.tre", useTree = TRUE, root2tip = TRUE)
+ts.trait.232    <- data.frame( id  = list_c232_ts[[6]], 
+                               geo = faslist.232[[8]][ match( list_c232_ts[[6]], faslist.232[[6]] ) ],
+                               stringsAsFactors = FALSE )
+write.table( x = ts.trait.232, file = "ts.trait.232", sep = "\t", quote = FALSE, row.names = FALSE)
+
+
+
+
+
+
 
 
 # simple curate for phylogeo.

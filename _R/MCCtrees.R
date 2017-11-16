@@ -7,7 +7,7 @@ library(tidyr)
 
 
 source("~/Packaging_Type/_R/Function.R")
-setwd("/Volumes/EDGE 2/LoVE/ReassortSubtype/Ne/")
+setwd("/Volumes/EDGE 2/LoVE/ReassortSubtype/BEAST/")
 
 
 ### skygrid_0810 --------------------------------
@@ -222,7 +222,7 @@ multiplot(g234_ha_grid, g232_ha_grid,
 ### mean rate from BEAST --------------------------------
 
 # HA 
-ha_meanRate <- as.data.frame( t(read.table("./skygrid_0810/result_0810/ha_meanRate.csv", 
+ha_meanRate <- data.frame( t(read.table("./skygrid_0810/result_0810/ha_meanRate.csv", 
                           sep = "\t", header = TRUE) ), stringsAsFactors = FALSE)
 
 colnames(ha_meanRate) <- ha_meanRate[1, ][1:10]
@@ -243,7 +243,7 @@ ggplot(data = ha_meanRate, aes(x=c("232", "234", "7"), y = mean)) +
 
 
 # NA
-na_meanRate <- as.data.frame( t(read.table("./skygrid_0810/result_0810/na_meanRate.csv", 
+na_meanRate <- data.frame( t( read.table("./skygrid_0810/result_0810/na_meanRate.csv", 
                                            sep = "\t", header = TRUE) ), stringsAsFactors = FALSE)
 
 colnames(na_meanRate) <- na_meanRate[1, ][1:10]
@@ -308,7 +308,7 @@ ggplot() + theme_bw() +
   theme( panel.grid.minor = element_blank(), 
          panel.grid.major = element_blank(),
          axis.text.x = element_text(size = 18), 
-         axis.title=element_text(size = 16,face="bold") ) +
+         axis.title=element_text(size = 16, face="bold") ) +
   
   scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
   
@@ -344,7 +344,7 @@ ggplot() + theme_bw() +
   theme( panel.grid.minor = element_blank(), 
          panel.grid.major = element_blank(),
          axis.text.x = element_text(size = 18), 
-         axis.title=element_text(size = 16,face="bold") ) +
+         axis.title=element_text(size = 16, face="bold") ) +
   
   scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
   scale_y_continuous(breaks = seq(-3, 5, by=2) ) +
@@ -444,11 +444,248 @@ ggplot() + theme_bw() +
                fill = "#d62728", alpha = 0.4)
   
   
+### more grid / ride / rate plot --------------------------------
+
+c232_ha_grid <- read.table("./grid_1107/result/232_h5_grid_1107.csv", sep = "\t", header = T)
+c234_ha_grid <- read.table("./grid_1107/result/234_h5_grid_1107.csv", sep = "\t", header = T)
+c232_na_grid <- read.table("./grid_1107/result/232_n1_grid_1107.csv", sep = "\t", header = T)
+c234_na_grid <- read.table("./grid_1107/result/234_n1_grid_1107.csv", sep = "\t", header = T)
+
+c232_ha_ride <- read.table("./ride_1106/result/232_h5_ride_1106.csv", sep = "\t", header = T)
+c234_ha_ride <- read.table("./ride_1106/result/234_h5_ride_1106.csv", sep = "\t", header = T)
+c232_na_ride <- read.table("./ride_1106/result/232_n1_ride_1106.csv", sep = "\t", header = T)
+c234_na_ride <- read.table("./ride_1106/result/234_n1_ride_1106.csv", sep = "\t", header = T)
 
 
+# grid - HA
 
-
-
-
-
+combined_grid_ha <- 
+  ggplot() + theme_bw() + 
   
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 18), 
+         axis.title=element_text(size = 16, face = "bold") ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  
+  xlab("") + ylab("Population size") +
+  
+  geom_line( data = c234_ha_grid, 
+             aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
+  geom_line( data = c232_ha_grid, 
+             aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+  
+  geom_ribbon( data = c234_ha_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
+  geom_ribbon( data = c232_ha_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
+  
+ 
+# grid - NA 
+
+combined_grid_na <- 
+  ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 18), 
+         axis.title=element_text(size = 16, face = "bold") ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  scale_y_continuous(breaks = seq(-3, 5, by=2) ) +
+  
+  xlab("") + ylab("Population size") +
+  
+  geom_line( data = c234_na_grid, 
+             aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
+  geom_line( data = c232_na_grid, 
+             aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+
+  geom_ribbon( data = c234_na_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
+  geom_ribbon( data = c232_na_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
+
+multiplot( combined_grid_ha, combined_grid_na, ncol = 1)
+
+# ride - HA 
+
+combined_ride_ha <- 
+  ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 18), 
+         axis.title=element_text(size = 16, face = "bold") ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  
+  xlab("") + ylab("Population size") +
+  
+  geom_line( data = c234_ha_ride, 
+             aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
+  geom_line( data = c232_ha_ride, 
+             aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+  
+  geom_ribbon( data = c234_ha_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
+  geom_ribbon( data = c232_ha_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
+
+
+
+# ride - NA
+
+combined_ride_na <- 
+  ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 18), 
+         axis.title=element_text(size = 16, face ="bold") ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  scale_y_continuous(breaks = seq(-3, 5, by=2) ) +
+  
+  xlab("") + ylab("Population size") +
+  
+  geom_line( data = c234_na_ride, 
+             aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
+  geom_line( data = c232_na_grid, 
+             aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+  
+  geom_ribbon( data = c234_na_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
+  geom_ribbon( data = c232_na_grid, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
+
+multiplot( combined_ride_ha, combined_ride_na, ncol = 1)
+
+
+# rate 
+
+rate_h5n1 <- data.frame( clade  = c( rep( c( rep("232", 2), rep("234", 2) ), 2 ) ),
+                         gene   = c( rep( c("HA", "NA"), 4) ),
+                         method = c( rep("ride", 4), rep("grid", 4) ),
+                         median = c( 5.3323E-3, 4.9161E-3, 3.8127E-3, 3.7575E-3, 5.6302E-3, 4.8016E-3, 4.0174E-3, 3.8179E-3),
+                         hpd_l  = c( 4.586E-3, 4.1466E-3, 3.1808E-3, 3.1799E-3, 4.8245E-3, 3.8923E-3, 3.5E-3, 3.2948E-3 ),
+                         hpd_u  = c( 6.0966E-3, 5.7407E-3, 4.4604E-3, 4.3539E-3, 6.5103E-3, 5.7716E-3, 4.6053E-3, 4.3723E-3 ), 
+                         stringsAsFactors = FALSE)
+
+ggplot(data = rate_h5n1, aes(x = method, y = median, color = clade )) +
+  geom_point( size = 4, position = position_dodge(0.8)) +
+  geom_errorbar( aes(ymin = hpd_l, ymax = hpd_u), width = 0.01, size = 1.2, position = position_dodge(0.8)) +
+  facet_wrap(~gene, ncol = 2) + 
+  xlab("") + ylab("meanRate") +
+  scale_color_manual(values = c( "#00BFC4", "#F8766D" )) +
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.text.x = element_text(size = 18), 
+        axis.title.y = element_text(size = 20), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_blank(), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 18, face = "bold") )
+
+
+### geo_1112 --------------------------------
+
+# 234
+b_tre.234    <- "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/234/1112/234_h5_1112-1_ann.tre"
+rawbeast.234 <- read.beast( b_tre.234 )
+tredata.234  <-  fortify( rawbeast.234 )
+
+g <- 
+  ggtree( rawbeast.234, right = TRUE, size = 1, mrsd = "2011-12-18") + 
+  aes( color = geo ) + 
+  scale_color_manual( values = c("#8c564b", "#2ca02c", "#d62728", "#1f77b4", "#17becf") ) + 
+  scale_fill_manual( values = c("#8c564b", "#2ca02c", "#d62728", "#1f77b4", "#17becf") ) +
+  theme_tree2( axis.text.x = element_text( size = 16  ), legend.position = c(0,0), legend.justification = c(0,0)) + 
+  scale_y_continuous( expand = c(0,5) ) + 
+  geom_tippoint(aes(fill = geo), shape = 21, color = "black", stroke = 0.5 ) + 
+  scale_x_continuous( breaks = seq(2002.5, 2012.5, by = 2), 
+                      labels = seq(2002, 2012, by = 2) )  + 
+  theme( axis.ticks  = element_blank(), legend.title = element_blank(), legend.text = element_text(size = 18))
+
+
+rectdf <- data.frame( xstart = seq( 2002, 2011, 2), 
+                      xend   = seq( 2003, 2012, 2))
+g + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf),
+              fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+# 232
+
+b_tre.232    <- "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/232/1112/232_h5_1112-1_ann.tre"
+rawbeast.232 <- read.beast( b_tre.232 )
+tredata.232  <-  fortify( rawbeast.232 )
+
+k <- 
+  ggtree( rawbeast.232, right = TRUE, size = 1,mrsd = "2011-12-30") + 
+  aes( color = geo ) + 
+  scale_color_manual( values = c("#8c564b", "#2ca02c", "#7f7f7f", "#d62728", "#1f77b4", "#bcbd22","#17becf" ) ) + 
+  scale_fill_manual( values = c("#8c564b", "#2ca02c", "#7f7f7f", "#d62728", "#1f77b4", "#bcbd22","#17becf" ) ) +
+  theme_tree2( axis.text.x = element_text( size = 16  ), legend.position = c(0,0), legend.justification = c(0,0)) + 
+  scale_y_continuous( expand = c(0,5) ) + 
+  geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2014.5, by = 2), 
+                      labels = seq(2002, 2014, by = 2) )  + 
+  theme( axis.ticks  = element_blank(), legend.title = element_blank(), legend.text = element_text(size = 18))
+
+rectdf <- data.frame( xstart = seq( 2002, 2013, 2), 
+                      xend   = seq( 2003, 2014, 2))
+k + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf),
+              fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+# persistence 
+
+PACT_232 <- read.table("/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/out.232.stats", header = TRUE)
+PACT_234 <- read.table("/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/out.234.stats", header = TRUE)
+
+# 232
+ggplot(data = PACT_232[-1,], aes( x= statistic, y = mean, color = statistic)) +
+  geom_point(size = 5) +
+  geom_errorbar( aes( ymin = lower, ymax = upper ), width = 0.01, size = 1) +
+  coord_flip() + 
+  xlab("") + ylab("Persistence") +
+  scale_color_manual( values = c("#8c564b", "#2ca02c", "#7f7f7f", "#d62728", "#1f77b4", "#bcbd22","#17becf" ) ) + 
+  
+  scale_x_discrete( labels = c("Central China", "Eastern China", "Northern China", "Southern China", 
+                               "SouthWest China", "Northern Asia", "Southeast Asia") ) +
+  theme_bw() + #ggtitle("Inferred MRCA of Nx viruses") + 
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         axis.ticks.y     = element_blank(),
+         panel.border     = element_blank(),
+         axis.text.y      = element_text(size = 16),
+         axis.text.x      = element_text(size = 15),
+         axis.title.x     = element_text(size = 18),
+         legend.position  = "none") 
+  
+# 234
+ggplot(data = PACT_234[-1,], aes( x= statistic, y = mean, color = statistic)) +
+  geom_point(size = 5) +
+  geom_errorbar( aes( ymin = lower, ymax = upper ), width = 0.01, size = 1) +
+  coord_flip() + 
+  xlab("") + ylab("Persistence") +
+  scale_color_manual( values = c("#8c564b", "#2ca02c", "#d62728", "#1f77b4", "#17becf") ) + 
+  
+  scale_x_discrete( labels = c("Central China", "Eastern China", "Southern China", 
+                               "SouthWest China",  "Southeast Asia") ) +
+  scale_y_continuous( limits = c(0,3) ) +
+  theme_bw() + #ggtitle("Inferred MRCA of Nx viruses") + 
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         axis.ticks.y     = element_blank(),
+         panel.border     = element_blank(),
+         axis.text.y      = element_text(size = 16),
+         axis.text.x      = element_text(size = 15),
+         axis.title.x     = element_text(size = 18),
+         legend.position  = "none") 
+
+
