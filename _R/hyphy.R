@@ -7,7 +7,7 @@ library(ggplot2)
 library(readr)
 library(dplyr)
 
-setwd("~/Desktop/Hyphy/")
+setwd("/Volumes/EDGE2/LoVE/ReassortSubtype/")
 source("~/Packaging_Type/_R/Function.R")
 
 ### SLAC (src) --------------------------------
@@ -1834,7 +1834,7 @@ df_slac_1019 <- hyphy_slac( "~/Desktop/Hyphy/result/slac_1019/")
 
 ### ph5-HA1/HA2: slac_1107 --------------------------------
   
-df_slac_1109 <- hyphy_slac( "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/Hyphy/result/slac_1107/" )  
+df_slac_1109 <- hyphy_slac( "/Volumes/EDGE2/LoVE/ReassortSubtype/Hyphy/result/slac_1107/" )  
   
 ggplot(data = df_slac_1109, aes(x = clade, y = w, colour = year)) +
   geom_point( size = 4, position = position_dodge(0.8) ) +
@@ -1858,8 +1858,41 @@ ggplot(data = df_slac_1109, aes(x = clade, y = w, colour = year)) +
 
   
   
+### ph5-HA1/HA2: slac_1206 --------------------------------
+
+df_slac_1206 <- hyphy_slac( "Hyphy/result/slac_1205/" )
+
+domain1 <- seq(1,20,2)
+domain2 <- seq(2,20,2)
+
+ggplot(data = df_slac_1206[domain2,], aes(x = year, y = w, colour = clade, group = clade)) +
+  geom_point( size = 3.5, position = position_dodge(0.8) ) +
+  geom_line( position = position_dodge(0.8)  ) +
+  geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                 position = position_dodge(0.8), width = 0.001, size = 1) +
+  facet_wrap(~gene, ncol = 1) + 
+  scale_x_discrete(labels = c("2003-2006", "2007-2011", "2012-2016") ) +
+  xlab("") + ylab(expression(omega)) +
+  scale_color_manual(values = c( "#2ca02c", "#d62728" ), labels = c("c232", "c234")) +
+  # "#00BFC4", "#F8766D"
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.text.x = element_text(size = 15), 
+        axis.title.y = element_text(size = 22), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_blank(), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 18, face = "bold") )
+
+
+
+
   
-  
+
+
   
   
    
