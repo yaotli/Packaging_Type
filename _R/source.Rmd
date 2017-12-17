@@ -16,7 +16,7 @@ source("~/Packaging_Type/_R/Function.R")
 #### Searching criteria
 
 Type | H | Host | Location | Required Segments | only com. Min Len. | only GISAID 
-- | - | - | - | - | - | - 
+---- | - | ---- | -------- | ----------------- | -------------------| ----------- 
 A | 5 | __w/o__( Lab derived, Unknown, NA ) | all | HA + NA | 1000 ( __w/o__ check ) | check 
 
 <br>
