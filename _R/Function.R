@@ -635,11 +635,12 @@ keepLongSeq <- function(seq_0,
         sapply(seq_0[id_dup_k], function(x)
         {
           
-          y = c2s(x)
-          z = gsub("-", "", y)
-          z = gsub("~", "", z)
+          y = grep( pattern     = "a|t|c|g",
+                    x           = x,
+                    ignore.case = TRUE, 
+                    value       = TRUE)
           
-          l = length( s2c(z) )
+          l = length( y )
           
           return(l)
           
@@ -668,7 +669,7 @@ keepLongSeq <- function(seq_0,
     print("No identical ID here")
   }
   
-  #v20170907
+  #v20171124
 }
 
 ### fastaEx --------------------------------
@@ -750,9 +751,7 @@ subfastaSeq <- function( subtype         = "H5N1",
   
   if ( AC )
   {
-    ac_code  <- "EPI[0-9]+|[A-Z]{1,2}[0-9]{5,6}"
-    ac.file  <- str_match( seq_name0 , ac_code )
-    
+    ac.file  <- str_match( seq_name0, "^[A-Z0-9]+" )
     ac.i     <- match( AC_list, ac.file)
     
     if ( TRUE %in% is.na(ac.i) )
@@ -831,7 +830,7 @@ subfastaSeq <- function( subtype         = "H5N1",
   }
   
   
-  #v20171009
+  #v20171205
 }
 
 
@@ -1710,7 +1709,7 @@ geoID <- function( strings,
   nA    <- "Japan|Mongolia|Russia|South_Korea"
   E     <- "Bulgaria"
   
-  nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane"
+  nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane|peacock"
   
   
   geo.key <- c( cn.NE, cn.BH, cn.YZ, cn.C, cn.SW, cn.NW, cn.S, SEA, nA, E)
@@ -1851,4 +1850,144 @@ temSample <- function( fasfile    = file.choose(),
   
   #v20171110b
 }
+
+### alternative way to do sequence extraction from tree --------------------------------
+
+leafEx <- function( filedir   = file.choose(), 
+                    leaflist  = c() )
+{
+  require( seqinr )
+  
+  leaflist <- unlist( strsplit( gsub( " ", "", leaflist ), "\n" ) )
+  
+  fas   <- read.fasta( filedir )
+  fas.s <- getSequence( fas )
+  fas.n <- attributes( fas )$names
+  
+  m <- match( leaflist, fas.n )
+  
+  if( TRUE %in% is.na(m) ){ stop() }else
+  {
+    write.fasta( fas.s[ m ], fas.n[ m ], gsub( pattern = ".fasta", 
+                                               replacement = paste0( "_", length(m), ".fasta"), 
+                                               x = filedir ) )  
+    
+  }
+  
+  mx <- do.call( rbind, fas.s[ m ] )
+  
+  Conseq = 
+    apply( mx, 2, 
+           function(x){
+             
+             if ( length( grep( "a|t|c|g", x, value = TRUE, ignore.case = TRUE) )  == 0 ){ most = "-" }else
+             {
+               most <- as.data.frame( table( grep( "a|t|c|g", x, value = TRUE, ignore.case = TRUE) ), 
+                                      stringsAsFactors = FALSE)[1,1]
+             }
+             
+             return( most )
+             
+           })
+  
+  write.fasta( list(Conseq), "Conseq", gsub( pattern = ".fasta", 
+                                             replacement = paste0( "_con", length(m), ".fasta"), 
+                                             x = filedir ) )
+  #v20171130
+}
+
+
+### site-level unique sequences --------------------------------
+
+rmdup_plus <- function( fasdir = file.choose() )
+{
+  require(seqinr)
+  require(stringr)
+  
+  fas = read.fasta( fasdir )
+  
+  #readin
+  fas.s0 <- getSequence(fas)
+  fas.i0 <- attributes(fas)$names
+  
+  # sort1
+  o.t <- 
+    sort( as.numeric( str_match( fas.i0, "_([0-9]{4}.[0-9]{3})$" )[,2] ), index.return = TRUE )$ix
+  
+  if( TRUE %in% is.na(as.numeric( str_match( fas.i0, "_([0-9]{4}.[0-9]{3})$" )[,2] )) ){ stop() }
+  
+  fas.s1 <- fas.s0[ o.t ] 
+  fas.i1 <- fas.i0[ o.t ]
+  
+  # sort2
+  o.lth <- 
+    sort( sapply(fas.s1, 
+                 function(x)
+                 {
+                   length( grep( pattern = "a|t|c|g", x = x, ignore.case = TRUE, value = TRUE ) )
+                 }
+    ), index.return = TRUE )$ix
+  
+  fas.s1 <- fas.s1[ o.lth ] 
+  fas.i1 <- fas.i1[ o.lth ]
+  
+  
+  
+  m   <- matrix( unlist(fas.s1), ncol = length( fas.s1[[1]] ), byrow = TRUE )
+  
+  todel <- c()
+  for(i in 1: ( length(fas.s1) -2 ) )
+  {
+    m_i <- grep( pattern = "a|t|c|g", x = m[i,], ignore.case = TRUE)
+    
+    if( TRUE %in% grepl( c2s( m[ i, m_i] ), apply( m[ (i+1) : nrow(m), m_i], 1, c2s) ) ){ todel[ length(todel) + 1 ] <-  i }
+    
+    print( i )
+  }
+  
+  remain <- seq(1, length(fas.s1) )[- todel ]
+  
+  print( paste0( "Done:", length(remain) ) )
+  
+  write.fasta( sequences = fas.s1[remain], names = fas.i1[remain], file.out = gsub( ".fasta", "_rmdP.fasta", fasdir) )
+  
+  #v20171130
+}
+
+### search for ac in the faslist --------------------------------
+
+
+acSearch <- function( faslist     = list(),
+                      ac.dir      = 1,
+                      keyword     = NULL, 
+                      keyword.dir = c(9),
+                      range       = NULL, 
+                      range.dir   = 4 
+                      )
+{
+  a.1 <- c()
+  a.2 <- c()
+  
+  if( length(keyword) >0 )
+  {
+    for( i in 1: length(keyword) )
+    {
+      a.1 <- c( a.1, which( faslist[[ keyword.dir[i] ]] == keyword[i] ) ) 
+    }
+  }
+  
+  
+  if( length(range) >1 )
+  {
+    a.2 <- c( a.2, which( floor( faslist[[ range.dir ]] ) <= range[2] & floor( faslist[[ range.dir ]] ) >= range[1] ) )
+  }
+  
+  return( faslist[[ ac.dir ]][ sort( unique( intersect( a.1, a.2 ) ) ) ] )
+
+  #v20171205
+}
+
+
+
+
 
