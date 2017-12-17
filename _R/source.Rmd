@@ -15,9 +15,9 @@ source("~/Packaging_Type/_R/Function.R")
 
 #### Searching criteria
 
-Type | H | Host | Location | Required Segments | only com. Min Len. | only GISAID |
-- | - | - | - | - | - | - | 
-A | 5 | __w/o__( Lab derived, Unknown, NA ) | all | HA + NA | 1000 ( __w/o__ check ) | check | 
+Type | H | Host | Location | Required Segments | only com. Min Len. | only GISAID 
+- | - | - | - | - | - | - 
+A | 5 | __w/o__( Lab derived, Unknown, NA ) | all | HA + NA | 1000 ( __w/o__ check ) | check 
 
 <br>
 
@@ -31,10 +31,10 @@ Isolate name Type Collection date Isolate ID
 
 #### Raw file
 
-1. #####`pH5_G_2136_20171124.fasta`
-2. #####`pNA_G_2135_20171124.fasta`
-3. #####`G_2135_20171124.xls`
-4. #####`ac_20171124.xls`
+1. ##### `pH5_G_2136_20171124.fasta`
+2. ##### `pNA_G_2135_20171124.fasta`
+3. ##### `G_2135_20171124.xls`
+4. ##### `ac_20171124.xls`
 
 <br>
 
@@ -62,8 +62,8 @@ linkage:
 
 #### Raw file
 
-1. #####`pH5_N_5753_20171124.fasta`
-2. #####`pNA_G_2135_20171124.fasta`
+1. ##### `pH5_N_5753_20171124.fasta`
+2. ##### `pNA_G_2135_20171124.fasta`
 
 ***
 
