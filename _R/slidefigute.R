@@ -8,7 +8,7 @@ source("~/Packaging_Type/_R/Function.R")
 ## big 2344 tree ----------------
 
 # 2014 --
-trefile  <- read.tree("./Tree/allh5_GsGDlike_GsGDonly_e1011")
+trefile  <- read.nexus("./tree/rmd_pH5_7326/rmd_pH5_gsgd_p.tre")
 targetid <- paste0( c("_2014.", "_2015.", "_2016.", "_2017."), collapse = "|" )
 target   <- "#ff7f0e"
 
@@ -36,12 +36,16 @@ for( i in 1: length(targetna) )
     shapetaxa$Nx[ grep( targetna[i], tree.d$taxaid ) ] <- colna[i]
 }
 
+ls.c2344 <- read.table( "tree/rmd_pH5_7326/ls_c2344.txt", header = FALSE, stringsAsFactors = FALSE)
+shapetaxa$Nx[ match( grep( "_H5N1_", ls.c2344[,1], ignore.case = TRUE, value = TRUE), tree.d$taxaid ) ] <- "black"
+
+
 p = 
 ggtree(trefile, color = "gray", alpha = 0.6, size = 1.1) %<+% shapetaxa + 
-  geom_tippoint( aes(color = I(Nx)), alpha = 0.7, size = 4, stroke = 0)
+  geom_tippoint( aes(color = I(Nx)), alpha = 0.7, size = 2.5, stroke = 0)
 
 # clade 2344
-viewClade(p, node = 6347 )
+viewClade(p, node = 5008 )
 
 
 ## trees 234 ----------------
@@ -189,6 +193,35 @@ c232_t <-
   geom_treescale(x = 0, y = 20, offset = 4) + theme(legend.position = "right") 
 
 
+### big c234 and c232 ML tree ------------------------------------
+
+# c232
+trefile.c232 <- "./c232/rmd/tree/ph5_c232_1007_rmdp_phy_phyml/ph5_c232_1007_rmdp_phy_phyml_e1201.tre"
+tre.c232 <- read.nexus( trefile.c232 )
+
+key_nCN.c232 <- 
+paste0( grep( "China|Hong_Kong", as.data.frame( table(taxaInfo( trefile.c232, useTree = TRUE)[2]), stringsAsFactors = FALSE)$Var1, value = TRUE, invert = TRUE ),
+        collapse = "|")
+
+colordf.c232 <- 
+findtaxa( type = 1, tree = tre.c232, targetid = key_nCN.c232, target = "red")
+
+ggtree( tre.c232, ladderize = FALSE ) %<+% colordf.c232 + aes( color = I(colorr) ) +
+  geom_treescale(width = 0.005, offset = -15 )
+
+# c234
+trefile.c234 <- "./c234/rmd/tree/ph5_c234_1699_rmdp_phy_phyml/ph5_c234_1699_rmdp_phy_phyml_e1201.tre"
+tre.c234 <- read.nexus( trefile.c234 )
+
+key_nCN.c234 <- 
+  paste0( grep( "China|Hong_Kong", as.data.frame( table(taxaInfo( trefile.c234, useTree = TRUE)[2]), stringsAsFactors = FALSE)$Var1, value = TRUE, invert = TRUE ),
+          collapse = "|")
+
+colordf.c234 <- 
+  findtaxa( type = 1, tree = tre.c234, targetid = key_nCN.c234, target = "red")
+
+ggtree( tre.c234, ladderize = FALSE ) %<+% colordf.c234 + aes( color = I(colorr) ) + 
+  geom_treescale(width = 0.005, offset = -25 )
 
 
 

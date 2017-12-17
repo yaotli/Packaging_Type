@@ -5,9 +5,8 @@ library(ape)
 library(dplyr)
 library(tidyr)
 
-
 source("~/Packaging_Type/_R/Function.R")
-setwd("/Volumes/EDGE 2/LoVE/ReassortSubtype/BEAST/")
+setwd("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/")
 
 
 ### skygrid_0810 --------------------------------
@@ -451,10 +450,10 @@ c234_ha_grid <- read.table("./grid_1107/result/234_h5_grid_1107.csv", sep = "\t"
 c232_na_grid <- read.table("./grid_1107/result/232_n1_grid_1107.csv", sep = "\t", header = T)
 c234_na_grid <- read.table("./grid_1107/result/234_n1_grid_1107.csv", sep = "\t", header = T)
 
-c232_ha_ride <- read.table("./ride_1106/result/232_h5_ride_1106.csv", sep = "\t", header = T)
-c234_ha_ride <- read.table("./ride_1106/result/234_h5_ride_1106.csv", sep = "\t", header = T)
-c232_na_ride <- read.table("./ride_1106/result/232_n1_ride_1106.csv", sep = "\t", header = T)
-c234_na_ride <- read.table("./ride_1106/result/234_n1_ride_1106.csv", sep = "\t", header = T)
+c232_ha_ride <- read.table("./ride_1205/result/ride_232_h5_1205", sep = "\t", header = T)
+c234_ha_ride <- read.table("./ride_1205/result/ride_234_h5_1205", sep = "\t", header = T)
+c232_na_ride <- read.table("./ride_1205/result/ride_232_n1_1205", sep = "\t", header = T)
+c234_na_ride <- read.table("./ride_1205/result/ride_234_n1_1205", sep = "\t", header = T)
 
 
 # grid - HA
@@ -516,10 +515,10 @@ combined_ride_ha <-
   
   theme( panel.grid.minor = element_blank(), 
          panel.grid.major = element_blank(),
-         axis.text.x = element_text(size = 18), 
+         axis.text.x = element_text(size = 14), 
          axis.title=element_text(size = 16, face = "bold") ) +
   
-  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  scale_x_continuous(breaks = seq(2004, 2016, by=1) ) +
   
   xlab("") + ylab("Population size") +
   
@@ -542,22 +541,22 @@ combined_ride_na <-
   
   theme( panel.grid.minor = element_blank(), 
          panel.grid.major = element_blank(),
-         axis.text.x = element_text(size = 18), 
+         axis.text.x = element_text( size = 14), 
          axis.title=element_text(size = 16, face ="bold") ) +
   
-  scale_x_continuous(breaks = seq(2004, 2014, by=1) ) +
+  scale_x_continuous(breaks = seq(2004, 2016, by=1) ) +
   scale_y_continuous(breaks = seq(-3, 5, by=2) ) +
   
   xlab("") + ylab("Population size") +
   
   geom_line( data = c234_na_ride, 
              aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
-  geom_line( data = c232_na_grid, 
+  geom_line( data = c232_na_ride, 
              aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
   
   geom_ribbon( data = c234_na_ride, 
                aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
-  geom_ribbon( data = c232_na_grid, 
+  geom_ribbon( data = c232_na_ride, 
                aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
 
 multiplot( combined_ride_ha, combined_ride_na, ncol = 1)
@@ -595,7 +594,7 @@ ggplot(data = rate_h5n1, aes(x = method, y = median, color = clade )) +
 ### geo_1112 --------------------------------
 
 # 234
-b_tre.234    <- "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/234/1112/234_h5_1112-1_ann.tre"
+b_tre.234    <- "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/234/1112/234_h5_1112_ann.tre"
 rawbeast.234 <- read.beast( b_tre.234 )
 tredata.234  <-  fortify( rawbeast.234 )
 
@@ -620,7 +619,7 @@ g + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax =
 
 # 232
 
-b_tre.232    <- "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/232/1112/232_h5_1112-1_ann.tre"
+b_tre.232    <- "/Volumes/EDGE\ 2/LoVE/ReassortSubtype/b_geo/232/1112/232_h5_1112_ann.tre"
 rawbeast.232 <- read.beast( b_tre.232 )
 tredata.232  <-  fortify( rawbeast.232 )
 
@@ -689,3 +688,110 @@ ggplot(data = PACT_234[-1,], aes( x= statistic, y = mean, color = statistic)) +
          legend.position  = "none") 
 
 
+### MCC tree 12/10 --------------------------------
+
+# 232 ha 
+mcc_tre.232  <- "ride_1205/result/com/232_h5_1205-anno.tree"
+rawbeast.232 <- read.beast( mcc_tre.232 )
+
+k2 <- 
+  ggtree( rawbeast.232, right = TRUE, size = 0.4, mrsd = "2016-4-12") + 
+  scale_y_continuous( expand = c(0,1) ) + 
+  # geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2016.5, by = 2), 
+                      labels = seq(2002, 2016, by = 2) )  + 
+  theme( axis.ticks  = element_blank(), 
+         axis.text.x = element_blank() )
+
+rectdf <- data.frame( xstart = seq( 2002, 2017, 2), 
+                      xend   = seq( 2003, 2017, 2))
+k22 <- k2 + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf),
+                      fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+# 234 ha
+mcc_tre.234  <- "ride_1205/result/com/234_h5_1205-anno.tree"
+rawbeast.234 <- read.beast( mcc_tre.234 )
+
+k1 <- 
+  ggtree( rawbeast.234, right = TRUE, size = 0.4, mrsd = "2011-12-15") + 
+  theme_tree2( axis.text.x = element_text( size = 16  ) ) + 
+  scale_y_continuous( expand = c(0,1) ) + 
+  # geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2016.5, by = 2), 
+                      labels = seq(2002, 2016, by = 2) )  + 
+  theme( axis.ticks.x  = element_blank() ) + 
+  
+  geom_point(x = 2010.071-3.0057, y = 152, size = 2, color = "blue") + 
+  geom_errorbarh( aes(y = 152, 
+                      xmax = 2010.071-2.2808, 
+                      xmin = 2010.071-4.1949), color = "blue", size = 1, height = 0)
+
+
+rectdf <- data.frame( xstart = seq( 2002, 2017, 2), 
+                      xend   = seq( 2003, 2017, 2))
+
+k11 <- k1 + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf), 
+                      fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+# Nx 
+mcc_tre.Nx  <- "Nx_1206/results/h5_1206_S_con-anno.tree"
+rawbeast.Nx <- read.beast( mcc_tre.Nx )
+tredata.Nx  <- fortify( rawbeast.Nx )
+
+ggtree( rawbeast.Nx, right = TRUE, mrsd = "2010-01-27" ) + theme_tree2() + 
+  
+
+
+multiplot(k11, k22, ncol = 1)
+
+
+## MRCA of Nx ----------------
+
+#h5
+h5_1206_mrca0 <- read.table("Nx_1206/results/h5_1206", sep = "\t", stringsAsFactors = FALSE, 
+                           row.names = NULL, header = T)
+h5_1206_mrca0 = h5_1206_mrca0[,-1]
+
+h5_1206_mrca <- data.frame( Method = c( "strict_constant", "strict_skyride", "UCLN_constant", "UCLN_skyride"), 
+                            median = as.numeric(h5_1206_mrca0[5,][1:4]), 
+                            hpd_l  = as.numeric( str_match( h5_1206_mrca0[8,][1:4], "\\[([0-9.]+)")[,2] ),
+                            hpd_u  = as.numeric( str_match( h5_1206_mrca0[8,][1:4], "([0-9.]+)\\]")[,2] ) )
+
+ggplot( data = h5_1206_mrca, aes( x= Method, y = 2010.071-median, color = Method )) +
+  geom_point(size = 4) +
+  geom_errorbar( aes( ymin = 2010.071-hpd_l, ymax = 2010.071-hpd_u), width = 0, size = 1) +
+  coord_flip() + 
+  xlab("") + ylab("") +
+  scale_color_manual(values = c( "blue", "black","black", "black") ) + 
+  scale_y_continuous(breaks = seq(2000,2008, by = 1), limits = c(2005,2008.5)) +
+  theme_bw() + #ggtitle("Inferred MRCA of Nx viruses") + 
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         text = element_text(size = 20, face = "bold"), 
+         legend.position = "none") 
+
+
+#n5
+n5_1206_mrca0 <- read.table("Nx_1206/results/n5_1206", sep = "\t", stringsAsFactors = FALSE, 
+                            row.names = NULL, header = T)
+n5_1206_mrca0 = n5_1206_mrca0[,-1]
+
+n5_1206_mrca <- data.frame( Method = c( "strict_constant", "strict_skyride", "UCLN_constant", "UCLN_skyride"), 
+                            median = as.numeric(n5_1206_mrca0[5,][1:4]), 
+                            hpd_l  = as.numeric( str_match( n5_1206_mrca0[8,][1:4], "\\[([0-9.]+)")[,2] ),
+                            hpd_u  = as.numeric( str_match( n5_1206_mrca0[8,][1:4], "([0-9.]+)\\]")[,2] ) )
+
+ggplot( data = n5_1206_mrca, aes( x= Method, y = 2010.071-median, color = Method )) +
+  geom_point(size = 4) +
+  geom_errorbar( aes( ymin = 2010.071-hpd_l, ymax = 2010.071-hpd_u), width = 0, size = 1) +
+  coord_flip() + 
+  xlab("") + ylab("") +
+  scale_color_manual(values = c( "blue", "black","black", "black") ) + 
+  # scale_y_continuous(breaks = seq(2000,2008, by = 1) ) +
+  theme_bw() + #ggtitle("Inferred MRCA of Nx viruses") + 
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(), 
+         text = element_text(size = 20, face = "bold"), 
+         legend.position = "none") 

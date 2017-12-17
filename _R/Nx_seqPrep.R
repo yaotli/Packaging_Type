@@ -3,57 +3,15 @@ library(stringr)
 library(ggtree)
 library(ape)
 
-setwd("~/Desktop/data_souce/")
+setwd("~/Desktop/data_souce/Nov2017_hana/")
 source("~/Packaging_Type/_R/Function.R")
 
-h5_raw_ncbi <- "./raw/H5_N_7412_20170815.fasta"
+### based on previous selection H5N5 (n = 8) --------------------------------
 
-### seq name cleaning (result are not used)--------------------------------
+oldh5id    <- tagExtra( "~/Desktop/data_souce/Nx/c2344_21_e1206.tre" )$id[ which( tagExtra( "~/Desktop/data_souce/Nx/c2344_21_e1206.tre" )$tag == "ff0000" ) ]
+oldh5id_ac <- str_match( oldh5id, "^[A-Z0-9]+" )[,1]
 
-# readin
-ha_n_seq    <- fastaEx(h5_raw_ncbi)$seq
-ha_n_id     <- fastaEx(h5_raw_ncbi)$id
+leafEx( "c234/raw/pH5_c234_2429.fasta", oldh5id )
 
-# deal with _A/
-ha_n_id[ grep( "_A/", ha_n_id, invert = TRUE) ] <-
-  str_replace( string      = ha_n_id[grep( "_A/", ha_n_id, invert = TRUE) ], 
-               pattern     = "([A-Z]{1,2})([0-9]{5,6})_", 
-               replacement = paste0( 
-                 str_match(ha_n_id[grep( "_A/", ha_n_id, invert = TRUE) ], 
-                           "([A-Z]{1,2})([0-9]{5,6})_")[,1], "A/") )
-
-ha_n_id <- gsub("A/", "", ha_n_id)
-
-# export
-write.fasta(ha_n_seq, ha_n_id, "h5_n_nonpaired.fasta")
-
-# cleanID
-cleanID("./Nx/h5_n_nonpaired.fasta")
-
-# curate
-# delete = 571 | remain = 6841
-curateSeq(maxamb = 150, minseq = 1500, mode = 1, filedir = "./Nx/cleanID_h5_n_nonpaired.fasta")
-
-# align the seq by MAFFT
-# SHELL:
-# 
-# cd ~/Desktop/data_souce/Nx
-# mafft ./curateSeq-1_cleanID_h5_pool.fasta > ./align_trim/align_h5_pool.fasta
-#
-# manually trim in BioEdit (remove stop codon & ~, lth = 1683)
-
-
-### extract sequences ----------------
-
-subtreseq(seq_filedir  = "./align_trim/trim_h5_pool_lth1683.fasta", 
-          list_filedir = "./Nx/h5n5.txt")
-
-# check substitution model
-# java -jar /Volumes/EDGE\ 2/Apps/jmodeltest-2.1.10/jModelTest.jar -d /Users/yaosmacbook/Desktop/data_souce/Nx/h5_n5_8.phy -f -i -g 4 -s 5 -BIC -a -S SPR
-# HKY
-
-# check by raxml tree
-# ~/Raxmldata/raxml_AVX2 -f a -p 666 -s h5_n5_8.fasta -x 616 -#autoMRE -m GTRGAMMAI --HKY85 -n h5n5
-# 
- 
-
+n5id_ac <- read.csv("R_process/pH5NA.csv", header = TRUE, stringsAsFactors = FALSE)$ac.na[ match( oldh5id_ac, read.csv("R_process/pH5NA.csv", header = TRUE, stringsAsFactors = FALSE)$ac.ha ) ]
+subfastaSeq( AC = TRUE, AC_list = n5id_ac, filedir = "./R_process/pNA_7138.fasta")
