@@ -1,7 +1,6 @@
 ---
 title: "Source"
 output: html_document
-fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
@@ -16,10 +15,13 @@ source("~/Packaging_Type/_R/Function.R")
 
 #### Searching criteria
 
+<font size="2">
+
 Type | H | Host | Location | Required Segments | only com. Min Len. | only GISAID 
 ---- | - | ---- | -------- | ----------------- | -------------------| ----------- 
 A | 5 | __w/o__( Lab derived, Unknown, NA ) | all | HA + NA | 1000 ( __w/o__ check ) | check 
 
+</font>
 <br>
 
 #### FASTA header
@@ -43,9 +45,13 @@ Isolate name Type Collection date Isolate ID
 
 #### Searching criteria
 
+<font size="2">
+
 Type | Host | Country | Segment | Subtype | Req. segments | pH1N1 | Lab | lineage def. | FLU | Vx | Mix 
 ---- | ---- | ------- | ------- | ------- | ------------- | ----- | --- | ------------ | --- | -- | --- 
 A | __w/o__( Unknown ) | any | HA or NA | 5 | 4 + 6 | E | E | I | I | I | E 
+
+</font>
 
 linkage: 
 [HA](https://www.ncbi.nlm.nih.gov/genomes/FLU/Database/nph-select.cgi?aln_subtype=5&cmd=show_query&country=any&defline_saved=%3E%7Baccession%7D%20%7Bstrain%7D%20%7Byear%7D/%7Bmonth%7D/%7Bday%7D%20%7Bsegname%7D&go=database&host=Avian&host=Bat&host=Blow%20fly&host=Bovine&host=Camel&host=Canine&host=Cat&host=Cheetah&host=Civet&host=Environment&host=Equine&host=Feline&host=Ferret&host=Giant%20anteater&host=Human&host=Leopard&host=Lion&host=Mink&host=Mouse&host=Muskrat&host=Panda&host=Penguin&host=Pika&host=Raccoon%20dog&host=Reassortant&host=Seal&host=Sloth%20bear&host=Stone%20marten&host=Swine&host=Tiger&host=Whale&host=Wild%20boar&lab=exclude&lineage=include&niaid=include&orderby=date%20asc&prev_cmd=show_query&reqseg=4&reqseg=6&searchin=strain&segment=4&sequence=N&showfilters=true&subtype_h=5&subtype_mix=exclude&subtype_n=any&swine=exclude&taxid=197911&type=a&vac_strain=include)
