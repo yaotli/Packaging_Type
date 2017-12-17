@@ -42,9 +42,9 @@ Isolate name Type Collection date Isolate ID
 
 #### Searching criteria
 
-Type | Host | Country | Segment | Subtype | Req. segments | pH1N1 | Lab | lineage def. | FLU | Vx | Mix |
-- | - | - | - | - | - | - | - | - | - | - | - | 
-A | __w/o__( Unknown ) | any | HA or NA | 5 | 4 + 6 | E | E | I | I | I | E | 
+Type | Host | Country | Segment | Subtype | Req. segments | pH1N1 | Lab | lineage def. | FLU | Vx | Mix 
+---- | ---- | ------- | ------- | ------- | ------------- | ----- | --- | ------------ | --- | -- | --- 
+A | __w/o__( Unknown ) | any | HA or NA | 5 | 4 + 6 | E | E | I | I | I | E 
 
 linkage: 
 [HA](https://www.ncbi.nlm.nih.gov/genomes/FLU/Database/nph-select.cgi?aln_subtype=5&cmd=show_query&country=any&defline_saved=%3E%7Baccession%7D%20%7Bstrain%7D%20%7Byear%7D/%7Bmonth%7D/%7Bday%7D%20%7Bsegname%7D&go=database&host=Avian&host=Bat&host=Blow%20fly&host=Bovine&host=Camel&host=Canine&host=Cat&host=Cheetah&host=Civet&host=Environment&host=Equine&host=Feline&host=Ferret&host=Giant%20anteater&host=Human&host=Leopard&host=Lion&host=Mink&host=Mouse&host=Muskrat&host=Panda&host=Penguin&host=Pika&host=Raccoon%20dog&host=Reassortant&host=Seal&host=Sloth%20bear&host=Stone%20marten&host=Swine&host=Tiger&host=Whale&host=Wild%20boar&lab=exclude&lineage=include&niaid=include&orderby=date%20asc&prev_cmd=show_query&reqseg=4&reqseg=6&searchin=strain&segment=4&sequence=N&showfilters=true&subtype_h=5&subtype_mix=exclude&subtype_n=any&swine=exclude&taxid=197911&type=a&vac_strain=include)
@@ -73,9 +73,7 @@ linkage:
 2. Replace _blank_ with _undersocre_ in NCBI filess. 
 
 ```{r}
-
 system( 'cd ./Pre_process; for f in *.fasta; do sed -i "" "s/ /_/g" $f; done' )
-
 ```
 
 ***
