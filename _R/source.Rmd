@@ -1,3 +1,8 @@
+---
+title: "Source"
+output: html_document
+---
+
 ```{r setup, include=FALSE}
 knitr::opts_knit$set( root.dir = "~/Desktop/data_souce/Nov2017_hana/")
 source("~/Packaging_Type/_R/Function.R")
