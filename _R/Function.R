@@ -1709,7 +1709,7 @@ geoID <- function( strings,
   nA    <- "Japan|Mongolia|Russia|South_Korea"
   E     <- "Bulgaria"
   
-  nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane|peacock"
+  nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane|peacock|turkey|falcon|swiftlet|rook|pintail|curlew"
   
   
   geo.key <- c( cn.NE, cn.BH, cn.YZ, cn.C, cn.SW, cn.NW, cn.S, SEA, nA, E)
@@ -1963,16 +1963,17 @@ acSearch <- function( faslist     = list(),
                       keyword.dir = c(9),
                       range       = NULL, 
                       range.dir   = 4 
-                      )
+)
 {
   a.1 <- c()
   a.2 <- c()
   
-  if( length(keyword) >0 )
+  if( length( keyword.dir ) > 0 )
   {
-    for( i in 1: length(keyword) )
+    for( i in 1: length( keyword.dir ) )
     {
-      a.1 <- c( a.1, which( faslist[[ keyword.dir[i] ]] == keyword[i] ) ) 
+      a.t <- which( faslist[[ keyword.dir[i] ]] == keyword[i] )
+      a.1 <- intersect( a.1, a.t )
     }
   }
   
@@ -1982,9 +1983,17 @@ acSearch <- function( faslist     = list(),
     a.2 <- c( a.2, which( floor( faslist[[ range.dir ]] ) <= range[2] & floor( faslist[[ range.dir ]] ) >= range[1] ) )
   }
   
-  return( faslist[[ ac.dir ]][ sort( unique( intersect( a.1, a.2 ) ) ) ] )
-
-  #v20171205
+  if( ( length(a.1) > 0 ) & ( length(a.2) > 0) )
+  {
+    return( faslist[[ ac.dir ]][ sort( unique( intersect( a.1, a.2 ) ) ) ] ) 
+    
+  }else
+  {
+    return( faslist[[ ac.dir ]][ sort( unique( c( a.1, a.2 ) ) ) ] ) 
+    
+  }
+  
+  #v20180105
 }
 
 
