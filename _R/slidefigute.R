@@ -8,7 +8,7 @@ source("~/Packaging_Type/_R/Function.R")
 ## big 2344 tree ----------------
 
 # 2014 --
-trefile  <- read.nexus("./tree/rmd_pH5_7326/rmd_pH5_gsgd_p.tre")
+trefile  <- read.nexus("Nov2017_hana/tree/rmd_pH5_7326/rmd_pH5_gsgd_p.tre")
 targetid <- paste0( c("_2014.", "_2015.", "_2016.", "_2017."), collapse = "|" )
 target   <- "#ff7f0e"
 
@@ -222,6 +222,36 @@ colordf.c234 <-
 
 ggtree( tre.c234, ladderize = FALSE ) %<+% colordf.c234 + aes( color = I(colorr) ) + 
   geom_treescale(width = 0.005, offset = -25 )
+
+
+### c232 + c234 vs other in China (line plot) --------------------------------
+
+pri_tre_data    <- taxaInfo( useTree = TRUE, file = "Nov2017_hana/tree/rmd_pH5_7326/rmd_pH5_gsgd_e0108.tre")
+
+df_pri_tre_data <- data.frame( time  = floor(pri_tre_data[[4]]), 
+                               clade = pri_tre_data[[7]], 
+                               geo   = pri_tre_data[[2]],
+                               stringsAsFactors = FALSE)
+
+df_pri_tre_data <- df_pri_tre_data[ which( df_pri_tre_data$geo == "China" | df_pri_tre_data$geo == "Hong_Kong"), ]
+
+df_pri_tre_data$clade[ is.na(df_pri_tre_data$clade) ] <- "Other"
+df_pri_tre_data$clade <- ifelse( df_pri_tre_data$clade == "Other", "Other", "c23")
+  
+  
+df_pri_tre_data = as.data.frame( prop.table( table( df_pri_tre_data[, c(1,2)] ), margin = 1) )
+
+
+ggplot( data = df_pri_tre_data ) + 
+  geom_line( aes(x = time, y = Freq, color = clade, group = clade), size = 1.5) + 
+  theme_bw() + xlab("") + ylab("% Sequences") +
+  scale_x_discrete( breaks = seq(1996, 2016, by = 2), labels = seq(1996, 2016, by = 2) ) + 
+  theme( panel.grid.minor   = element_blank(), 
+         panel.grid.major.y = element_blank(), 
+         axis.title       = element_text(size = 18),
+         axis.ticks.x = element_blank(),
+         axis.text.y = element_text(size = 12),
+         legend.position = "none"  )
 
 
 

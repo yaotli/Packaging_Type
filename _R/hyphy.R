@@ -1888,13 +1888,104 @@ ggplot(data = df_slac_1206[domain2,], aes(x = year, y = w, colour = clade, group
         strip.text = element_text(size = 18, face = "bold") )
 
 
+### ph5-HA1/HA2: slac_0105 --------------------------------
+
+df_slac_0105 <- hyphy_slac( "/Volumes/EDGE2/LoVE/ReassortSubtype/Hyphy/result/slac_0105/" )
+df_slac_0105$clade <- factor( df_slac_0105$clade, levels = c("234a", "232a"))
+
+clade1         <- seq(1,20)
+clade2         <- seq(21,36)
+clade1_epitope <- which( df_slac_0105$clade == "232a" & ( df_slac_0105$gene == "HA1" | df_slac_0105$gene == "NAh")   )
+clade2_epitope <- which( df_slac_0105$clade == "234a" & ( df_slac_0105$gene == "HA1" | df_slac_0105$gene == "NAh")   )
+ha1            <- which( df_slac_0105$gene == "HA1")
+nah            <- which( df_slac_0105$gene == "NAh")
 
 
-  
+
+ggplot(data = df_slac_0105[ha1,], aes(x = year, y = w, colour = geo, group = geo)) +
+  geom_point( size = 3.5, position = position_dodge(0.8) ) +
+  geom_line( position = position_dodge(0.8)  ) +
+  geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                 position = position_dodge(0.8), width = 0, size = 1.5) +
+  facet_wrap(~clade, ncol = 1) + 
+  scale_x_discrete(labels = c("2003-2006", "2007-2011", "2012-2016") ) +
+  #scale_y_continuous( limits = c(0.05, 0.4) ) +
+  xlab("") + ylab( expression(omega~"(dN/dS)") ) +
+  scale_color_manual(values = c( pyCol("brown"), pyCol("cyan") ) , labels = c("D", "W")) +
+  # "#2ca02c", "#d62728"
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.text.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 22), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_blank(), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 35, face = "bold") )
 
 
-  
-  
-   
-  
- 
+ggplot(data = df_slac_0105[c(7,11,15,19),], aes(x = geo, y = w, colour = year, group = year)) +
+  geom_point( size = 6, position = position_dodge(0.5) ) +
+  geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                 position = position_dodge(0.5), width = 0.001, size = 1.5) +
+  facet_wrap(~gene, ncol = 1) + 
+  #scale_x_discrete(labels = c("2003-2006", "2007-2011", "2012-2016") ) +
+  xlab("") + ylab("Selection pressure") +
+  scale_color_manual(values = c( "#00BFC4", "#F8766D" ) , labels = c("2007-2011", "2012-2016")) +
+  scale_x_discrete( labels = c("Domestic", "Wild") ) + 
+  # "#00BFC4", "#F8766D"
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.text.x = element_text(size = 18), 
+        axis.title.y = element_text(size = 24), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_blank(), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 1, face = "bold") )
+
+
+### ph5-HA1/HA2: slac_0118 --------------------------------
+
+df_slac_0118 <- hyphy_slac( "/Volumes/EDGE2/LoVE/ReassortSubtype/Hyphy/result/slac_0118/" )
+df_slac_0118$clade <- factor( df_slac_0118$clade, levels = c("234a", "232a"))
+
+clade1         <- seq(1,20)
+clade2         <- seq(21,36)
+clade1_epitope <- which( df_slac_0118$clade == "232a" & ( df_slac_0118$gene == "HA1" | df_slac_0118$gene == "NAh")   )
+clade2_epitope <- which( df_slac_0118$clade == "234a" & ( df_slac_0118$gene == "HA1" | df_slac_0118$gene == "NAh")   )
+ha1            <- which( df_slac_0118$gene == "HA1")
+ha2            <- which( df_slac_0118$gene == "HA2")
+nah            <- which( df_slac_0118$gene == "NAh")
+nas            <- which( df_slac_0118$gene == "NAs")
+
+
+
+ggplot(data = df_slac_0118[nah,], aes(x = year, y = w, colour = geo, group = geo)) +
+  geom_point( size = 3.5, position = position_dodge(0.8) ) +
+  geom_line( position = position_dodge(0.8)  ) +
+  geom_errorbar( aes(ymin = w.l, ymax = w.u), 
+                 position = position_dodge(0.8), width = 0, size = 1.5) +
+  facet_wrap(~clade, ncol = 1) + 
+  scale_x_discrete(labels = c("2003-2006", "2007-2011", "2012-2016") ) +
+  #scale_y_continuous( limits = c(0.05, 0.4) ) +
+  xlab("") + ylab( expression(omega~"(dN/dS)") ) +
+  scale_color_manual(values = c( pyCol("brown"), pyCol("cyan") ) ) +
+  # "#2ca02c", "#d62728"
+  theme_bw() + 
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major.y = element_blank(), 
+        panel.grid.major.x = element_blank(), 
+        axis.text.x = element_text(size = 14), 
+        axis.title.y = element_text(size = 22), 
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_blank(), 
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(size = 35, face = "bold") )
+#~5*8in
+

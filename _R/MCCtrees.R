@@ -450,11 +450,11 @@ c234_ha_grid <- read.table("./grid_1107/result/234_h5_grid_1107.csv", sep = "\t"
 c232_na_grid <- read.table("./grid_1107/result/232_n1_grid_1107.csv", sep = "\t", header = T)
 c234_na_grid <- read.table("./grid_1107/result/234_n1_grid_1107.csv", sep = "\t", header = T)
 
-c232_ha_ride <- read.table("./ride_1205/result/ride_232_h5_1205", sep = "\t", header = T)
-c234_ha_ride <- read.table("./ride_1205/result/ride_234_h5_1205", sep = "\t", header = T)
-c232_na_ride <- read.table("./ride_1205/result/ride_232_n1_1205", sep = "\t", header = T)
-c234_na_ride <- read.table("./ride_1205/result/ride_234_n1_1205", sep = "\t", header = T)
-
+c232_ha_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_232_h5_1205", sep = "\t", header = T)
+c234_ha_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_234_h5_1205", sep = "\t", header = T)
+c232_na_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_232_n1_1205", sep = "\t", header = T)
+c234_na_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_234_n1_1205", sep = "\t", header = T)
+c234_nx_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/Nx_0112/results/h5nx_0112-1", sep = "\t", header = T)
 
 # grid - HA
 
@@ -515,8 +515,8 @@ combined_ride_ha <-
   
   theme( panel.grid.minor = element_blank(), 
          panel.grid.major = element_blank(),
-         axis.text.x = element_text(size = 14), 
-         axis.title=element_text(size = 16, face = "bold") ) +
+         axis.text.x = element_text(size = 15), 
+         axis.title=element_text(size = 20) ) +
   
   scale_x_continuous(breaks = seq(2004, 2016, by=1) ) +
   
@@ -526,11 +526,21 @@ combined_ride_ha <-
              aes(x = Time, y = log(Median) ), color = "#d62728", size = 2) +
   geom_line( data = c232_ha_ride, 
              aes(x = Time, y = log(Median) ), color = "#2ca02c", size = 2) +
+  geom_line( data = c234_nx_ride, 
+             aes(x = Time, y = log(Median) ), color = pyCol("blue"), size = 2) +
   
   geom_ribbon( data = c234_ha_ride, 
                aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#d62728", alpha = 0.1) + 
   geom_ribbon( data = c232_ha_ride, 
-               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) +
+  geom_ribbon( data = c234_nx_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = pyCol("blue"), alpha = 0.1) +
+  
+  
+  geom_point( aes( x = (2013.989-6.7632), y = 0 ), size = 4, color = "blue" ) + 
+  geom_errorbarh( aes( y    = 0,  x = (2013.989-6.7632),
+                       xmax = 2013.989-6.1119, 
+                       xmin = 2013.989-7.601 ), color = "blue", height = 0, size = 1)
 
 
 
@@ -541,8 +551,8 @@ combined_ride_na <-
   
   theme( panel.grid.minor = element_blank(), 
          panel.grid.major = element_blank(),
-         axis.text.x = element_text( size = 14), 
-         axis.title=element_text(size = 16, face ="bold") ) +
+         axis.text.x = element_text( size = 15), 
+         axis.title=element_text(size = 20) ) +
   
   scale_x_continuous(breaks = seq(2004, 2016, by=1) ) +
   scale_y_continuous(breaks = seq(-3, 5, by=2) ) +
@@ -559,7 +569,7 @@ combined_ride_na <-
   geom_ribbon( data = c232_na_ride, 
                aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = "#2ca02c", alpha = 0.1) 
 
-multiplot( combined_ride_ha, combined_ride_na, ncol = 1)
+multiplot( combined_ride_ha, combined_ride_na, ncol = 1) #5*10in
 
 
 # rate 
@@ -795,3 +805,150 @@ ggplot( data = n5_1206_mrca, aes( x= Method, y = 2010.071-median, color = Method
          panel.grid.major = element_blank(), 
          text = element_text(size = 20, face = "bold"), 
          legend.position = "none") 
+
+
+
+### eco tree 0102 --------------------------------
+
+# 232 ha 
+geo_tre.232  <- "/Volumes/EDGE2/LoVE/ReassortSubtype/b_geo/1222/results/232_h5_1225-anno.tre"
+rawbeast.232 <- read.beast( geo_tre.232 )
+
+k2 <- 
+  ggtree( rawbeast.232, right = TRUE, size = 0.6, mrsd = "2016-4-12") + 
+  scale_y_continuous( expand = c(0,1) ) + 
+  aes( color = states ) +
+  scale_color_manual( values = c( "#8c564b", "#17becf" )  ) + 
+  # geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2016.5, by = 2), 
+                      labels = seq(2002, 2016, by = 2), 
+                      limits = c(2002, 2017))  + 
+  theme( axis.ticks  = element_blank(), 
+         axis.text.x = element_blank() )
+
+rectdf <- data.frame( xstart = seq( 2002, 2017, 2), 
+                      xend   = seq( 2003, 2017, 2))
+k22 <- k2 + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf),
+                      fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+# 234 ha
+geo_tre.234  <- "/Volumes/EDGE2/LoVE/ReassortSubtype/b_geo/1222/results/234_h5_1222-anno.tre"
+rawbeast.234 <- read.beast( geo_tre.234 )
+
+k1 <- 
+  ggtree( rawbeast.234, right = TRUE, size = 0.6, mrsd = "2011-12-15") + 
+  aes( color = states ) +
+  scale_color_manual( values = c( "#8c564b", "#17becf" )  ) + 
+  theme_tree2( axis.text.x = element_text( size = 16  ) ) + 
+  scale_y_continuous( expand = c(0,1) ) + 
+  # geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2016.5, by = 2), 
+                      labels = seq(2002, 2016, by = 2), 
+                      limits = c(2002, 2017))  + 
+  theme( axis.ticks.x  = element_blank() ) 
+  
+
+rectdf <- data.frame( xstart = seq( 2002, 2017, 2), 
+                      xend   = seq( 2003, 2017, 2))
+
+k11 <- k1 + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf), 
+                      fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+  
+multiplot(k11, k22, ncol = 1) #5*10
+
+
+### skyride and host --------------------------------
+
+c232_ha_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_232_h5_1205", sep = "\t", header = T)
+c234_ha_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_234_h5_1205", sep = "\t", header = T)
+c232_na_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_232_n1_1205", sep = "\t", header = T)
+c234_na_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_1205/result/ride_234_n1_1205", sep = "\t", header = T)
+
+c232_h5_0312_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_0108/results/232_redueced_timescale/232_h5_0108-r-1", sep = "\t", header = T)
+
+c232_h5_D_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_0106/results/232_h5_0106_D-g-1", sep = "\t", header = T)
+c232_h5_W_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_0108/results/232_W/232_h5_0108_W-r-1", sep = "\t", header = T)
+c234_h5_D_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_0105/results/234_h5_0105_D-1", sep = "\t", header = T)
+c234_h5_W_ride <- read.table("/Volumes/EDGE2/LoVE/ReassortSubtype/BEAST/ride_0105/results/234_h5_0105_W-1", sep = "\t", header = T)
+
+
+  ggplot() + theme_bw() + 
+  
+  theme( panel.grid.minor = element_blank(), 
+         panel.grid.major = element_blank(),
+         axis.text.x = element_text(size = 15), 
+         axis.title=element_text(size = 20) ) +
+  
+  scale_x_continuous(breaks = seq(2004, 2016, by=1) ) +
+  scale_y_continuous(limits = c(-1.5, 5) ) +
+    
+  
+  xlab("") + ylab("Population size") +
+  
+  geom_line( data = c232_h5_D_ride, 
+             aes(x = Time, y = log(Median) ), color = pyCol("brown"), size = 2) +
+  geom_line( data = c232_h5_W_ride, 
+             aes(x = Time, y = log(Median) ), color = pyCol("cyan"), size = 2) +
+  
+  geom_ribbon( data = c232_h5_D_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = pyCol("brown"), alpha = 0.1) + 
+  geom_ribbon( data = c232_h5_W_ride, 
+               aes(x = Time, ymin = log(Lower) , ymax = log(Upper) ), fill = pyCol("cyan"), alpha = 0.1) 
+
+
+
+### geo tree 0122 --------------------------------
+
+# 232 ha 
+geo_tre.232  <- "/Volumes/EDGE2/LoVE/ReassortSubtype/b_geo/0120//results/232_h5_0120-anno.tre"
+rawbeast.232 <- read.beast( geo_tre.232 )
+
+k2 <- 
+  ggtree( rawbeast.232, right = TRUE, size = 1, mrsd = "2016-2-21") + 
+  scale_y_continuous( expand = c(0,1) ) + 
+  aes( color = states ) +
+  scale_color_manual( values = c( pyCol( c( "brown", "green", "gray", "red", "blue" ) ) ))   + 
+  # geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2016.5, by = 2), 
+                      labels = seq(2002, 2016, by = 2), 
+                      limits = c(2002, 2017))  + 
+  theme( axis.ticks  = element_blank(), 
+         axis.text.x = element_blank() )
+
+rectdf <- data.frame( xstart = seq( 2002, 2017, 2), 
+                      xend   = seq( 2003, 2017, 2))
+k22 <- k2 + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf),
+                      fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+# 234 ha
+geo_tre.234  <- "/Volumes/EDGE2/LoVE/ReassortSubtype/b_geo/0120/results/234_h5_0120-anno.tre"
+rawbeast.234 <- read.beast( geo_tre.234 )
+
+k1 <- 
+  ggtree( rawbeast.234, right = TRUE, size = 1, mrsd = "2010-12-15") + 
+  aes( color = states ) +
+  scale_color_manual( values = c( pyCol( c( "brown", "green", "red", "blue" ) ) ))   + 
+  theme_tree2( axis.text.x = element_text( size = 16  ) ) + 
+  scale_y_continuous( expand = c(0,1) ) + 
+  # geom_tippoint(aes(fill = geo), shape = 21, color = "black") + 
+  scale_x_continuous( breaks = seq(2002.5, 2016.5, by = 2), 
+                      labels = seq(2002, 2016, by = 2), 
+                      limits = c(2002, 2017))  + 
+  theme( axis.ticks.x  = element_blank() ) 
+
+
+rectdf <- data.frame( xstart = seq( 2002, 2017, 2), 
+                      xend   = seq( 2003, 2017, 2))
+
+k11 <- k1 + geom_rect(data = rectdf, aes(xmin = xstart, xmax = xend, ymin = -Inf, ymax = Inf), 
+                      fill = "gray", alpha = 0.2, inherit.aes=FALSE)
+
+
+
+multiplot(k11, k22, ncol = 1) #5*10
+
+

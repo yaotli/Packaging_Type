@@ -118,7 +118,7 @@ subtreseq( seq_filedir  = "./aligntrim_allh5/trim_allh5_7368_lth1683.fasta",
 
 ### GsGD global circulation --------------------------------
 
-trefile_GsGDlike_clade <- "./Tree/allh5_GsGDlike_6322_e0903.tre"
+trefile_GsGDlike_clade <- "Tree/allh5_GsGDlike_6322_e0903.tre"
 
 # readin
 

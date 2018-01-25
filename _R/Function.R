@@ -1697,13 +1697,13 @@ geoID <- function( strings,
 {
   cn.NE <- "Jilin|Sheny|Liaoning|Heilongjiang"
   cn.BH <- "Beijing|Hebei|Shandong|Zhaozhuang"
-  cn.YZ <- "Jiangsu|Zhejiang|Shanghai|Gaoyou|Dongtai|Xuzhou|Danyang|Yangzhou"
+  cn.YZ <- "Jiangsu|Zhejiang|Shanghai|Gaoyou|Dongtai|Xuzhou|Danyang|Yangzhou|Yuhang|Hangzhou|Wuxi|Wenzhou|Zhenjiang|Taizhou|Taishun"
   
-  cn.C  <- "Hunan|Hubei|Henan|Changsha|Chang_Sha|Anhui|Jiangxi|Shanxi|Nanchang"
+  cn.C  <- "Hunan|Hubei|Henan|Changsha|Chang_Sha|Anhui|Jiangxi|Shanxi|Nanchang|Wuhan|Ganzhou"
   
   cn.SW <- "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing|Anning|Dali|TongHai"
   cn.NW <- "Ningxia|Xinjiang|Gansu|Qinghai|Shaanxi"
-  cn.S  <- "Hong_Kong|Shantou|Guangdong|Shenzhen|Guangzhou|Fujian"
+  cn.S  <- "Hong_Kong|Shantou|Guangdong|Shenzhen|Guangzhou|Fujian|Dongguan|Zhanjiang|Zhongshan|Huizhou|Qingyuan"
   
   SEA   <- "Bangladesh|Laos|Malaysia|Myanmar|Thailand|Vietnam|India|Nepal"
   nA    <- "Japan|Mongolia|Russia|South_Korea"
@@ -1739,7 +1739,7 @@ geoID <- function( strings,
   print( strings[ which(y == "Unknown")  ]  )
   return( y )
   
-  #v20171107
+  #v20180110
 }
 
 
@@ -1970,6 +1970,8 @@ acSearch <- function( faslist     = list(),
   
   if( length( keyword.dir ) > 0 )
   {
+    a.1 = seq(1, length( faslist[[ ac.dir ]] ) )
+      
     for( i in 1: length( keyword.dir ) )
     {
       a.t <- which( faslist[[ keyword.dir[i] ]] == keyword[i] )
@@ -1983,7 +1985,7 @@ acSearch <- function( faslist     = list(),
     a.2 <- c( a.2, which( floor( faslist[[ range.dir ]] ) <= range[2] & floor( faslist[[ range.dir ]] ) >= range[1] ) )
   }
   
-  if( ( length(a.1) > 0 ) & ( length(a.2) > 0) )
+  if( ( length(keyword) > 0 ) & ( length(range) > 0) )
   {
     return( faslist[[ ac.dir ]][ sort( unique( intersect( a.1, a.2 ) ) ) ] ) 
     
@@ -1993,8 +1995,70 @@ acSearch <- function( faslist     = list(),
     
   }
   
-  #v20180105
+  #v20180108
 }
+
+
+### python color --------------------------------  
+
+pyCol <- function( name = c( "red", "blue", "green" ) )
+{
+  Col.code <- c( "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", 
+                 "#8c564b", "e3777c2", "#7f7f7f", "#bcbd22", "#17becf" )
+  Col.name <- c( "blue", "orange", "green", "red", "purple",
+                 "brown", "pink", "gray", "yellow", "cyan")
+  
+  
+  return( Col.code[ match( name, Col.name ) ] )
+  
+  #v20180110
+  
+}
+
+### jumpMx --------------------------------  
+
+jumpMx <- function( states = c("cnC", "cnE", "cnN", "cnS", "cnSW") )
+{
+  lth <- length( states )
+  mx  <- matrix( rep(0,lth^2), nrow = lth)
+  ord <- combn( lth, 2)
+  
+  dirname <- c() 
+  string  <- c()
+  for( x in 1: ( dim(ord)[2] ) )
+  {
+    dirname = c( dirname, paste0( states[ ord[,x][1] ], "_to_", states[ ord[,x][2] ] ) )
+    dirname = c( dirname, paste0( states[ rev(ord[,x])[1] ], "_to_", states[ rev(ord[,x])[2] ] ) )
+  }
+  
+  for( x in 1: ( dim(ord)[2] ) )
+  {
+    mx1  <- matrix( rep(0,lth^2), nrow = lth)
+    mx1[ ord[,x][1], ord[,x][2]  ]          <- 1
+    string  <- c( string, paste( paste( as.vector( t(mx1) ), ".0", sep = ""), collapse = " ") )
+    
+    mx2  <- matrix( rep(0,lth^2), nrow = lth)
+    mx2[ ord[,x][2], ord[,x][1] ] <- 1
+    string  <- c( string, paste( paste( as.vector( t(mx2) ), ".0", sep = ""), collapse = " ") )
+  }
+    
+  out <- c()
+  for( y in 1: length(dirname) )
+  {
+    out <- c(out, paste("<parameter id=", dirname[y], " value=", string[y], "/>",  sep = 'b' ) )
+  }
+  
+  print("Remember to replace b to quotation marks!!!")
+  write.table( out, file = "trans.mx", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+  
+  #v20180112
+}
+
+
+
+
+
+
 
 
 
