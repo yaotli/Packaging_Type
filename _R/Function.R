@@ -1133,7 +1133,8 @@ strainSelect <- function( infolist )
 
 seqDate <- function( rawdata )
 {
-  library(stringr)
+  require(stringr)
+  require(lubridate)
   
   # gisaid
   
@@ -1151,11 +1152,12 @@ seqDate <- function( rawdata )
   
   yr   <- as.numeric( str_match(rawdata.2, d)[,2] )
   yr.0 <- paste0(yr, "-01-01")
+  yr.e <- paste0(yr, "-12-31")
   
   daydifference <- as.numeric( difftime( strptime( rawdata.2, "%Y-%m-%d"),
                                          strptime( yr.0, "%Y-%m-%d"), 
                                          units = "days") 
-  )/365
+  )/yday(yr.e)
   
   # bug?
   if ( TRUE %in% is.na(daydifference) )
@@ -1168,7 +1170,7 @@ seqDate <- function( rawdata )
     daydifference <- as.numeric( difftime( strptime( rawdata.2, "%Y-%m-%d"),
                                            strptime( yr.0, "%Y-%m-%d"), 
                                            units = "days") 
-    )/365
+    )/yday(yr.e)
   }
   
   yr.daydifference <- yr + daydifference
@@ -1176,7 +1178,7 @@ seqDate <- function( rawdata )
   
   return(yr.daydifference)
   
-  #v20170921b
+  #v20180125
 }
 
 
@@ -1259,12 +1261,13 @@ seqSelect <- function( minlth  = 1000,
 
 tagExtra <- function( filedir = file.choose() )
 {
+  require(stringr)
+  
   anno.tre <- read.csv( filedir, stringsAsFactors = FALSE)
   taxa.s   <- grep( x = anno.tre[,1], pattern = "taxlabels" ) + 1
-  ntax     <- 
-    as.numeric( str_match( grep( x       = anno.tre[,1], 
-                                 pattern = "ntax", value = TRUE) , "(ntax=)([0-9]+)")[,3] 
-                )
+  ntax     <- as.numeric( str_match( grep( x       = anno.tre[,1], 
+                                           pattern = "ntax", value = TRUE) , "(ntax=)([0-9]+)")[,3] 
+                          )
   
   taxa.e <- taxa.s + ntax - 1
   
@@ -1274,11 +1277,11 @@ tagExtra <- function( filedir = file.choose() )
   GsGDlike_tag  <- str_match( string = anno.tre[, 1][taxa.s: taxa.e], 
                               pattern = "color=#([a-z0-9]{6})")[, 2]
   
-  return(df = data.frame(id  = GsGDlike_name, 
-                         tag = GsGDlike_tag, stringsAsFactors = FALSE))
+  return( df = data.frame(id  = GsGDlike_name, 
+                          tag = GsGDlike_tag, stringsAsFactors = FALSE))
   
+  #v20180127
 }
-
 
 
 ### remove duplicate and filter seq based on arranged name --------------------------------
