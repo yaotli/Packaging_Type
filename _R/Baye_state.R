@@ -20,10 +20,15 @@ pH5_pri_cn_232[[8]] <- data.frame( name   = pH5_pri_cn_232[[6]],
                                    states = geoID( strings = pH5_pri_cn_232[[6]], host = TRUE ),
                                    ref    = NA, stringsAsFactors = FALSE )
 
-pH5_pri_cn_232[[8]]$states[ which( pH5_pri_cn_232[[8]]$states == "Unknown" ) ] <- 
-  c( rep("W_m", 3), rep("D_m", 8), rep("W_m", 2), rep( "D_m", 2), rep( "D_a", 4) )
-
 pH5_pri_cn_232[[8]] <- pH5_pri_cn_232[[8]][ sort( str_match( pH5_pri_cn_232[[8]]$name, "^[A-Z0-9]+"), index.return = TRUE )$ix, ]
+
+pH5_pri_cn_232[[8]]$ref[ which( pH5_pri_cn_232[[8]]$states == "Unknown" ) ][c(18,19)] =
+  "Characterization of H5N1 highly pathogenic mink influenza viruses in eastern China"
+
+pH5_pri_cn_232[[8]]$states[ which( pH5_pri_cn_232[[8]]$states == "Unknown" ) ] <- 
+  c( rep( "D_a", 4), rep( "D_m", 4), rep("W_m", 3), rep("D_m", 8) )
+
+
 
 # environment
 pH5_pri_cn_232[[8]]$states[ grep( "environment", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ] <- 
@@ -54,6 +59,7 @@ pH5_pri_cn_232[[8]]$ref[ grep( "pigeon", pH5_pri_cn_232[[8]]$name, ignore.case =
 pH5_pri_cn_232[[8]]$states[ grep( "pigeon", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ] <- 
   c( "W_a", "W_a", "D_a", "D_a" )
 
+
 pH5_pri_cn_232[[8]]$states[ grep( "chicken", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ] <- "D_a"
 pH5_pri_cn_232[[8]]$states[ grep( "duck", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ]    <- "D_a"
 pH5_pri_cn_232[[8]]$states[ grep( "quail", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ]   <- "D_a"
@@ -71,7 +77,7 @@ pH5_pri_cn_232[[8]] <- pH5_pri_cn_232[[8]][ sort( as.numeric( rownames(pH5_pri_c
 pH5_pri_cn_232[[8]]      <- data.frame( pH5_pri_cn_232[[8]], time = NA)     
 pH5_pri_cn_232[[8]]$time <- floor( as.numeric( str_match( pH5_pri_cn_232[[8]]$name, "[0-9.]+$" ) ) )
 
-#write.csv( pH5_pri_cn_232[[8]], "eco_232.csv")
+# write.csv( pH5_pri_cn_232[[8]], "eco_232.csv")
 
 ### 234 primary data (CN_HK) Species  --------------------------------
 
@@ -86,9 +92,10 @@ pH5_pri_cn_234[[8]] <- data.frame( name   = pH5_pri_cn_234[[6]],
                                    ref    = NA, stringsAsFactors = FALSE)
 pH5_pri_cn_234[[8]] <- pH5_pri_cn_234[[8]][ sort( str_match( pH5_pri_cn_234[[8]]$name, "^[A-Z0-9]+"), index.return = TRUE )$ix, ]
 
-pH5_pri_cn_234[[8]]$ref[ which( pH5_pri_cn_234[[8]]$states == "Unknown" ) ][c(28, 31, 60)] <-     
+pH5_pri_cn_234[[8]]$ref[ which( pH5_pri_cn_234[[8]]$states == "Unknown" ) ][c(28, 31, 56, 57, 58, 60)] <-     
   c( "Genesis, Evolution and Prevalence of H5N6 Avian Influenza Viruses in China",
      "Novel Reassortant Avian Influenza A(H5N6) Viruses in Humans, Guangdong, China, 2015",
+     rep("Highly pathogenic H5N6 in uenza A viruses recovered from wild birds in Guangdong, southern China, 2014–2015", 3),
      "Genetic Characterization of Continually Evolving Highly Pathogenic H5N6 Influenza Viruses in China, 2012–2016" )
 pH5_pri_cn_234[[8]]$states[ which( pH5_pri_cn_234[[8]]$states == "Unknown" ) ] <- 
   c( rep("D_m", 27), "W_a", rep("D_m", 2), "D_e", rep("D_m", 7), rep("U_e", 2), rep("D_m", 15),
@@ -137,7 +144,7 @@ pH5_pri_cn_234[[8]]$ref[ grep( "environment", pH5_pri_cn_234[[8]]$name, ignore.c
      "GenBank", #13
      "Two novel reassortants of avian influenza A (H5N6) virus in China", #14
      rep( "Continuing Reassortant of H5N6 Subtype Highly Pathogenic Avian Influenza Virus in Guangdong", 6), #15
-     "GenBank", #16
+     "Dispersal and Transmission of Avian Paramyxovirus Serotype 4 among Wild Birds and Domestic Poultry", #16
      rep( "Emergence of triple-subtype reassortants of fatal human H5N6 avian influenza virus in Yunnan, China", 3),
      rep( "Continuing Reassortant of H5N6 Subtype Highly Pathogenic Avian Influenza Virus in Guangdong", 3), #18
      "Aerosolized avian influenza A (H5N6) virus isolated from a live poultry market, China", #19
@@ -162,16 +169,22 @@ pH5_pri_cn_234[[8]]$ref[ grep( "pigeon", pH5_pri_cn_234[[8]]$name, ignore.case =
      "Two novel reassortants of avian influenza A (H5N6) virus in China",
      "Complete Genome Sequences of an H5N1 Highly Pathogenic Avian Influenza Virus Isolated from Pigeon in China in 2012",
      "GenBank")
-     
+
+pH5_pri_cn_234[[8]]$states[ grep( "[A-Za-z]_duck", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ] <- 
+  c( rep("D_a", 27), rep("W_a",6) )
+pH5_pri_cn_234[[8]]$states[ grep( "[0-9]_duck", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ] <- "D_a"
+
 pH5_pri_cn_234[[8]]$states[ grep( "chicken", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ] <- "D_a"
-pH5_pri_cn_234[[8]]$states[ grep( "duck", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ]    <- "D_a"
 pH5_pri_cn_234[[8]]$states[ grep( "quail", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ]   <- "D_a"
-pH5_pri_cn_234[[8]]$states[ grep( "goose", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ]   <- "D_a"
 
-pH5_pri_cn_234[[8]]$ref[ which( pH5_pri_cn_234[[8]]$states == "nonML") ][c(26,27,28)]    <- "GenBank"
-pH5_pri_cn_234[[8]]$states[ which( pH5_pri_cn_234[[8]]$states == "nonML") ][c(26,27,28)] <- "D_a"
+pH5_pri_cn_234[[8]]$states[ grep( "[A-Za-z]_goose", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ] <- "W_a"
+pH5_pri_cn_234[[8]]$states[ grep( "[0-9]_goose", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ]    <- "D_a"
 
-pH5_pri_cn_234[[8]]$states[ which( pH5_pri_cn_234[[8]]$states == "nonML") ] <- "W_a"
+# 'avian'
+pH5_pri_cn_234[[8]]$ref[ which( pH5_pri_cn_234[[8]]$states == "nonML") ][c(31, 32, 33)]    <- "GenBank"
+pH5_pri_cn_234[[8]]$states[ which( pH5_pri_cn_234[[8]]$states == "nonML") ][c(31, 32, 33)] <- "D_a"
+
+pH5_pri_cn_234[[8]]$states[ which( pH5_pri_cn_234[[8]]$states == "nonML") ]                 <- "W_a"
 pH5_pri_cn_234[[8]]$states[ grep( "domestic", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ] <- "D_a"
 pH5_pri_cn_234[[8]]$states[ grep( "wild", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ]     <- "W_a"
 pH5_pri_cn_234[[8]]$states[ grep( "bar_head", pH5_pri_cn_234[[8]]$name, ignore.case = T ) ] <- "W_a"
@@ -182,7 +195,7 @@ pH5_pri_cn_234[[8]]      <- pH5_pri_cn_234[[8]][ sort( as.numeric( rownames(pH5_
 pH5_pri_cn_234[[8]]      <- data.frame( pH5_pri_cn_234[[8]], time = NA)     
 pH5_pri_cn_234[[8]]$time <- floor( as.numeric( str_match( pH5_pri_cn_234[[8]]$name, "[0-9.]+$" ) ) )
 
-#write.csv( pH5_pri_cn_234[[8]], "eco_234.csv")
+# write.csv( pH5_pri_cn_234[[8]], "eco_234.csv")
 
     
 ### figure species --------------------------------
