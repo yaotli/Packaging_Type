@@ -2058,7 +2058,134 @@ jumpMx <- function( states = c("cnC", "cnE", "cnN", "cnS", "cnSW") )
 }
 
 
+### improved findtaxa --------------------------------
 
+findtaxa2 <- function( type       = 2, 
+                       tree       = NULL, 
+                       targetid   = "chiken", 
+                       target     = "red",
+                       Refdf      = data.frame(name = NA, state = NA),
+                       useRefdf   = TRUE,
+                       background = "black")
+{
+  
+  # type 1 = branch coloring 
+  # type 0 = tip shape
+  # default branch color = black
+  
+  library(ape)
+  library(ggtree)
+  
+  # extract tree data
+  
+  tree.d                         <- fortify(tree)
+  tree.d[, ncol(tree.d) + 1]     <- gsub("'", "", tree.d$label)
+  colnames(tree.d)[ncol(tree.d)] <- "taxaid"
+  
+  # for tip shape
+  
+  if ( useRefdf )
+  {
+    tem.m    <- match( gsub( "'", "", tree$tip.label ), Refdf$name )
+    if( TRUE %in% is.na(tem.m) ){ stop() }
+    
+    taxainfo <- Refdf$state[ tem.m ]
+    
+  }else
+  {
+    taxainfo <- tree.d$taxaid
+  }
+  
+  
+  if (type == 0)
+  {
+    
+    shapetaxa <- data.frame( node   = c( 1:length( tree.d$isTip ) ), 
+                             shapee = NA)
+    
+    for (i in 1: length(targetid) )
+    {
+      shapetaxa$shapee[  grep(  tolower( targetid[i] ), tolower( taxainfo ) ) ] <- target[i]
+    }
+    
+    return(shapetaxa)
+    
+  }else {
+    
+    # for branch colorring  
+    
+    # new column
+    tree.d[, ncol(tree.d) + 1]     <- background
+    colnames(tree.d)[ncol(tree.d)] <- "colorr"
+    
+    # for branch extension
+    edgematrix <- as.matrix( tree.d[,c(2,1)] )
+    
+    # color grouping 
+    group_color <- unique( target )
+    
+    for ( i in 1: length( group_color ) )
+    {
+      
+      # color as group to combine key word to targetno
+      sub_color <- which( target == group_color[i] )
+      targetno  <- c()
+      
+      for ( t in 1: length( sub_color ) )
+      {
+        targetno <- 
+          unique( c( targetno, grep( tolower( targetid[ sub_color[t] ] ), 
+                                     tolower( taxainfo ) )
+          ) )
+      }
+      
+      pre_targetno  <- length( targetno )
+      post_targetno = 0
+      
+      # while loop 
+      
+      while( pre_targetno != post_targetno )
+      {
+        
+        pre_targetno = length( targetno )
+        
+        for( k in 1: length(targetno) )
+        {
+          # all sibiling 
+          sibs <- as.integer( edgematrix[ 
+            which( edgematrix[,1] == 
+                     edgematrix[ which( edgematrix[,2] == targetno[k] ), ][1] ),][,2] )
+          
+          if ( length( sibs ) == 1 )
+          {
+            targetno = c( targetno, as.integer( edgematrix[which( edgematrix[,2] == targetno[k]), ][1] ) )
+            
+          }else{
+            
+            if ( length( which(! sibs %in% targetno ) ) == 0 )
+            {
+              # add parent no
+              targetno = c( targetno, as.integer( edgematrix[which( edgematrix[,2] == targetno[k]),][1] ) )
+            }
+          }
+          
+          targetno = unique( targetno )
+        }
+        
+        post_targetno = length(targetno)
+        
+      }
+      
+      # coloring
+      
+      tree.d$colorr[targetno] <- group_color[i]
+      
+    }
+    return(tree.d)    
+    
+  }
+  #v20180201
+}
 
 
 
