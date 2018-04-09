@@ -287,8 +287,8 @@ seqDate <- function( rawdata )
   yr.0 <- paste0(yr, "-01-01")
   yr.e <- paste0(yr, "-12-31")
   
-  daydifference <- as.numeric( difftime( strptime( rawdata.2, "%Y-%m-%d"),
-                                         strptime( yr.0, "%Y-%m-%d"), 
+  daydifference <- as.numeric( difftime( strptime( rawdata.2, "%Y-%m-%d", tz = "GMT"),
+                                         strptime( yr.0, "%Y-%m-%d", tz = "GMT"), 
                                          units = "days") 
   )/yday(yr.e)
   
@@ -300,8 +300,8 @@ seqDate <- function( rawdata )
       sub("01$", "02", rawdata.2[ which(is.na(daydifference)) ] )
     
     
-    daydifference <- as.numeric( difftime( strptime( rawdata.2, "%Y-%m-%d"),
-                                           strptime( yr.0, "%Y-%m-%d"), 
+    daydifference <- as.numeric( difftime( strptime( rawdata.2, "%Y-%m-%d", tz = "GMT"),
+                                           strptime( yr.0, "%Y-%m-%d", tz = "GMT"), 
                                            units = "days") 
     )/yday(yr.e)
   }
@@ -311,7 +311,7 @@ seqDate <- function( rawdata )
   
   return(yr.daydifference)
   
-  #v20180125
+  #v20180409
 }
 
 ### seqSelect --------------------------------
