@@ -174,8 +174,8 @@ pH5_pri_cn_232[[8]]$states[ grep( "goose", pH5_pri_cn_232[[8]]$name, ignore.case
 pH5_pri_cn_232[[8]]$states[ grep( "pheasant", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ]<- "D_a"
 pH5_pri_cn_232[[8]]$states[ grep( "peacock", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ] <- "D_a"
 
-pH5_pri_cn_232[[8]]$states[ which( pH5_pri_cn_232[[8]]$states == "nonML") ]             <- "W_a"
-pH5_pri_cn_232[[8]]$states[ grep( "wild", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ] <- "W_a"
+pH5_pri_cn_232[[8]]$states[ which( pH5_pri_cn_232[[8]]$states == "nonML") ]                 <- "W_a"
+pH5_pri_cn_232[[8]]$states[ grep( "wild", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ]     <- "W_a"
 pH5_pri_cn_232[[8]]$states[ grep( "bar_head", pH5_pri_cn_232[[8]]$name, ignore.case = T ) ] <- "W_a"
 
 pH5_pri_cn_232[[8]] <- pH5_pri_cn_232[[8]][ sort( as.numeric( rownames(pH5_pri_cn_232[[8]]) ), index.return = TRUE )$ix, ]

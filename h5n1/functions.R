@@ -1185,3 +1185,54 @@ acSearch <- function( faslist     = list(),
   #v20180108
 }
 
+### timeDice --------------------------------   
+
+timeDice <- function( fas.dir, ecotab.dir, timetab.dir )
+{
+  require(seqinr)
+  
+  id        <- attributes( read.fasta( fas.dir ) )$names
+  df_ecotab <- read.table( ecotab.dir, header = TRUE, stringsAsFactors = FALSE )
+  df_timtab <- read.table( timetab.dir, header = TRUE, stringsAsFactors = FALSE )
+  
+  if( TRUE %in% is.na( match( id, df_timtab$id ) ) ){ stop( "mismatch" ) }
+  
+  yr   <- df_timtab$yr[ match( id, df_timtab$id ) ]
+  yr_0 <- paste0( floor(yr), ".000" )
+  delT <- which( df_timtab$partialT[ match( id, df_timtab$id ) ] == 1 ) 
+  tag  <- df_ecotab$states[ match( id, df_ecotab$id ) ] 
+  id_t <- id[delT]
+  
+  p1       <- paste0( "<taxon id=\"", id, "\">", "\n<date value=\"", yr , "\" direction=\"forwards\" units=\"years\"/>", "\n<attr name=\"states\">", tag ,"</attr>\n</taxon>")
+  p1[delT] <- paste0( "<taxon id=\"", id[delT], "\">", "\n<date value=\"", yr_0[delT] , "\" direction=\"forwards\" units=\"years\" precision=\"1.0\"/>", "\n<attr name=\"states\">", tag[delT] ,"</attr>\n</taxon>") 
+  p1       <- c( "# following <taxa id=\"taxa\">", p1)
+  
+  # after 	<taxa id="taxa">
+  write.table( p1, "taxon", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  # before the end of treeModel
+  q1 <- paste0( "<leafHeight taxon=\"", id_t, "\">\n<parameter id=\"age(", id_t, ")\"/>\n</leafHeight>" )
+  q1 <- c( "# before </treeModel>",
+           "<!-- START Tip date sampling                                                 -->", 
+           q1, 
+           "<!-- END Tip date sampling                                                   -->")
+  
+  write.table( q1, "treeModel", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  # before the end of operators 
+  q2 <- paste0( "<uniformOperator weight=\"1\">\n<parameter idref=\"age(", id_t, ")\"/>\n</uniformOperator>" )
+  q2 <- c( "# before </operators>", q2 )
+  
+  write.table( q2, "operators", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  # in write log to file (after ratestatistic)
+  q3 <- paste0( "<parameter idref=\"age(", id_t, ")\"/>" )
+  q3 <- c( "# in write log to file after ratestatistic",
+           "<!-- START Tip date sampling                                                 -->", 
+           q3,
+           "<!-- END Tip date sampling                                                   -->" )
+  
+  write.table( q3, "log", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+ #v20180523b 
+}
