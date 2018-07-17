@@ -1,7 +1,7 @@
 require(ggtree)
 require(ape)
 
-setwd("~/Desktop/data_souce/")
+setwd("/Volumes/EDGE2/LoVE/ReassortSubtype/data_souce/")
 source("~/Packaging_Type/_R/Function.R")
 
 
@@ -243,14 +243,15 @@ df_pri_tre_data = as.data.frame( prop.table( table( df_pri_tre_data[, c(1,2)] ),
 
 
 ggplot( data = df_pri_tre_data ) + 
-  geom_line( aes(x = time, y = Freq, color = clade, group = clade), size = 1.5) + 
+  geom_line( aes(x = time, y = Freq, color = clade, group = clade), size = 2) + 
   theme_bw() + xlab("") + ylab("% Sequences") +
-  scale_x_discrete( breaks = seq(1996, 2016, by = 2), labels = seq(1996, 2016, by = 2) ) + 
+  scale_x_discrete( breaks = seq(1996, 2016, by = 4), labels = seq(1996, 2016, by = 4) ) + 
+  scale_color_manual( values = c( pyCol("red"), pyCol("gray") )  ) +
   theme( panel.grid.minor   = element_blank(), 
-         panel.grid.major.y = element_blank(), 
-         axis.title       = element_text(size = 18),
+         panel.grid.major   = element_blank(), 
+         axis.title       = element_text(size = 14),
          axis.ticks.x = element_blank(),
-         axis.text.y = element_text(size = 12),
+         axis.text    = element_text(size = 10),
          legend.position = "none"  )
 
 

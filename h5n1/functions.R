@@ -1187,15 +1187,24 @@ acSearch <- function( faslist     = list(),
 
 ### timeDice --------------------------------   
 
-timeDice <- function( fas.dir, ecotab.dir, timetab.dir )
+timeDice <- function( fas.dir, ecotab.dir, timetab.dir, ecotable = TRUE )
 {
   require(seqinr)
   
   id        <- attributes( read.fasta( fas.dir ) )$names
-  df_ecotab <- read.table( ecotab.dir, header = TRUE, stringsAsFactors = FALSE )
   df_timtab <- read.table( timetab.dir, header = TRUE, stringsAsFactors = FALSE )
   
+  if( ecotable )
+  {
+    df_ecotab <- read.table( ecotab.dir, header = TRUE, stringsAsFactors = FALSE )
+    
+  }else
+  {
+    df_ecotab <- data.frame( id = id, states = ".")
+    }
+  
   if( TRUE %in% is.na( match( id, df_timtab$id ) ) ){ stop( "mismatch" ) }
+  if( TRUE %in% is.na( match( id, df_ecotab$id ) ) ){ stop( "mismatch" ) }
   
   yr   <- df_timtab$yr[ match( id, df_timtab$id ) ]
   yr_0 <- paste0( floor(yr), ".000" )
@@ -1208,7 +1217,7 @@ timeDice <- function( fas.dir, ecotab.dir, timetab.dir )
   p1       <- c( "# following <taxa id=\"taxa\">", p1)
   
   # after 	<taxa id="taxa">
-  write.table( p1, "taxon", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  write.table( p1, file = sub( ".fasta", ".taxa", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
   
   # before the end of treeModel
   q1 <- paste0( "<leafHeight taxon=\"", id_t, "\">\n<parameter id=\"age(", id_t, ")\"/>\n</leafHeight>" )
@@ -1217,13 +1226,13 @@ timeDice <- function( fas.dir, ecotab.dir, timetab.dir )
            q1, 
            "<!-- END Tip date sampling                                                   -->")
   
-  write.table( q1, "treeModel", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  write.table( q1, file = sub( ".fasta", ".treeModel", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
   
   # before the end of operators 
   q2 <- paste0( "<uniformOperator weight=\"1\">\n<parameter idref=\"age(", id_t, ")\"/>\n</uniformOperator>" )
   q2 <- c( "# before </operators>", q2 )
   
-  write.table( q2, "operators", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  write.table( q2, file = sub( ".fasta", ".operator", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
   
   # in write log to file (after ratestatistic)
   q3 <- paste0( "<parameter idref=\"age(", id_t, ")\"/>" )
@@ -1232,7 +1241,70 @@ timeDice <- function( fas.dir, ecotab.dir, timetab.dir )
            q3,
            "<!-- END Tip date sampling                                                   -->" )
   
-  write.table( q3, "log", quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  write.table( q3, file = sub( ".fasta", ".log", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
   
- #v20180523b 
+ #v20180707
 }
+
+### getDescendant --------------------------------   
+
+getDes <- function( tre.d = trefile, node, curr = NULL )
+{
+  if( is.null(curr) ){ curr <- vector() }
+  
+  edgemax   <- tre.d[ c(2,1) ]
+  daughters <- edgemax[which( edgemax[,1] == node ), 2]
+  
+  curr <- c(curr, daughters)
+  nd   <- which( daughters >= length( which( tre.d$isTip )) )
+  
+  if( length(nd) > 0)
+  {
+    for(i in 1:length(nd) ){ curr <- getDes( tre.d = tre.d, daughters[ nd[i] ], curr ) }
+  }
+  return(curr)
+  
+ #v20180628    ->modified from unknown source  
+}
+
+### skygrowth_df --------------------------------   
+
+
+skygrowth_df <- function( ls.nwk, ls.t,  n.res = 40, name = NA )
+{
+  require( skygrowth )
+  require( ape )
+  
+  if( length(ls.nwk) != length(ls.t) ){ stop() }
+  if( length(name) != length(ls.nwk) ){ note = as.character( seq( 1, length(ls.nwk) ) )   }
+  
+  ls.fit  <- list()
+  ls.mcmc <- list()
+  ls.rate <- list()
+  
+  for( i in 1: length( ls.nwk ) )
+  {
+    nwk <- read.tree( ls.nwk[i] )
+    
+    fit     = skygrowth.map( nwk, res = n.res, tau0 = 0.1 )
+    mcmcfit = skygrowth.mcmc( nwk, res = n.res, tau0 = 0.1 )
+    
+    ls.fit[[ i ]]  <- data.frame( fit$ne_ci, time = fit$time + ls.t[i], note = name[i], type = "fit", stringsAsFactors = FALSE)
+    ls.mcmc[[ i ]] <- data.frame( mcmcfit$ne_ci, time = mcmcfit$time + ls.t[i], note = name[i], type = "mcmc", stringsAsFactors = FALSE)
+    ls.rate[[ i ]] <- data.frame( mcmcfit$growthrate_ci, time = mcmcfit$time + ls.t[i], note = name[i], type = "rate", stringsAsFactors = FALSE)
+    
+  }
+  
+  df.fit  <- do.call( rbind, ls.fit )
+  df.mcmc <- do.call( rbind, ls.mcmc )
+  df.rate <- do.call( rbind, ls.rate )
+  
+  colnames(df.fit)[ c(1,2,3) ]  <- c( "lb", "e", "ub" )
+  colnames(df.mcmc)[ c(1,2,3) ] <- c( "lb", "e", "ub" )
+  colnames(df.rate)[ c(1,2,3) ] <- c( "lb", "e", "ub" )
+  
+  return( do.call( rbind, list( df.fit, df.mcmc, df.rate ) )  )
+  
+  #v20180713v
+}
+
