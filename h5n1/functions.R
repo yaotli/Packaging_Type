@@ -932,17 +932,27 @@ geoID <- function( strings,
   
   cn.SW <- "Guizhou|Guangxi|Yunnan|Guiyang|Tibet|Sichuan|Chongqing|Anning|Dali|TongHai"
   cn.NW <- "Ningxia|Xinjiang|Gansu|Qinghai|Shaanxi"
-  cn.S  <- "Hong_Kong|Shantou|Guangdong|Shenzhen|Guangzhou|Fujian|Dongguan|Zhanjiang|Zhongshan|Huizhou|Qingyuan"
+  cn.S  <- "Shantou|Guangdong|Shenzhen|Guangzhou|Fujian|Dongguan|Zhanjiang|Zhongshan|Huizhou|Qingyuan"
   
-  SEA   <- "Bangladesh|Laos|Malaysia|Myanmar|Thailand|Vietnam|India|Nepal"
-  nA    <- "Japan|Mongolia|Russia|South_Korea"
-  E     <- "Bulgaria"
+  gCN  <- c( "China", "Hong_Kong" )
+  gSEA <- c( "Laos", "Malaysia", "Myanmar", "Taiwan", "Thailand", "Vietnam", "Indonesia" )
+  gWA  <- c( "Bangladesh", "Bhutan", "India", "Lebanon", "Nepal", "United_Arab_Emirates", "Egypt" )
+  gNA  <- c( "Japan", "Mongolia", "Russia", "South_Korea" )
+  gA   <- c( "Burkina_Faso", "Cote_dIvoire", "Niger", "Nigeria", "Togo", "Ghana" )
+  gE   <- c( "Austria", "Bulgaria", "Belgium", "Denmark", "France", "Germany", "Hungary", "Italy", "Netherlands", "Poland", "Sweden", "Switzerland", "United_Kingdom", "Croatia", "Czech_Republic")
+  gAm  <- c( "USA", "Canada" )
+  
+  g.ls <- list( gCN, gSEA, gWA, gNA, gA, gE, gAm )
+  g.ls <- unlist( lapply( g.ls, function(x) paste0( x, collapse = "|" ) ) )
+  
+  
   
   nonML <- "avian|bird|wildbird|poultry|chicken|duck|dove|pigeon|mallard|goose|environment|water|teal|hawk|eagle|magpie|munia|myna|kestrel|peregrine|crow|sparrow|robin|mesia|gull|egret|swan|shrike|buzzard|heron|quail|pheasant|grebe|starling|swallow|white_eye|cormorant|goldeneye|fowl|pochard|crane|peacock|turkey|falcon|swiftlet|rook|pintail|curlew"
   
   
-  geo.key <- c( cn.NE, cn.BH, cn.YZ, cn.C, cn.SW, cn.NW, cn.S, SEA, nA, E)
-  geo     <- c("cnNE", "cnBH", "cnYZ", "cnC", "cnSW", "cnNW", "cnS", "SEA", "nA", "E", "Unknown")
+  
+  geo.key <- c( cn.NE, cn.BH, cn.YZ, cn.C, cn.SW, cn.NW, cn.S, g.ls )
+  geo     <- c("cnNE", "cnBH", "cnYZ", "cnC", "cnSW", "cnNW", "cnS", "gCN", "gSEA", "gWA", "gNA", "gA", "gE", "gAm", "Unknown")
   
   if( host )
   {
@@ -968,7 +978,7 @@ geoID <- function( strings,
   print( strings[ which(y == "Unknown")  ]  )
   return( y )
   
-  #v20180110
+  #v20180711
 }
 
 ### pyCol --------------------------------  
@@ -1308,3 +1318,240 @@ skygrowth_df <- function( ls.nwk, ls.t,  n.res = 40, name = NA )
   #v20180713v
 }
 
+
+### cladesampling --------------------------------   
+
+
+cladeSampling <- function( trefile      = file.choose(),
+                           fasfile      = file.choose(),
+                           listinput    = list(),
+                           seed         = 666,
+                           grid         = 1,
+                           minBranchlth = TRUE, 
+                           showTree     = FALSE, 
+                           saveFasta    = FALSE,  
+                           suppList     = FALSE,
+                           list.x       = c("id", "y", "geo") )
+{
+  require( ape )
+  require( seqinr )
+  require( ggtree )
+  require( stringr )
+  
+  # getdescendants
+  getDes <- function( node, curr = NULL )
+  {
+    if( is.null(curr) ){ curr <- vector() }
+    
+    edgemax   <- tre.d[ c(2,1) ]
+    daughters <- edgemax[which( edgemax[,1] == node ), 2]
+    
+    curr <- c(curr, daughters)
+    nd   <- which( daughters >= length( which( tre.d$isTip )) )
+    
+    if( length(nd) > 0)
+    {
+      for(i in 1:length(nd) ){ curr <- getDes( daughters[ nd[i] ], curr ) }
+    }
+    return(curr)
+  }
+  
+  
+  nex <- read.nexus( trefile )
+  fas <- read.fasta( fasfile )
+  seq <- getSequence( fas )
+  id  <- attributes( fas )$names
+  
+  tre.d   <- fortify( nex )
+  N.tip   <- length( which( tre.d$isTip ) )
+  N.node  <- nex$Nnode
+  edgemax <- tre.d[ c(2,1) ]
+  
+  
+  t.id <- gsub("'", "", tre.d$label)
+  
+  if( suppList )
+  {
+    
+    tem.m  <- match( t.id[ 1:  N.tip], listinput[[ list.x[1] ]])
+    
+    if( TRUE %in% is.na(tem.m) ){stop()}
+    
+    i.id.y <- listinput[[ list.x[2] ]][ tem.m ]
+    i.id.g <- listinput[[ list.x[3] ]][ tem.m ]
+    
+  }else
+  {
+    i.id.y <- as.numeric( str_match( t.id, "_([0-9]{4}\\.[0-9]+)$")[,2] )
+    i.id.g <- str_match( t.id, "\\|([A-Za-z_]+)\\|")[,2]  
+  }
+  
+  # 1st search for node with homogeneous descendants 
+  inner.node <- seq( 1, dim( tre.d )[1])[ - seq(1, N.tip+1) ]
+  c1.node    <- inner.node[ which( sapply( as.list(inner.node), 
+                                           function(x)
+                                           {
+                                             all <- getDes(x)[ getDes(x) <= N.tip ]
+                                             
+                                             if( length( all[ !is.na( i.id.g[all] ) ] ) < 1 ){ return( TRUE ) }else
+                                             {
+                                               r   <- range( i.id.y[ all[ !is.na( i.id.g[all] ) ] ] )[2] - range( i.id.y[ all[ !is.na( i.id.g[all] ) ] ] )[1]
+                                               g   <- unique( i.id.g[ all[ !is.na( i.id.g[all] ) ] ] )
+                                               
+                                               return( ( r <= grid ) & ( length( g ) == 1 ) )    
+                                               
+                                             } 
+                                           } )) 
+                            ]
+  # reduce redndant nodes
+  c2.node    <- c1.node[ which( sapply( as.list(c1.node), 
+                                        function(x)
+                                        {
+                                          if( edgemax[,1][ which( edgemax[,2] == x) ] %in% c1.node )
+                                          {
+                                            return( FALSE )
+                                            
+                                          }else
+                                          {
+                                            return( TRUE )
+                                          }
+                                          
+                                        } )
+  )  
+  ] 
+  
+  c2.node_des <- c( c2.node, unlist( sapply( as.list(c2.node), getDes) ) )
+  c2.node_tip <- c2.node_des[ c2.node_des <= N.tip ]
+  nogroup_tip <- seq(1, N.tip)[ - c2.node_tip ]
+  nogroup_tip <- nogroup_tip[ !is.na( i.id.g[ nogroup_tip ] ) ]
+  
+  # sample within a group
+  if( minBranchlth )
+  {
+    selected_tip <- sapply( as.list(c2.node), 
+                            function(x)
+                            {
+                              alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              
+                              if( TRUE %in% is.na( i.id.g[ alltip ] )  )
+                              {
+                                alltip <- alltip[ - which( is.na( i.id.g[ alltip ] ) ) ]
+                              }
+                              
+                              m      <- which.min( tre.d$x[ alltip ] )
+                              
+                              if( length( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ) )  > 1 )
+                              {
+                                set.seed( seed ) 
+                                s = sample( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ), 1 )
+                                
+                              }else
+                              {
+                                s = m
+                              }
+                              return( alltip[s] )
+                            })
+    
+  }else
+  {
+    selected_tip <- sapply( as.list(c2.node), 
+                            function(x)
+                            {
+                              alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              
+                              if( TRUE %in% is.na( i.id.g[ alltip ] )  )
+                              {
+                                alltip <- alltip[ - which( is.na( i.id.g[ alltip ] ) ) ]
+                              }
+                              
+                              set.seed( seed ) 
+                              s = sample( alltip, 1)
+                              return(s)
+                              
+                            } 
+    )
+  }  
+  
+  if( showTree )
+  {
+    # view the result
+    tre.d[, ncol(tre.d) + 1 ] = "gray"
+    colnames(tre.d)[ ncol(tre.d) ] = "colorr"
+    tre.d$colorr[c2.node_des] = "red"
+    
+    tre.d[, ncol(tre.d) + 1 ] = NA
+    colnames(tre.d)[ ncol(tre.d) ] = "shapee"
+    tre.d$shapee[selected_tip] = 16
+    
+    g1 <- ggtree( nex ) %<+% tre.d + aes(color = I(colorr)) + geom_tiplab(size = 1)
+    print( g1 + geom_tippoint(aes( shape = factor(shapee) ), size = 2) )
+  }
+  
+  remain <- c( nogroup_tip, selected_tip )
+  seq.o  <- seq[ match( t.id[ sort(remain) ], id) ]
+  id.o   <- id[ match( t.id[ sort(remain) ], id) ]
+  
+  if( saveFasta )
+  {
+    write.fasta( seq.o, id.o, 
+                 file.out = gsub( ".fasta", "_s.fasta", fasfile) )
+  }
+  
+  print( paste0("sampled n = ", length(remain), " from ", length(id) ) )
+  print( table( floor( i.id.y[remain] ), i.id.g[remain] ) )
+  
+  
+  #v20171111b
+}
+
+
+
+### jumpMx --------------------------------  
+
+jumpMx <- function( states = c("cnC", "cnE", "cnN", "cnS", "cnSW") )
+{
+  states = sort( unique( states ) )
+  lth <- length( states )
+  mx  <- matrix( rep(0,lth^2), nrow = lth)
+  ord <- combn( lth, 2)
+  
+  dirname <- c() 
+  string  <- c()
+  for( x in 1: ( dim(ord)[2] ) )
+  {
+    dirname = c( dirname, paste0( states[ ord[,x][1] ], "_to_", states[ ord[,x][2] ] ) )
+    dirname = c( dirname, paste0( states[ rev(ord[,x])[1] ], "_to_", states[ rev(ord[,x])[2] ] ) )
+  }
+  
+  for( x in 1: ( dim(ord)[2] ) )
+  {
+    mx1  <- matrix( rep(0,lth^2), nrow = lth)
+    mx1[ ord[,x][1], ord[,x][2]  ]          <- 1
+    string  <- c( string, paste( paste( as.vector( t(mx1) ), ".0", sep = ""), collapse = " ") )
+    
+    mx2  <- matrix( rep(0,lth^2), nrow = lth)
+    mx2[ ord[,x][2], ord[,x][1] ] <- 1
+    string  <- c( string, paste( paste( as.vector( t(mx2) ), ".0", sep = ""), collapse = " ") )
+  }
+  
+  out <- c()
+  for( y in 1: length(dirname) )
+  {
+    out <- c(out, paste("<parameter id=", dirname[y], " value=", string[y], "/>",  sep = '\"' ) )
+  }
+  
+  blls = c()
+  for( r in 1: length(states) )
+  {
+    bll  <- rep(0, length(states) )
+    bll[ r ] = 1
+    blls = c( blls, paste0( bll, collapse = " ") )
+  }
+  
+  rw <- paste0( " <parameter value=\"", blls, "\" id=\"reward_", states, "\"/>")
+  rw <- c( "<rewards>", rw, "</rewards>")
+  write.table( rw, file = "reward.mx", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+  write.table( out, file = "trans.mx", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+  
+  #v20180717
+}

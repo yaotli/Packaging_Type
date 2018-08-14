@@ -9,11 +9,10 @@ require(tidyverse)
 
 # raw input -------- 
 # 1 .tre
-c232_D <- data.frame( read.table("./eco/results/201807_grid_eco/table/20180702_grid_eco_232_h5_D-com", sep = "\t", header = T), Eco = "Domestic", Clade = "232" )
-c232_W <- data.frame( read.table("./eco/results/201807_grid_eco/table/20180702_grid_eco_232_h5_W-com", sep = "\t", header = T), Eco = "Wild", Clade = "232" )
+c232_D <- data.frame( read.table("./eco/results/201807_grid_eco_2014/table/20180719_grid_eco_2014_232_h5_D-com", sep = "\t", header = T), Eco = "Domestic", Clade = "232" )
+c232_W <- data.frame( read.table("./eco/results/201807_grid_eco_2014/table/20180719_grid_eco_2014_232_h5_W-com", sep = "\t", header = T), Eco = "Wild", Clade = "232" )
 c234_D <- data.frame( read.table("./eco/results/201807_grid_eco/table/20180706_grid_eco_234_h5_D-com", sep = "\t", header = T), Eco = "Domestic", Clade = "234" )
 c234_W <- data.frame( read.table("./eco/results/201807_grid_eco/table/20180706_grid_eco_234_h5_W-com", sep = "\t", header = T), Eco = "Wild", Clade = "234" )
-
 
 tb = list( c232_D, c232_W, c234_D, c234_W ) 
 tb = do.call( rbind, tb )
@@ -21,13 +20,13 @@ tb = do.call( rbind, tb )
 
 # 2 .nwk 
 
-c232_D_tre <- "./eco/results/201807_grid_eco/20180702_grid_eco_232_h5_D-anno.nwk"
-c232_W_tre <- "./eco/results/201807_grid_eco/20180702_grid_eco_232_h5_W-anno.nwk"
+c232_D_tre <- "./eco/results/201807_grid_eco_2014/20180719_grid_eco_2014_232_h5_D-anno.nwk"
+c232_W_tre <- "./eco/results/201807_grid_eco_2014/20180719_grid_eco_2014_232_h5_W-anno.nwk"
 c234_D_tre <- "./eco/results/201807_grid_eco/20180706_grid_eco_234_h5_D-anno.nwk"
 c234_W_tre <- "./eco/results/201807_grid_eco/20180706_grid_eco_234_h5_W-anno.nwk"
 
-t_c232_D <- 2011.989
-t_c232_W <- 2011.948
+t_c232_D <- 2013.879
+t_c232_W <- 2012.505
 t_c234_D <- 2011.953
 t_c234_W <- 2009.496
 
@@ -43,20 +42,29 @@ tb.g = skygrowth_df( ls.nwk = c( c232_D_tre, c232_W_tre, c234_D_tre, c234_W_tre 
 # figures --------
 
 p1 <- 
-ggplot( data = tb ) + theme_bw() +
-  facet_grid( Eco~. ) + 
-  geom_line( aes( x = Time, y = log(Median), color = Clade ), size = 1.5) + 
-  geom_ribbon( aes( x = Time, ymin = log(Lower), ymax = log(Upper), group = Clade), alpha = 0.1) +
-  coord_cartesian( ylim = c(-1.5, 6), xlim = c(2003, 2012) ) +
-  scale_x_continuous( breaks = seq(2003, 2011, by = 2), labels =  seq(2003, 2011, by = 2) ) +
-  #scale_linetype_manual(  values =  c( "solid", "dotted") ) +
-  xlab( "Year" ) + ylab( "Effective population size" ) + 
-  scale_color_manual( values = pyCol( c( "green", "red" ) ) ) +
+  tb %>%
+  filter( 2003 <= Time ) %>% 
+  filter( Time <= 2012 ) %>% 
+  ggplot( ) + theme_bw() +
+  facet_grid( Clade ~. ) + 
+  geom_line( aes( x = Time, y = Median, color = Eco ), size = 1.5) + 
+  geom_ribbon( aes( x = Time, ymin = Lower, ymax = Upper, group = Eco, fill = Eco ), alpha = 0.1) +
+  scale_y_log10( breaks = scales::trans_breaks("log10", function(x) 10^x),
+                 labels = scales::trans_format("log10", scales::math_format(10^.x))  ) +
+  annotation_logticks() +  
+  coord_cartesian( ylim = c( 0.1, 1000 ), xlim = c(2003, 2012) ) +
+  scale_x_continuous( breaks = seq(2003, 2014, by = 2), labels =  seq(2003, 2014, by = 2) ) +
+  xlab( "" ) + ylab( "Effective population size" ) + 
+  ggtitle("Skygrid") +
+  scale_color_manual( values = c( "#8c564b", "#17becf" ) )  +
+  scale_fill_manual( values = c( "#8c564b", "#17becf" ) )  +
   theme( panel.grid.minor.y =  element_blank(), 
+         panel.grid.minor.x =  element_blank(),
          strip.background = element_rect( fill = "white", color = "white"),
          panel.border = element_rect( color = "black", fill = NA, size = 1),
-         legend.position = "none", 
-         strip.text = element_blank() ) +
+         #strip.text = element_blank()
+         legend.position = c(0.5,.9),
+         legend.title = element_blank()) +
   geom_vline( xintercept = 2007, linetype = "dotted") 
 
 
@@ -67,27 +75,62 @@ colnames(tb.g)[7] = "Clade"
 tb.g[, 8] <- ifelse( endsWith( as.character(tb.g[, 5]) , suffix = "D" ),  "D", "W" )
 colnames(tb.g)[8] = "Eco"
 
+# growth rate
 p2 <- 
   tb.g %>%
   filter( type == "rate" ) %>% 
+  filter( 2003 <= time ) %>% 
+  filter( time <= 2012 ) %>% 
   select( lb, e, ub, time, note, Clade, Eco) %>%
   ggplot() + theme_bw() +
-  facet_grid( Eco~.) +
-  geom_line( aes( x = time, y = e, color = Clade) , size = 1.5) + 
-  geom_ribbon( aes( x = time, ymin = lb, ymax = ub, group = Clade), alpha = 0.1) + 
+  facet_grid( Clade~.) +
+  geom_line( aes( x = time, y = e, color = Eco ) , size = 1.5) + 
+  geom_ribbon( aes( x = time, ymin = lb, ymax = ub, group = Eco, fill = Eco ), alpha = 0.1) + 
   coord_cartesian( ylim = c(-6, 8), xlim = c(2003, 2012) ) +
-  # scale_linetype_manual(  values =  c( "solid", "dotted") ) +
-  scale_x_continuous( breaks = seq(2003, 2011, by = 2), labels =  seq(2003, 2011, by = 2) ) +
-  xlab( "Year" ) + ylab( "Growth rate" ) + 
-  scale_color_manual( values = pyCol( c( "green", "red", "blue" ) ) ) +
+  scale_x_continuous( breaks = seq(2003, 2014, by = 2), labels =  seq(2003, 2014, by = 2) ) +
+  xlab( "" ) + ylab( "Growth rate" ) + 
+  ggtitle(" ") +
+  scale_color_manual( values = c( "#8c564b", "#17becf" ) )  +
+  scale_fill_manual( values = c( "#8c564b", "#17becf" ) )  +
   theme( panel.grid.minor.y =  element_blank(), 
+         panel.grid.minor.x =  element_blank(),
          strip.background = element_rect( fill = "white", color = "white"),
-         strip.text = element_blank(),
+         #strip.text = element_blank(),
          panel.border = element_rect( color = "black", fill = NA, size = 1),
-         legend.position = "none" )  +
+         legend.position = c(0.5,.9),
+         legend.title = element_blank() )  +
   geom_vline( xintercept = 2007, linetype = "dotted")
 
 
-ggarrange( p1, p2, ncol = 2 )
+# Ne generated by skygrowth
+p3 <- 
+  tb.g %>%
+  filter( type == "mcmc" ) %>% 
+  filter( 2003 <= time ) %>% 
+  filter( time <= 2012 ) %>% 
+  select( lb, e, ub, time, note, Clade, Eco ) %>%
+  ggplot() + theme_bw() +
+  facet_grid( Clade~.) +
+  geom_line( aes( x = time, y = e , color = Eco ) , size = 1.5) + 
+  geom_ribbon( aes( x = time, ymin = lb , ymax = ub , group = Eco, fill = Eco ), alpha = 0.1) + 
+  scale_y_log10( breaks = scales::trans_breaks("log10", function(x) 10^x),
+                 labels = scales::trans_format("log10", scales::math_format(10^.x))  ) +
+  annotation_logticks() +  
+  coord_cartesian( ylim = c( 0.1, 1000 ), xlim = c(2003, 2012 ) ) +
+  scale_x_continuous( breaks = seq(2003, 2014, by = 2), labels =  seq(2003, 2014, by = 2) ) +
+  xlab( "" ) + ylab( "Effective population size" ) + 
+  ggtitle("Skygrowth") +
+  scale_color_manual( values = c( "#8c564b", "#17becf" ) )  +
+  scale_fill_manual( values = c( "#8c564b", "#17becf" ) )  +
+  theme( panel.grid.minor.y =  element_blank(), 
+         panel.grid.minor.x =  element_blank(),
+         strip.background = element_rect( fill = "white", color = "white"),
+         #strip.text = element_blank(),
+         panel.border = element_rect( color = "black", fill = NA, size = 1),
+         legend.position = c(0.5,.9),
+         legend.title = element_blank() )  +
+  geom_vline( xintercept = 2007, linetype = "dotted")
+
+ggarrange( p1, p3, p2, ncol = 3, labels = c("A", "B", "C")) #4*8 inch landcape 
 
 
