@@ -1555,3 +1555,190 @@ jumpMx <- function( states = c("cnC", "cnE", "cnN", "cnS", "cnSW") )
   
   #v20180717
 }
+
+### treeWalk --------------------------------  
+
+treeWalk <- function( center   = c( "China", "Hong_Kong"), 
+                      trefile  = file.choose(),
+                      timegap  = 0.25, 
+                      pattern  = "00",
+                      onlyCen  = TRUE,
+                      showTree = FALSE)
+{
+  require( ape )
+  require( seqinr )
+  require( ggtree )
+  require( stringr )
+  
+  getDes <- function( node, curr = NULL )
+  {
+    if( is.null(curr) ){ curr <- vector() }
+    
+    edge.matrix <- tre.d[ c(2,1) ]
+    daughters   <- edge.matrix[ which( edge.matrix[,1] == node ), 2 ]
+    
+    curr <- c( curr, daughters )
+    nd   <- which( daughters >= length( which( tre.d$isTip )) )
+    
+    if( length(nd) > 0 )
+    {
+      for( i in 1: length(nd) ){ curr <- getDes( daughters[ nd[i] ], curr ) }
+    }
+    
+    return( curr )
+  }
+  getAnc <- function( node)
+  {
+    edge.matrix <- tre.d[ c(2,1) ]
+    
+    return( edge.matrix[,1][ which( edge.matrix[,2] == node ) ] )
+  }
+  getSon <- function( node )
+  {
+    edge.matrix <- tre.d[ c(2,1) ]
+    
+    return( edge.matrix[,2][ which( edge.matrix[,1] == node ) ] )
+    
+  }
+  getSib <- function( node )
+  {
+    edge.matrix <- tre.d[ c(2,1) ]
+    
+    p = edge.matrix[,1][ which( edge.matrix[,2] == node ) ]
+    d = edge.matrix[,2][ which( edge.matrix[,1] == p ) ]
+    
+    if ( p %in% d ){ d = setdiff( d, p ) }
+    return( setdiff( d, node )  )
+    
+  }
+  branchWalk <- function( node )
+  {
+    curr = c()
+    while( node != n.tip + 1 )
+    {
+      edge.matrix <- tre.d[ c(2,1) ]
+      
+      step <- edge.matrix[ which( edge.matrix[,2] == node ), 1 ]
+      curr <-  c( curr, pseudo.anc.w[ step ] )
+      
+      node = step
+      
+    }
+    if ( node == n.tip + 1 ){ curr = c( curr, 1) }
+    return( curr )
+    
+  }
+  
+  
+  nex      <- read.nexus( trefile ) 
+  tre.d    <- fortify( nex )
+  n.tip    <- length( which( tre.d$isTip ) )
+  n.node   <- nex$Nnode
+  edge.max <- tre.d[ c(2,1) ]
+  
+  t.id  <- gsub( "'", "", tre.d$label )
+  t.g   <- str_match( string = t.id, pattern = "_\\|([A-Za-z_]+)\\|_" )[,2]
+  t.t   <- as.numeric( str_match( string = t.id, pattern = "_([\\d\\.]+)$" )[,2] )
+  t.cen <- grep( paste0( center, collapse = "|"), t.g )
+  
+  # assigning a pseudo state
+  pseudo.anc <- 
+    sapply( as.list( edge.max$node ),
+            function(x)
+            {
+              # pseudo anc. state 
+              if( x <= n.tip )
+              { br.state = ifelse( t.g[x] %in% center, 1, 0 ) }
+              else if( x == n.tip +1 )
+              {
+                br.rep <- which.min( tre.d$x[ 1:n.tip ]  )             
+                br.state <- ifelse( t.g[ br.rep ] %in% center, 1, 0 )  
+              }
+              else{
+                tips     <- getDes( x )[ which( getDes(x)  <= n.tip ) ]
+                br.rep   <- tips[ which.min( tre.d$x[ tips ] ) ]
+                br.state <- ifelse( t.g[ br.rep ] %in% center, 1, 0 )  
+              }
+              return( br.state )
+            })
+  
+  # second check 
+  pseudo.anc2 <- c()  
+  for( i in 1: length(pseudo.anc) )
+  {
+    if( ( i > n.tip + 1 ) & ( pseudo.anc[i] == 0) )
+    {
+      dec <- getDes( i )
+      r   <- range( t.t[ dec[ which( pseudo.anc[dec] == 0 ) ] ], na.rm = TRUE )
+      
+      if( (1 %in% pseudo.anc[dec]) & ( (r[2] - r[1]) > timegap ) )
+      {
+        pseudo.anc2 = c( pseudo.anc2, pseudo.anc[i] )
+        
+      }else if( ! 1 %in% pseudo.anc[dec]  )
+      { 
+        pseudo.anc2 = c( pseudo.anc2, pseudo.anc[i] ) 
+        
+      }else{ pseudo.anc2 = c( pseudo.anc2, 1 )   }
+      
+    }else{ pseudo.anc2 = c( pseudo.anc2, pseudo.anc[i] ) }
+    
+  }
+  
+  # third check 
+  
+  int.node        <- seq( (n.tip + 2), length(pseudo.anc2) )
+  pseudo.anc3.int <- 
+    sapply( as.list( int.node ),
+            function(x)
+            { 
+              if( pseudo.anc2[x] == 0 )
+              {
+                return( ifelse( ( 1 %in% pseudo.anc2[ getSon( x ) ] ), 1, 0) )
+                
+              }else{ return( 1 )  }
+              
+            })
+  
+  pseudo.anc3 = c( pseudo.anc2[ 1: (n.tip + 1)  ], pseudo.anc3.int )
+  
+  pseudo.anc.w <- pseudo.anc3
+  
+  if( onlyCen )
+  {
+    walk    <- sapply( as.list( t.cen ), branchWalk ) 
+    walk.s  <- sapply( walk, function(x){ return( paste0(x, collapse = "") ) } ) 
+    reIntro <- t.id[ t.cen[ grep( pattern, walk.s ) ] ]
+    
+  }else
+  {
+    walk    <- sapply( as.list( seq(1, n.tip) ), branchWalk ) 
+    walk.s  <- sapply( walk, function(x){ return( paste0(x, collapse = "") ) } ) 
+    reIntro <- t.id[ n.tip[ grep( pattern, walk.s ) ] ] 
+    
+  }
+  
+  if( showTree )
+  {
+    
+    tre.d[, ncol(tre.d) + 1 ]                      = "red"
+    colnames( tre.d )[ ncol( tre.d ) ]             = "branchCol"
+    tre.d$branchCol[ which( pseudo.anc.w == 1 )  ] = "black"
+    
+    tre.d[, ncol(tre.d) + 1 ]   = NA
+    colnames( tre.d )[ ncol( tre.d ) ]             = "tipCol"
+    tre.d$tipCol[ match( reIntro, t.id )  ]        = 1
+    
+    g <- 
+      ggtree( nex ) %<+% tre.d + aes( color = I(branchCol) ) + 
+      geom_tippoint( aes( shape = I(tipCol) ), size = 2 ) +
+      geom_text2( aes( label = node ), size = 1 ) 
+    
+    print( g )
+  }
+  
+  return( reIntro )
+  
+  #v20180829
+}
+
