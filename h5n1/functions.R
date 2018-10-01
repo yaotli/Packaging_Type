@@ -1742,3 +1742,49 @@ treeWalk <- function( center   = c( "China", "Hong_Kong"),
   #v20180829
 }
 
+### treelayer --------------------------------  
+
+treelayer <- function( origin_layer = NULL, 
+                       treefile     = NULL, 
+                       mostRecTime  = NULL,
+                       yFactor      = 1,
+                       yPosition    = 1,
+                       branchSize   = 1, branchColor = "black", 
+                       tipSize      = 1, tipColor    = "black",
+                       branchOrder  = "D",
+                       pseudoRoot   = 0.25){
+  require( ape )
+  require( ggtree )
+  
+  if( is.null(origin_layer) | is.null(treefile) | is.null(mostRecTime) ){ stop( "input required" ) }
+  
+  tre.df0   <- fortify( read.nexus( treefile ) )[, seq(1,7) ]
+  
+  # horizontal 
+  tre.df1.x   = tre.df0
+  tre.df1.x$x = tre.df0$x - tre.df0$branch.length
+  
+  # vertical 
+  tre.df1.y   = tre.df1.x
+  tre.df1.y$y = tre.df1.y$y[ tre.df1.y$parent ]
+  
+  tre.df = rbind( cbind( tre.df1.y, site = "a") , cbind( tre.df1.x, site = "b"), cbind( tre.df0, site = "c") )
+  tre.df[ length( which( tre.df0$isTip ) ) + 1,  ]$x = -( pseudoRoot ) 
+  
+  t.root = mostRecTime - max(tre.df$x) 
+  
+  if( branchOrder == "D" ){  tre.df$y = length(  which( tre.df$isTip == TRUE ) )/2 - tre.df$y }
+  
+  tre.df$y = tre.df$y / yFactor
+  tre.df$y = tre.df$y + yPosition
+  
+  return(
+    
+    f = origin_layer + 
+      geom_line(  data = tre.df, aes( x = x + t.root, y = y, group = node), 
+                  size = branchSize, color = branchColor ) + 
+      geom_point( data = tre.df[ which( tre.df$isTip & tre.df$site == "c"  ), ], 
+                  aes( x = x + t.root, y = y), size = tipSize, color = tipColor )  )
+  
+  #v20180914v 
+}
