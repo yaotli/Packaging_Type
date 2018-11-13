@@ -15,7 +15,7 @@ source( "./function.coevo.R" )
 # 3. country 'any'; 4. segment 'HA'
 # 5. H '5'; N 'any' 
 # 6. required segments 'HA, NA' 
-# 7. 'exclude' pH5N1, 'exclude' lab strains
+# 7. 'exclude' pH1N1, 'exclude' lab strains
 #    'include' lineage defining strains 
 #    'include' FLU project, 
 #    'include' vaccine strains, 'exclude' mixed 

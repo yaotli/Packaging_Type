@@ -4,7 +4,7 @@ fastaEx <- function(filedir = file.choose())
 {
   require(seqinr)
   
-  file     <- read.fasta(filedir)
+  file     <- seqinr::read.fasta(filedir)
   file_seq <- getSequence(file)
   file_id  <- attributes(file)$names
   
@@ -110,10 +110,11 @@ idInfo <- function( rawid,
     id.n[ which( startsWith(id.n, "A/") == FALSE) ] <- gsub( "_A/", "A/", id.n[ which( startsWith(id.n, "A/") == FALSE) ] )
     
     id.n <- gsub( "\\?|\\(|\\)|\\[|\\]|\\.|:|-|/", "_", id.n )
-    id.n <- gsub( "__", "_", id.n )
     id.n <- gsub( "\\'|\\?|>", "", id.n )
     id.n <- gsub("A_", "", id.n)
+    id.n <- gsub( "[_]+", "_", id.n )
     id.n <- gsub( "_$", "", id.n )
+    id.n <- gsub( "^_", "", id.n )
     
     g <- gsub( " ", "_", read.csv( g.csv, header = TRUE, stringsAsFactors = FALSE)$Location )
     g <- gsub( "_$", "",  str_match( g, "([A-Za-z_]+)_/_([A-Za-z_]+)" )[,3] ) 
@@ -145,10 +146,11 @@ idInfo <- function( rawid,
       paste0("A/", id.n[ which( startsWith(id.n, "A/") == FALSE) ])
     
     id.n <- gsub("\\?|\\(|\\)|\\[|\\]|\\.|:|-|/|__", "_", id.n)
-    id.n <- gsub("__", "_", id.n)
     id.n <- gsub("\\'|\\?|>", "", id.n)
     id.n <- gsub("A_", "", id.n)
+    id.n <- gsub("[_]+", "_", id.n)
     id.n <- gsub("_$", "", id.n)
+    id.n <- gsub("^_", "", id.n)
     
   }
   
@@ -168,7 +170,7 @@ idInfo <- function( rawid,
   
   return(infolist)
   
-  #v20180912e
+  #v20181002e
 }
 
 
@@ -647,4 +649,554 @@ rmdup_plus <- function( fasdir = file.choose() )
   write.fasta( sequences = fas.s1[remain], names = fas.i1[remain], file.out = gsub( ".fasta", "_rmd2.fasta", fasdir) )
   
   #v20181001
+}
+
+### getDescendant --------------------------------
+
+getDes <- function( tre.d = trefile, node, curr = NULL )
+{
+  if( is.null(curr) ){ curr <- vector() }
+  
+  edgemax   <- tre.d[ c(2,1) ]
+  daughters <- edgemax[which( edgemax[,1] == node ), 2]
+  
+  curr <- c(curr, daughters)
+  nd   <- which( daughters >= length( which( tre.d$isTip )) )
+  
+  if( length(nd) > 0)
+  {
+    for(i in 1:length(nd) ){ curr <- getDes( tre.d = tre.d, daughters[ nd[i] ], curr ) }
+  }
+  return(curr)
+  
+  #v20180628    -> modified from unknown source  
+}
+
+
+### cladesampling --------------------------------   
+
+
+cladeSampling <- function( trefile      = file.choose(),
+                           fasfile      = file.choose(),
+                           listinput    = list(),
+                           seed         = 666,
+                           grid         = 1,
+                           minBranchlth = TRUE, 
+                           showTree     = FALSE, 
+                           saveFasta    = FALSE,  
+                           suppList     = FALSE,
+                           list.x       = c("id", "y", "info1", "info2") )
+{
+  require( ape )
+  require( seqinr )
+  require( ggtree )
+  require( stringr )
+  
+  # getdescendants
+  getDes <- function( node, curr = NULL )
+  {
+    if( is.null(curr) ){ curr <- vector() }
+    
+    edgemax   <- tre.d[ c(2,1) ]
+    daughters <- edgemax[which( edgemax[,1] == node ), 2]
+    
+    curr <- c(curr, daughters)
+    nd   <- which( daughters >= length( which( tre.d$isTip )) )
+    
+    if( length(nd) > 0)
+    {
+      for(i in 1:length(nd) ){ curr <- getDes( daughters[ nd[i] ], curr ) }
+    }
+    return(curr)
+  }
+  
+  
+  nex <- read.nexus( trefile )
+  fas <- read.fasta( fasfile )
+  seq <- getSequence( fas )
+  id  <- attributes( fas )$names
+  
+  tre.d   <- fortify( nex )
+  N.tip   <- length( which( tre.d$isTip ) )
+  N.node  <- nex$Nnode
+  edgemax <- tre.d[ c(2,1) ]
+  
+  
+  t.id <- gsub("'", "", tre.d$label)
+  
+  if( suppList )
+  {
+    
+    tem.m  <- match(   str_match(t.id[ 1:  N.tip], "^[A-Za-z0-9]+")[,1]  , 
+                       str_match(listinput[[ list.x[1] ]], "^[A-Za-z0-9]+")[,1]   )
+    
+    if( TRUE %in% is.na(tem.m) ){stop()}
+    
+    i.id.y <- listinput[[ list.x[2] ]][ tem.m ]
+    i.id.g <- listinput[[ list.x[3] ]][ tem.m ]
+    
+    if( length( list.x ) >3 )
+    {
+      for( k in 1: ( length(list.x) -3 ) )
+      {
+        i.id.s <- listinput[[ list.x[ 3 + k ] ]][ tem.m ]
+        i.id.g <- paste0( i.id.g, "-", i.id.s )
+      }
+    }
+    
+  }else
+  {
+    i.id.y <- as.numeric( str_match( t.id, "_([0-9]{4}\\.[0-9]+)$")[,2] )
+    i.id.g <- str_match( t.id, "\\|([A-Za-z_]+)\\|")[,2]  
+  }
+  
+  # 1st search for node with homogeneous descendants 
+  inner.node <- seq( 1, dim( tre.d )[1])[ - seq(1, N.tip+1) ]
+  c1.node    <- inner.node[ which( sapply( as.list(inner.node), 
+                                           function(x)
+                                           {
+                                             all <- getDes(x)[ getDes(x) <= N.tip ]
+                                             
+                                             if( length( all[ !is.na( i.id.g[all] ) ] ) < 1 ){ return( TRUE ) }else
+                                             {
+                                               r   <- range( i.id.y[ all[ !is.na( i.id.g[all] ) ] ] )[2] - range( i.id.y[ all[ !is.na( i.id.g[all] ) ] ] )[1]
+                                               g   <- unique( i.id.g[ all[ !is.na( i.id.g[all] ) ] ] )
+                                               
+                                               return( ( r <= grid ) & ( length( g ) == 1 ) )    
+                                               
+                                             } 
+                                           } )) 
+                            ]
+  # reduce redndant nodes
+  c2.node    <- c1.node[ which( sapply( as.list(c1.node), 
+                                        function(x)
+                                        {
+                                          if( edgemax[,1][ which( edgemax[,2] == x) ] %in% c1.node )
+                                          {
+                                            return( FALSE )
+                                            
+                                          }else
+                                          {
+                                            return( TRUE )
+                                          }
+                                          
+                                        } )
+  )  
+  ] 
+  
+  c2.node_des <- c( c2.node, unlist( sapply( as.list(c2.node), getDes) ) )
+  c2.node_tip <- c2.node_des[ c2.node_des <= N.tip ]
+  nogroup_tip <- seq(1, N.tip)[ - c2.node_tip ]
+  nogroup_tip <- nogroup_tip[ !is.na( i.id.g[ nogroup_tip ] ) ]
+  
+  # sample within a group
+  if( minBranchlth )
+  {
+    selected_tip <- sapply( as.list(c2.node), 
+                            function(x)
+                            {
+                              alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              
+                              if( TRUE %in% is.na( i.id.g[ alltip ] )  )
+                              {
+                                alltip <- alltip[ - which( is.na( i.id.g[ alltip ] ) ) ]
+                              }
+                              
+                              m      <- which.min( tre.d$x[ alltip ] )
+                              
+                              if( length( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ) )  > 1 )
+                              {
+                                set.seed( seed ) 
+                                s = sample( which( tre.d$x[ alltip ] == tre.d$x[ alltip ][m] ), 1 )
+                                
+                              }else
+                              {
+                                s = m
+                              }
+                              return( alltip[s] )
+                            })
+    
+  }else
+  {
+    selected_tip <- sapply( as.list(c2.node), 
+                            function(x)
+                            {
+                              alltip <- getDes(x)[ getDes(x) <= N.tip ]
+                              
+                              if( TRUE %in% is.na( i.id.g[ alltip ] )  )
+                              {
+                                alltip <- alltip[ - which( is.na( i.id.g[ alltip ] ) ) ]
+                              }
+                              
+                              set.seed( seed ) 
+                              s = sample( alltip, 1)
+                              return(s)
+                              
+                            } 
+    )
+  }  
+  
+  if( showTree )
+  {
+    # view the result
+    tre.d[, ncol(tre.d) + 1 ] = "gray"
+    colnames(tre.d)[ ncol(tre.d) ] = "colorr"
+    tre.d$colorr[c2.node_des] = "red"
+    
+    tre.d[, ncol(tre.d) + 1 ] = NA
+    colnames(tre.d)[ ncol(tre.d) ] = "shapee"
+    tre.d$shapee[selected_tip] = 16
+    
+    g1 <- ggtree( nex ) %<+% tre.d + aes(color = I(colorr)) + geom_tiplab(size = 1)
+    print( g1 + geom_tippoint(aes( shape = factor(shapee) ), size = 2) )
+  }
+  
+  remain  <- c( nogroup_tip, selected_tip )
+  
+  f.match <- match( str_match( t.id[ sort(remain) ], "^[A-Za-z0-9]+")[,1], 
+                    str_match( id, "^[A-Za-z0-9]+")[,1])
+  
+  seq.o   <- seq[ f.match ]
+  id.o    <- id[ f.match ]
+  
+  if( saveFasta )
+  {
+    write.fasta( seq.o, id.o, 
+                 file.out = gsub( ".fasta", "_s.fasta", fasfile) )
+  }
+  
+  print( paste0("sampled n = ", length(remain), " from ", length(id) ) )
+  print( table( floor( i.id.y[remain] ), i.id.g[remain] ) )
+  
+  
+  #v20171111b
+}
+
+
+
+### taxaInfo --------------------------------
+
+taxaInfo <- function( file     = file.choose(), 
+                      useTree  = FALSE, 
+                      makecsv  = FALSE, 
+                      root2tip = FALSE)
+{
+  # input: 
+  # 1 colored .tre file
+  # 2 .fas file with clean id 
+  
+  require(seqinr)
+  require(stringr)
+  require(ape)
+  require(ggtree)
+  
+  if ( useTree )
+  {
+    anno.tre <- read.csv( file, stringsAsFactors = FALSE)
+    nex      <- read.nexus( file )
+    
+    taxa.s   <- grep( "taxlabels", anno.tre[,1] ) + 1
+    
+    ntax     <- as.numeric( str_match( grep( "ntax", anno.tre[,1],  value = TRUE ), 
+                                       "(ntax=)([0-9]+)" )[,3] )
+    taxa.e   <- taxa.s + ntax - 1
+    
+    id  <- str_match( anno.tre[, 1][taxa.s: taxa.e], "\'([0-9A-Za-z_\\|.]+)\'" )[,2]
+    tag <- str_match( string = anno.tre[, 1][taxa.s: taxa.e], 
+                      pattern = "color=#([a-z0-9]{6})")[, 2]
+    
+    id.a <- str_match( id, "[A-Z]{1,2}[0-9]{5,6}|EPI[0-9]+" )[,1]
+    id.g <- str_match( id, "\\|([A-Za-z_]+)\\|")[,2]
+    id.s <- str_match( id, "\\|_(H[0-9]{1,2}N[0-9]{1,2})_")[,2]
+    id.y <- as.numeric( str_match( id, "_([0-9]{4}.[0-9]{3})$")[,2] )  
+    id.n <- gsub("^[A-Z]{1,2}[0-9]{5,6}_|^EPI[0-9]+_|_\\|[A-Za-z_]+\\|_|H[0-9]{1,2}N[0-9]{1,2}_[0-9]{4}.[0-9]{3}$", "", id)
+    
+    ls <- list( id.a, id.g, id.s, id.y, id.n, id, tag)
+    df <- data.frame( id.a, id.g, id.s, id.y, id.n, id, tag )
+    
+    if( TRUE %in% is.na(unlist( ls[c(1:6)] ) ) ){ stop() }
+    
+    if( root2tip )
+    {
+      # distance max
+      
+      nexdata   <- fortify( nex )
+      root.node <- length( nex$tip.label ) + 1
+      root.dist <- dist.nodes( nex )[ root.node, 1: (root.node - 1) ]
+      tre.id    <- gsub("'", "", nex$tip.label[ 1: root.node - 1])
+      
+      m <- match( tre.id, id )
+      
+      dist.df <- data.frame( name = id[m], geo = id.g[m], sero = id.s[m], year = id.y[m], 
+                             root.dist, stringsAsFactors = FALSE)
+      
+      lm.tre <- lm( dist.df$root.dist ~ dist.df$year) 
+      
+      plot( dist.df$year, dist.df$root.dist ) 
+      abline(lm.tre) 
+      text( x = dist.df$year, y = dist.df$root.dist, labels = rownames(dist.df), cex = 0.5, pos = 3)
+      
+      out <- sort( lm.tre$residuals, index.return = TRUE, decreasing = TRUE )$ix[1: floor(1/10*( ntax) ) ]
+      
+      nexdata[, ncol(nexdata) + 1]             = NA
+      colnames( nexdata )[ length( nexdata ) ] = "shapee"
+      nexdata$shapee[ out ] = colorRampPalette( c("red", "white") )( length(out) )
+      
+      p = ggtree(nex, right = TRUE) %<+% nexdata + geom_tippoint( aes(color = I(shapee)), size = 3, alpha = 0.9) 
+      print(p)
+      lm.max <- list( R.sq    = summary( lm.tre )$r.squared, 
+                      slope   = summary( lm.tre )$coefficients[2,1],
+                      outlier = data.frame(o1 = dist.df$name[out], o2 = out),
+                      df      = dist.df
+      )
+      
+      ls[[ length(ls) + 1 ]] = lm.max
+      
+    }
+    
+    
+  }else
+  {
+    fas <- read.fasta( file )
+    id  <- attributes( fas )$names
+    seq <- getSequence( fas )
+    
+    id.a <- str_match( id, "[A-Z]{1,2}[0-9]{5,6}|EPI[0-9]+" )[,1]
+    id.g <- str_match( id, "\\|([A-Za-z_]+)\\|")[,2]
+    id.s <- str_match( id, "\\|_(H[0-9]{1,2}N[0-9]{1,2})_")[,2]
+    id.y <- as.numeric( str_match( id, "_([0-9]{4}.[0-9]{3})$")[,2] )  
+    id.n <- gsub("^[A-Z]{1,2}[0-9]{5,6}_|^EPI[0-9]+_|_\\|[A-Za-z_]+\\|_|H[0-9]{1,2}N[0-9]{1,2}_[0-9]{4}.[0-9]{3}$", "", id)
+    
+    seq.l <- sapply( seq,
+                     function(x)
+                     {
+                       z = grep( pattern = "a|t|c|g", 
+                                 x = x, 
+                                 ignore.case = TRUE, value = TRUE )
+                       
+                       l = length( z )
+                       
+                       return(l)
+                     } )
+    
+    ls <- list( id.a, id.g, id.s, id.y, id.n, id, seq.l)
+    df <- data.frame( id.a, id.g, id.s, id.y, id.n, id, seq.l )
+    
+    if( TRUE %in% is.na(unlist( ls[c(1:6)] ) ) ){ stop() }
+    
+  }
+  
+  if ( makecsv ){ write.csv(df, file = sub( ".fasta", "_info.csv", file) , row.names = FALSE) }
+  
+  return( ls )
+  
+  #v20181016
+}
+
+
+### timeDice --------------------------------
+
+timeDice <- function( fas.dir, ecotab.dir, oldfas.dir, ecotable = TRUE )
+{
+  require(seqinr)
+  require(tidyverse )
+  
+  id    <- attributes( read.fasta( fas.dir ) )$names
+  id.ac <- str_match( id, "^[A-Z0-9]+")[,1]
+  id.yr <- as.numeric( str_match( id, "_([0-9.]+)$")[,2] )
+  
+  id.0    <- unlist( sapply( as.list( oldfas.dir ), function(x) attributes( read.fasta(x) )$names ) )
+  id.0.ac <- sapply( as.list( id.0), 
+                     function(x)
+                     {
+                       if( grepl( "_EPI_ISL_", x ) )
+                       { y = gsub( "_ISL_", "", str_match( x, "EPI_ISL_[0-9]+")[,1] )
+                       }else
+                       { y = str_match( x, "^[A-Z0-9]+")[,1] }
+                       
+                       return(y)
+                     })
+  
+  id.0.yr <- ifelse( grepl( "_\\(Month_and_day_unknown\\)_|[0-9]--$", id.0 ), 1, 0 )
+  
+  if( ecotable )
+  {
+    df_ecotab <- read.table( ecotab.dir, header = TRUE, stringsAsFactors = FALSE )
+    
+  }else
+  {
+    df_ecotab <- data.frame( id = id, states = ".", stringsAsFactors = FALSE )
+  }
+  
+  if( TRUE %in% is.na( match( id.ac, id.0.ac ) ) ){ stop( "mismatch" ) }
+  if( TRUE %in% is.na( match( id, df_ecotab$id ) ) ){ stop( "mismatch" ) }
+  
+  
+  yr   <- id.yr
+  yr_0 <- paste0( floor(yr), ".000" )
+  delT <- which( id.0.yr[ match( id.ac, id.0.ac ) ] == 1 ) 
+  tag  <- df_ecotab$states[ match( id, df_ecotab$id ) ] 
+  id_t <- id[delT]
+  
+  p1       <- paste0( "<taxon id=\"", id, "\">", "\n<date value=\"", yr , "\" direction=\"forwards\" units=\"years\"/>", "\n<attr name=\"states\">", tag ,"</attr>\n</taxon>")
+  p1[delT] <- paste0( "<taxon id=\"", id[delT], "\">", "\n<date value=\"", yr_0[delT] , "\" direction=\"forwards\" units=\"years\" precision=\"1.0\"/>", "\n<attr name=\"states\">", tag[delT] ,"</attr>\n</taxon>") 
+  p1       <- c( "# following <taxa id=\"taxa\">", p1)
+  
+  # after 	<taxa id="taxa">
+  write.table( p1, file = sub( ".fasta", ".taxa", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  # before the end of treeModel
+  q1 <- paste0( "<leafHeight taxon=\"", id_t, "\">\n<parameter id=\"age(", id_t, ")\"/>\n</leafHeight>" )
+  q1 <- c( "# before </treeModel>",
+           "<!-- START Tip date sampling                                                 -->", 
+           q1, 
+           "<!-- END Tip date sampling                                                   -->")
+  
+  write.table( q1, file = sub( ".fasta", ".treeModel", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  # before the end of operators 
+  q2 <- paste0( "<uniformOperator weight=\"1\">\n<parameter idref=\"age(", id_t, ")\"/>\n</uniformOperator>" )
+  q2 <- c( "# before </operators>", q2 )
+  
+  write.table( q2, file = sub( ".fasta", ".operator", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  # in write log to file (after ratestatistic)
+  q3 <- paste0( "<parameter idref=\"age(", id_t, ")\"/>" )
+  q3 <- c( "# in write log to file after ratestatistic",
+           "<!-- START Tip date sampling                                                 -->", 
+           q3,
+           "<!-- END Tip date sampling                                                   -->" )
+  
+  write.table( q3, file = sub( ".fasta", ".log", fas.dir ), quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  
+  #v20181022
+}
+
+
+
+### branchAA --------------------------------
+
+branchAA <- 
+  function( trefile = file.choose(), saveFasta = FALSE , writeTre = TRUE )
+  {
+    require( ape )
+    require( ggtree )
+    require( seqinr )
+    require( treeio )
+    
+    
+    tre <- read.beast( trefile )
+    tab <- fortify( tre )
+    tab <- as.data.frame( tab )
+    
+    print( colnames(tab) )
+    cat( "choose the sequence partition" )
+    p = as.numeric( readline() )
+    
+    if( saveFasta )
+    {
+      
+      write.fasta( names = ifelse( is.na(tab$label), paste0( "node_", tab$node ), tab$label  ),
+                   sequences = as.list( tab[,p] ), 
+                   file.out = gsub( ".tre", "_anc.fasta", trefile ) )
+    }
+    
+    int_node = which( !tab$isTip )[-1]
+    
+    AA.change <- 
+      sapply( as.list( int_node ), 
+              function( x )
+              {
+                
+                if( grepl( "\\+", tab[,p][x] ) | grepl( "\\+", tab[,p][ tab$parent[ x ] ] ) )
+                {
+                  tab[,p][x]                 = strsplit( tab[,p][x], "+", fixed = T )[[1]][1]
+                  tab[,p][ tab$parent[ x ] ] = strsplit( tab[,p][  tab$parent[ x ] ], "+", fixed = T )[[1]][1]
+                }
+                
+                mx <- sapply( as.list( tab[,p][ c( tab$parent[ x ], x ) ] ), 
+                              function(x) translate( s2c(x) ) ) 
+                
+                pos <- which( ! mx[,1] == mx[,2] ) 
+                return( paste( paste0( mx[,1][pos], pos, mx[,2][pos] ), collapse = " " ) )
+                
+              })
+    
+    AA.change <- ifelse( AA.change == "", " ", AA.change )
+    AA.change = c( rep( " ", length(which( tab$isTip )) + 1 ), AA.change )
+    
+    tre@data[,p-4] = AA.change[ as.numeric( tre@data$node ) ]
+    tre@data[,p-2] = tre@data$node
+    tre@data[,p-1] = " "
+    
+    write.beast( tre, 
+                 gsub( ".tre", "_aa.tre", trefile ) )
+    #v20181102
+  } 
+
+
+
+### ha_num --------------------------------
+
+ha_num <- function( ref_fas = file.choose(),
+                    ref_csv = file.choose(),
+                    data_pos = c( 2, 354, 500 ) )
+{
+  require( seqinr )
+  require( stringr )
+  
+  csv  <- read.csv( ref_csv, stringsAsFactors = FALSE, header = TRUE )
+  fas  <- lapply( fastaEx( ref_fas )$seq, toupper )
+  
+  pos = lapply( as.list(data_pos),
+                function(x)
+                {
+                  if( x < length( which( fas[[1]] == "-" ) ) ){ return( "N-signal_peptide" ) }
+                  
+                  # y - > read position in the ref_fas
+                  if( x > 339 ){ y = x + 7  }else{ y = x }
+                  
+                  # p1 - > number of h5 (vn1203)
+                  p1    <- y - length( which( fas[[1]] == "-" ) )
+                  
+                  n.row <- which( str_match( csv$A.Vietnam.1203.2004.H5N1, "([0-9]{1,3}) ([A-Z]{1})" )[,2] == as.character(p1) )
+                  p1.n  <- str_match( csv$A.Vietnam.1203.2004.H5N1, "([0-9]{1,3}) ([A-Z]{1})" )[,3][ n.row ]
+                  
+                  # p2 - > number of h3 (aichi)
+                  p2   <- as.numeric( str_match( csv$A.AICHI.2.68.H3N2, "([0-9]{1,3}) ([A-Z]{1})" )[,2][ n.row ] )
+                  p2.n <- str_match( csv$A.AICHI.2.68.H3N2, "([0-9]{1,3}) ([A-Z]{1})" )[,3][ n.row ]
+                  if( is.na(p2.n) ){ p2.n = "del" }
+                  
+                  if( x <=  339 )
+                  {
+                    p3i = y - 15
+                    p4i = y - 15
+                    p3.n <- fas[[2]][ y ]
+                    p4.n <- fas[[4]][ y ] 
+                    
+                    p3 = csv$p2fk0_1[ p3i ]
+                    p4 = csv$p4jul_1[ p3i ]
+                    
+                  }else
+                  {
+                    p3i = y - 346
+                    p4i = y - 346
+                    p3.n <- fas[[2]][ y ]
+                    p4.n <- fas[[4]][ y ] 
+                    
+                    p3 = csv$p2fk0_2[ p3i ]
+                    p4 = csv$p4jul_2[ p3i ]
+                    
+                  }
+                  
+                  out = data.frame( type = c( "data", "H5", "H3", paste0( "2fk0-", ifelse( x <= 339, "A", "B") ),
+                                              paste0( "4jul-", ifelse( x <= 339, "A", "B") ) ),
+                                    pos  = c(  x, p1, p2, p3, p4),
+                                    res  = c( fas[[6]][y], p1.n, p2.n, p3.n, p4.n ) )
+                  return( out )
+                  
+                })
+  return(pos)
+  
+  #v20181109
 }
