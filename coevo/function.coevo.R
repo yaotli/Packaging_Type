@@ -277,7 +277,7 @@ seqDate <- function( rawdata )
   
   # parse into numeric
   
-  d = "([0-9]{4})-([0-9]{2})-([0-9]{2})"
+  d = "([0-9]{4})-([0-9]{1,2})-([0-9]{2})"
   
   yr   <- as.numeric( str_match(rawdata.2, d)[,2] )
   yr.0 <- paste0(yr, "-01-01")
@@ -447,13 +447,14 @@ tagExtra <- function( filedir = file.choose() )
 
 leafEx <- function( filedir   = file.choose(), 
                     leaflist  = c(), 
-                    consenseq = FALSE )
+                    consenseq = FALSE, 
+                    seq.out  = NA )
 {
   require( seqinr )
   
   leaflist <- unlist( strsplit( gsub( " ", "", leaflist ), "\n" ) )
   
-  fas   <- read.fasta( filedir )
+  fas   <- seqinr::read.fasta( filedir )
   fas.s <- getSequence( fas )
   fas.n <- attributes( fas )$names
   
@@ -461,9 +462,19 @@ leafEx <- function( filedir   = file.choose(),
   
   if( TRUE %in% is.na(m) ){ stop() }else
   {
-    write.fasta( fas.s[ m ], fas.n[ m ], gsub( pattern = ".fasta", 
-                                               replacement = paste0( "_", length(m), ".fasta"), 
-                                               x = filedir ) )  
+    
+    if( !is.na(seq.out) )
+    {
+      write.fasta( fas.s[ m ], fas.n[ m ], file.out = seq.out )  
+      
+    }else
+    {
+      write.fasta( fas.s[ m ], fas.n[ m ], gsub( pattern = ".fasta", 
+                                                 replacement = paste0( "_", length(m), ".fasta"), 
+                                                 x = filedir ) )    
+      
+      }
+    
     
   }
   
@@ -490,7 +501,7 @@ leafEx <- function( filedir   = file.choose(),
                                                x = filedir ) )
   }
   
-  #v20180921
+  #v20190121
 }
 
 ### rmDup --------------------------------
@@ -566,19 +577,19 @@ rmDup <- function( fasfile     = file.choose(),
   
   # sero
   
-  s     <- grep( sero, str_match( id, "_(H5N[0-9]{1,2})_" )[,2], invert = sero.invert )
+  s     <- grep( sero, str_match( id, "\\|_(H[0-9]{1,2}N[0-9]{1,2})_" )[,2], invert = sero.invert )
   
   if ( TRUE %in% is.na( 
     c(str_match( id, "_([0-9]{4}\\.[0-9]+$)")[,2], 
       str_match( id, "\\|([A-Za-z_]+)\\|" )[,2], 
-      str_match( id, "_(H5N[0-9]{1,2})_" )[,2]) ) )
+      str_match( id, "\\|_(H[0-9]{1,2}N[0-9]{1,2})_" )[,2]) ) )
   {
     stop( 
       c("Year", "Geo", "Serotype")[ ceiling( 
         which( is.na( 
           c(str_match( id, "_([0-9]{4}\\.[0-9]+$)")[,2], 
             str_match( id, "\\|([A-Za-z_]+)\\|" )[,2], 
-            str_match( id, "_(H5N[0-9]{1,2})_" )[,2]) ))/3) ] 
+            str_match( id, "\\|_(H[0-9]{1,2}N[0-9]{1,2})_" )[,2]) ))/3) ] 
     )
   }  
   
@@ -590,9 +601,8 @@ rmDup <- function( fasfile     = file.choose(),
   
   print( length( remain ) )
   
-  #v20181001
+  #v20190106
 }
-
 
 ### rmdup_plus --------------------------------
 
@@ -611,7 +621,7 @@ rmdup_plus <- function( fasdir = file.choose() )
   o.t <- 
     sort( as.numeric( str_match( fas.i0, "_([0-9]{4}.[0-9]{3})$" )[,2] ), index.return = TRUE )$ix
   
-  if( TRUE %in% is.na(as.numeric( str_match( fas.i0, "_([0-9]{4}.[0-9]{3})$" )[,2] )) ){ stop() }
+  if( TRUE %in% is.na(as.numeric( str_match( fas.i0, "_([0-9]{4}.[0-9]{1,3})$" )[,2] )) ){ stop() }
   
   fas.s1 <- fas.s0[ o.t ] 
   fas.i1 <- fas.i0[ o.t ]
@@ -648,7 +658,7 @@ rmdup_plus <- function( fasdir = file.choose() )
   
   write.fasta( sequences = fas.s1[remain], names = fas.i1[remain], file.out = gsub( ".fasta", "_rmd2.fasta", fasdir) )
   
-  #v20181001
+  #v20190106
 }
 
 ### getDescendant --------------------------------
@@ -697,7 +707,7 @@ cladeSampling <- function( trefile      = file.choose(),
   {
     if( is.null(curr) ){ curr <- vector() }
     
-    edgemax   <- tre.d[ c(2,1) ]
+    edgemax   <- tre.d[ c(1,2) ]
     daughters <- edgemax[which( edgemax[,1] == node ), 2]
     
     curr <- c(curr, daughters)
@@ -716,10 +726,10 @@ cladeSampling <- function( trefile      = file.choose(),
   seq <- getSequence( fas )
   id  <- attributes( fas )$names
   
-  tre.d   <- fortify( nex )
+  tre.d   <- as.data.frame( fortify( nex ) )
   N.tip   <- length( which( tre.d$isTip ) )
   N.node  <- nex$Nnode
-  edgemax <- tre.d[ c(2,1) ]
+  edgemax <- tre.d[ c(1,2) ]
   
   
   t.id <- gsub("'", "", tre.d$label)
@@ -869,7 +879,7 @@ cladeSampling <- function( trefile      = file.choose(),
   print( table( floor( i.id.y[remain] ), i.id.g[remain] ) )
   
   
-  #v20171111b
+  #v20181116
 }
 
 
@@ -1101,10 +1111,8 @@ branchAA <-
                    file.out = gsub( ".tre", "_anc.fasta", trefile ) )
     }
     
-    int_node = which( !tab$isTip )[-1]
-    
     AA.change <- 
-      sapply( as.list( int_node ), 
+      sapply( as.list( tab$node ), 
               function( x )
               {
                 
@@ -1122,18 +1130,40 @@ branchAA <-
                 
               })
     
+    pool <- 
+      unlist( sapply( as.list( tab$node ), 
+                      function( x )
+                      {
+                        
+                        if( grepl( "\\+", tab[,p][x] ) | grepl( "\\+", tab[,p][ tab$parent[ x ] ] ) )
+                        {
+                          tab[,p][x]                 = strsplit( tab[,p][x], "+", fixed = T )[[1]][1]
+                          tab[,p][ tab$parent[ x ] ] = strsplit( tab[,p][  tab$parent[ x ] ], "+", fixed = T )[[1]][1]
+                        }
+                        
+                        mx <- sapply( as.list( tab[,p][ c( tab$parent[ x ], x ) ] ), 
+                                      function(x) translate( s2c(x) ) ) 
+                        
+                        pos <- which( ! mx[,1] == mx[,2] ) 
+                        return( pos )
+                        
+                      }))
+    
     AA.change <- ifelse( AA.change == "", " ", AA.change )
-    AA.change = c( rep( " ", length(which( tab$isTip )) + 1 ), AA.change )
     
     tre@data[,p-4] = AA.change[ as.numeric( tre@data$node ) ]
     tre@data[,p-2] = tre@data$node
     tre@data[,p-1] = " "
     
-    write.beast( tre, 
-                 gsub( ".tre", "_aa.tre", trefile ) )
-    #v20181102
+    if( writeTre )
+    {
+      write.beast( tre, 
+                   gsub( ".tre", "_aa.tre", trefile ) ) 
+    }
+    
+    print( table( pool ) )
+    #v20181123
   } 
-
 
 
 ### ha_num --------------------------------
@@ -1181,8 +1211,8 @@ ha_num <- function( ref_fas = file.choose(),
                   {
                     p3i = y - 346
                     p4i = y - 346
-                    p3.n <- fas[[2]][ y ]
-                    p4.n <- fas[[4]][ y ] 
+                    p3.n <- fas[[3]][ y ]
+                    p4.n <- fas[[5]][ y ] 
                     
                     p3 = csv$p2fk0_2[ p3i ]
                     p4 = csv$p4jul_2[ p3i ]
@@ -1200,3 +1230,335 @@ ha_num <- function( ref_fas = file.choose(),
   
   #v20181109
 }
+
+
+
+### viewResi --------------------------------
+
+
+viewResi <- function( trefile  = file.choose(), 
+                      fasfile  = file.choose(),
+                      pos      = 1 )
+{
+  require( ggtree )
+  require( seqinr )
+  require( ggplot2 )
+  
+  tre       = read.nexus( trefile )
+  tre.tip.n = gsub( "'", "", tre$tip.label )
+  tre.data  = as.data.frame( fortify( tre ) )
+  
+  fas.n  = attributes( seqinr::read.fasta( fasfile ) )$name
+  fas.s  = lapply( getSequence( seqinr::read.fasta( fasfile ) ), translate )
+  fas.mx = do.call( rbind, fas.s )
+  
+  
+  if( NA %in% match( tre.tip.n, fas.n ) ){ stop("seqeucne and tree do not match") }else
+  {
+    
+    tre.data[ ncol( tre.data ) + 1 ]          = fas.mx[ ,pos][ match( gsub( "'", "", tre.data$label ), fas.n ) ]
+    colnames( tre.data )[ ncol( tre.data )  ] = "Resi"
+    
+    resi.df <- as.data.frame( table( tre.data$Resi ), stringsAsFactors = FALSE )
+    resi.df <- resi.df[ order(-resi.df$Freq), ]
+    
+    if( dim(resi.df)[1] > 8 )
+    {
+      
+      rr = paste0( resi.df$Var[ 8: dim(resi.df[1]) ], collapse = "|")
+      
+      tre.data$Resi[ grep( rr, tre.data$Resi ) ] = "Others"
+      tre.data$Resi <- factor( tre.data$Resi, levels = c( resi.df$Var1[1:7], "Others" ) )
+      
+    }else
+    {
+      tre.data$Resi <- factor( tre.data$Resi, levels = resi.df$Var1 )  
+      
+    }
+  }
+  
+  g = 
+    ggtree( tre, right = TRUE, size = 0.25, color = "gray") %<+% tre.data + 
+    geom_tippoint( aes( color = Resi), alpha = 0.8 )  +
+    theme_tree( legend.position = "top",
+                legend.title = element_blank()) + 
+    scale_color_brewer( palette =  "Dark2") +
+    ggtitle( label = paste0("Resi.", pos))
+  
+  return( g )
+  
+}
+
+
+
+### parse_hyphy --------------------------------
+
+parse_hyphy <- function( n_sample = 1,
+                         omega    = TRUE,
+                         SLAC     = TRUE, 
+                         MEME     = TRUE, 
+                         folerdif = getwd(),
+                         p        = 0.01 )
+{
+  require( stringr )
+  require( readr )
+  
+  filelist = list.files( folerdif )
+  
+  out <-  lapply( seq(1, n_sample), list)
+  
+  if( omega )
+  {
+    if( length( which( grepl( ".wlog", filelist ) ) ) != n_sample ){ stop( "mismatch sample number" ) }
+    
+    file_w <- grep( "wlog", filelist, value = TRUE )
+    for( i in 1: n_sample )
+    {
+      s1.i <- read_file( paste0( folerdif, file_w[i] ) )
+      
+      out[[i]][[1]] = c( as.numeric( str_match( s1.i, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,3] ),
+                         as.numeric( str_match( s1.i, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,2] ),
+                         as.numeric( str_match( s1.i, "Using dN/dS=([0-9.]+)\\(Estimated 95% CI = \\[([0-9.]+),([0-9.]+)" )[,4] ) )
+    }
+  }  
+  
+  
+  if( SLAC )
+  {
+    if( length( which( grepl( ".slaclog", filelist ) ) ) != n_sample ){ stop( "mismatch sample number" ) }
+    
+    file_s <- grep( "slaclog", filelist, value = TRUE )
+    for( i in 1: n_sample )
+    {
+      s2.i <- read_file( paste0( folerdif, file_s[i] ) )
+      
+      slac.str = "For partition 1 these sites are significant at p \\<\\=0.1 ([ 0-9A-Za-z-\\|.\\=:<>?\\<\\>]+)"
+      
+      slac.row.i <- strsplit( str_match( s2.i, slac.str )[,2], split = "\\| \\|" )[[1]][-2]
+      
+      out[[i]][[2]] = 
+        unlist( sapply( as.list(slac.row.i[-1]), 
+                        function(x)
+                        {
+                          codon  = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\. ]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,2] )
+                          po_ne  = str_match( x, "^ ([0-9]+) [\\|0-9\\. ]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,3]
+                          pvalue = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\. ]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,4] )
+                          
+                          if( (po_ne == "Pos") & (pvalue < p) ){ return(codon) }
+                        } 
+        ) )
+      out[[i]][[3]] = slac.row.i
+    }
+  } 
+  
+  
+  if( MEME )
+  {
+    if( length( which( grepl( ".memelog", filelist ) ) ) != n_sample ){ stop( "mismatch sample number" ) }
+    
+    file_m <- grep( "memelog", filelist, value = TRUE )
+    for( i in 1: n_sample )
+    {
+      s3.i <- read_file( paste0( folerdif, file_m[i] ) )
+      
+      meme.str = "For partition 1 these sites are significant at p \\<\\=0.1 ([ 0-9A-Za-z-\\|.\\=:<>?\\<\\>\\+#,]+) ###"
+      
+      meme.row.i <- strsplit( str_match( s3.i, meme.str )[,2], split = "\\| \\|" )[[1]][-2]
+      
+      out[[i]][[4]] = 
+        unlist( sapply( as.list(meme.row.i[-1]), 
+                        function(x)
+                        {
+                          codon  = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\., A-Za-z]+ p \\= ([0-9\\.]+) \\|" )[,2] )
+                          pvalue = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\., A-Za-z]+ p \\= ([0-9\\.]+) \\|" )[,3] )
+                          
+                          if(  pvalue < p  ){ return(codon) }
+                        } 
+        ) )
+      out[[i]][[5]] = meme.row.i
+    }  
+  }  
+  
+  attr(out, "item") = c( "omega with CI", 
+                         "sign. Pos. selected site (SLAC)", "full SLAC result", 
+                         "sign. Pos. selected site (MEME)", "full MEME result" )
+  
+  names( out ) = sub( pattern = paste0( ".", c("w", "s", "m")[ which( c( omega, SLAC, MEME ) )[1] ], "log"), replacement = "", 
+                      get( paste0( "file_", c("w", "s", "m")[ which( c( omega, SLAC, MEME ) )[1] ] ) ) )
+  
+  return( out )
+  
+  #v20181120
+}
+
+
+### idInfo.na --------------------------------
+
+idInfo.na <- function( rawid, 
+                       datasource = "n",
+                       g.csv      = "",
+                       na_subtype = 2 )
+{
+  # format: 
+  # N:  >{accession}_{strain}_{serotype}_|{country}|_{year}-{month}-{day}
+  # G:  Isolate name Type Collection date Isolate ID
+  # Both need replace the blank with underline 
+  
+  require(seqinr)
+  require(stringr)
+  
+  # g
+  a.string.g <- "EPI_ISL_([0-9]+)"
+  s.string.g <- "_A_/_(H[0-9]{1,2}N[0-9xX]{1,2})_"
+  y.string.g <- "_[0-9]{4}[-0-9]{6}|_[0-9]{4}-[0-9]{2}_\\(Day_unknown\\)|_[0-9]{4}_\\(Month_and_day_unknown\\)" 
+  r.string.g <- "^([0-9A-Za-z\\.\\/\\-_\\(\\)\\?]+)_A_/_"
+  
+  # n 
+  a.string.n   <- "^[A-Za-z0-9]+"
+  s.g.string.n <- "(H[0-9]{1,2}[N0-9xX]{0,2})_\\|([a-zA-Z_\\']+)\\|"
+  y.string.n   <- "_[0-9]{4}-[0-9]{1,2}-[0-9]{2}$|_[0-9]{4}-[0-9]{1,2}-$|_[0-9]{4}--$|_--$"
+  n.Nstring.n  <- "^[A-Za-z0-9]+_|(H[0-9]{1,2}[N0-9xX]{0,2})_\\|([a-zA-Z_\\']+)\\||_([0-9-]+)$"
+  
+  
+  if( datasource == "g")
+  {
+    id.a <- gsub( "_ISL_", "", str_match( rawid, a.string.g )[, 1] )
+    id.s <- str_match( rawid, s.string.g )[,2] 
+    id.s[ which( id.s == paste0("N",na_subtype) | id.s == paste0("HxN", na_subtype) | id.s == paste0("HXN", na_subtype) )  ] = paste0("H0N", na_subtype)
+    id.y <- str_match( rawid, y.string.g )
+    id.y <- gsub( "^_", "", x = id.y)[,1]
+    
+    id.n <- str_match( rawid, r.string.g )[,2]
+    id.n[ which( startsWith(id.n, "A/") == FALSE) ] <- gsub( "_A/", "A/", id.n[ which( startsWith(id.n, "A/") == FALSE) ] )
+    
+    id.n <- gsub( "\\+|\\?|\\(|\\)|\\[|\\]|\\.|:|-|/", "_", id.n )
+    id.n <- gsub( "\\'|\\?|>", "", id.n )
+    id.n <- gsub("A_", "", id.n)
+    id.n <- gsub( "[_]+", "_", id.n )
+    id.n <- gsub( "_$", "", id.n )
+    id.n <- gsub( "^_", "", id.n )
+    
+    g <- gsub( " ", "_", read.csv( g.csv, header = TRUE, stringsAsFactors = FALSE)$Location )
+    g <- gsub( "_$", "",  str_match( g, "([A-Za-z_]+)_/_([A-Za-z_]+)" )[,3] ) 
+    
+    g[ which( is.na(g) == TRUE ) ] = "Unknown"
+    g[ which(g == "Russian_Federation") ] = "Russia"
+    g[ which(g == "United_States") ] = "USA"
+    g[ which(g == "Korea") ] = "South_Korea"
+    
+    id.g <- g[ match( id.a, gsub("_ISL_", "", read.csv( g.csv, header = TRUE, stringsAsFactors = FALSE)$Isolate_Id ) ) ]
+    
+    
+  }else
+  {
+    id.a <- str_match( rawid, a.string.n)[,1]
+    id.s <- str_match( rawid, s.g.string.n)[,2]
+    id.s[ which( id.s == paste0("N",na_subtype) | id.s == paste0("HxN", na_subtype) | id.s == paste0("HXN", na_subtype) )  ] = paste0("H0N", na_subtype)
+    id.g <- str_match( rawid, s.g.string.n)[,3]
+    id.g[ which( id.g == "Viet_Nam") ] = "Vietnam"
+    id.g[ which( id.g == "Cote_d'Ivoire") ] = "Cote_dIvoire"
+    
+    id.y <- str_match( string = rawid, y.string.n)
+    id.y <- gsub( "_--", "1900-01-01", id.y)
+    id.y <- gsub( "^_", "", id.y)
+    
+    id.n <- gsub( n.Nstring.n, "", rawid)
+    
+    id.n[ which( startsWith(id.n, "A/") == FALSE) ] <- 
+      paste0("A/", id.n[ which( startsWith(id.n, "A/") == FALSE) ])
+    
+    id.n <- gsub("\\+|\\?|\\(|\\)|\\[|\\]|\\.|:|-|/|__", "_", id.n)
+    id.n <- gsub("\\'|\\?|>", "", id.n)
+    id.n <- gsub("A_", "", id.n)
+    id.n <- gsub("[_]+", "_", id.n)
+    id.n <- gsub("_$", "", id.n)
+    id.n <- gsub("^_", "", id.n)
+    
+  }
+  
+  infolist = list(id.a, id.s, id.g, id.y, id.n)
+  
+  e = 
+    which(
+      sapply( infolist, 
+              function(x)
+              {
+                TRUE %in% is.na(x)
+                
+              })  == TRUE )
+  
+  
+  print( paste("ERROR in ", c("ac", "sero", "geo", "year", "name")[e] )  )
+  
+  return(infolist)
+  
+  #v20181205e
+}
+
+
+### trimtool --------------------------------
+
+trimtool <- function( propblank = 0.8, 
+                      filedir   = file.choose()){
+  
+  library(stringr)
+  library(seqinr)
+  
+  file       = seqinr::read.fasta(filedir)
+  seq_name0  = attributes(file)$names
+  seq0       = getSequence(file)
+  seq_matrix = do.call(rbind, seq0)
+  
+  
+  coltoberemove = apply(seq_matrix, 2, 
+                        function(x)
+                        {
+                          blank = ( length( which( x == "-") ) + length( which( x == "~") ) ) 
+                          fl    = length(x)
+                          
+                          if ( fl*propblank < blank ){ return(1) }else{ return(0) }    
+                        }
+  )
+  
+  cut_matrix = seq_matrix[ ,-which(coltoberemove == 1) ]
+  
+  seq_cut    = as.list( data.frame(t(cut_matrix), stringsAsFactors = FALSE) )
+  
+  filename <- str_match(filedir, "([a-zA-Z0-9_-]+)(\\.)(fas)" )[,2]
+  
+  write.fasta( seq_cut, 
+               file.out = paste0("./trim_", filename, ".fasta"),
+               names    = seq_name0)
+  print("DONE")
+  
+  #201811207
+}
+
+
+### treeMDR --------------------------------
+
+treeMDR <- function( index, bigmatrix )
+{
+  lth = length( index )
+  mx  = matrix( nrow = lth, ncol = lth )
+  
+  for( i in 1: lth )
+  {
+    for( j in 1: lth )
+    {
+      mx[ i,j ] =  bigmatrix[ index[i], index[j] ]
+    }
+  }
+  
+  colnames( mx ) = index
+  rownames( mx ) = index
+  
+  out <- as.data.frame( cmdscale( mx ) )
+  colnames( out ) = c( "Dim_1", "Dim_2" )
+  
+  return( out )
+  
+  #v20190110
+}
+
+

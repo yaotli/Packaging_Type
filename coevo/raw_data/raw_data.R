@@ -165,5 +165,19 @@ write.fasta( sequences = paired_infols_na[[6]],
 gapFill( "./raw_data/processed/pH5_8334_trim2.1.fasta", s.start = 1012, s.end = 1088 )
 
 
+# NA tree ------------
+
+rmDup( "./raw_data/processed/pNA_8334.fasta", sero = "H5N1", rmdup = "FALSE" )
+trimtool( propblank = 0.9, filedir = "./raw_data/processed/pN1_4696_align.fasta" )
+
+
+
+
+
+
+
+
+
+
 
 

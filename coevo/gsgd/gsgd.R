@@ -65,12 +65,12 @@ write.nexus( raw_iqtree, file = "./gsgd/processed/tree/iqtree_c2344_1598/pH5_c23
 
 # tipls_n1958 <- taxaInfo( useTree = TRUE, file = "./gsgd/processed/tree/iqtree_c2344_1598/pH5_c2344_1598_e1014_.tre", makecsv = FALSE )
 # 
-# cladeSampling( trefile   = "./gsgd/processed/tree/iqtree_c2344_1598/pH5_c2344_1598.fasta_e1014.tre",
+# cladeSampling( trefile   = "./gsgd/processed/tree/iqtree_c2344_1598/pH5_c2344_1598_e1014_.tre",
 #                fasfile   = "./raw_data/processed/pH5_8334_trim2.2.fasta",
-#                suppList  = TRUE, 
+#                suppList  = TRUE,
 #                listinput = tipls_n1958,
 #                grid      = 100,
-#                list.x    = c( 6, 4, 3), saveFasta = TRUE )
+#                list.x    = c( 6, 4, 3), saveFasta = FALSE )
 
 
 
@@ -80,12 +80,65 @@ tipls_n1958 <- taxaInfo( useTree = TRUE, file = "./gsgd/processed/tree/iqtree_c2
 
 anc_recon   <- c( tipls_n1958[[6]][ which( tipls_n1958[[4]] < 2014 ) ],
                   tipls_n1958[[6]][ which( tipls_n1958[[7]] == "ff6fcf" &  tipls_n1958[[4]] < 2014.1 &  
-                                         ( tipls_n1958[[2]] == "South_Korea" | tipls_n1958[[2]] == "China" ) ) ]  )
+                                         ( tipls_n1958[[2]] == "South_Korea" | tipls_n1958[[2]] == "China" ) ) ]  ) #n139
 
 leafEx( filedir = "./raw_data/processed/pH5_8334_trim2.2.fasta", consenseq = FALSE, leaflist = anc_recon )
 timeDice( "./gsgd/processed/pH5_c2344anc_139.fasta", ecotable = FALSE,
           oldfas.dir = c( "./raw_data/sources/pH5_G_2690_20180912.fasta", 
                           "./raw_data/sources/pH5_N_6452_20180912.fasta") )
+
+# exclude old H5N1
+
+old_h5n1 <- tipls_n1958[[6]][ which( tipls_n1958[[7]] == 808080 ) ] #n124
+anc_2344 <- setdiff( anc_recon, old_h5n1 )
+leafEx( filedir = "./raw_data/processed/pH5_8334_trim2.2.fasta", consenseq = FALSE, leaflist = anc_2344 )
+
+b2014      <- tipls_n1958[[6]][ which( tipls_n1958[[4]] < 2014 ) ]
+b2014_2344 <- setdiff( b2014, old_h5n1 )
+leafEx( filedir = "./raw_data/processed/pH5_8334_trim2.2.fasta", consenseq = FALSE, leaflist = b2014_2344 )
+
+
+
+# examine each clade 
+
+table(tipls_n1958[[7]])
+cladeSampling( trefile   = "./gsgd/processed/tree/iqtree_c2344_1598/pH5_c2344_1598_e1014_.tre",
+               fasfile   = "./raw_data/processed/pH5_8334_trim2.2.fasta",
+               suppList  = TRUE,
+               listinput = tipls_n1958,
+               grid      = 0.5,
+               list.x    = c( 6, 4, 7), saveFasta = TRUE )
+
+for( l in 1:4 )
+{
+  col = unique( tipls_n1958[[7]] )[ c(1,2,5,6) ]
+  group_i <- intersect( tipls_n1958[[6]][ which( tipls_n1958[[7]] == col[l]) ], fastaEx("./gsgd/processed/pH5_c2344_1598_cs2.fasta")$id )
+  
+  leafEx( filedir = "./raw_data/processed/pH5_8334_trim2.2.fasta", consenseq = FALSE, leaflist = group_i )
+}
+
+
+
+# prepare h5 big tree ( with redundant srquences )
+# curate as previous nonredundant alignment  
+
+n2659.seqname = fastaEx( "./gsgd/processed/pH5_8334_trim2.2_2659.fasta" )$id
+n2659.seq     = fastaEx( "./gsgd/processed/pH5_8334_trim2.2_2659.fasta" )$seq
+
+n2659.seqname[ grep( "EPI237995", n2659.seqname ) ] = 
+  sub( "_2005.000", "_2015.000", n2659.seqname[ grep( "EPI237995", n2659.seqname ) ] )
+
+rm <- grep( "JX878683|LC316683", n2659.seqname )
+write.fasta( n2659.seq[-rm], n2659.seqname[-rm], file.out = "./gsgd/processed/pH5_c2344_2657.fasta" )
+
+
+
+
+
+
+
+
+
 
 
 
