@@ -1,5 +1,5 @@
 source( "./function.coevo.R" )
-source( "./ha_classi.R" )
+#source( "./ha_classi.R" )
 source( "./f.aa_recon.R")
 require(ggtree)
 require(ape)
@@ -110,19 +110,48 @@ leafEx( N1_seq, g2_na, seq.out = "./h5_n1/pNA_h5n1_g2.fasta")
 
 # aa reconstruction  -----------------------------------------------------
 
-# sam1-ha
-.aa_recon( folderdir = "./h5_n1/sam1/HA/" )
-# sam1-na
-.aa_recon( folderdir = "./h5_n1/sam1/NA/" )
+# sam1
+.aa_recon( folderdir = "./h5_n1/dS/h5n1_g1_h5/" )
+.aa_recon( folderdir = "./h5_n1/dS/h5n1_g1_n1/" )
 
-
-# sam2-ha
-.aa_recon( folderdir = "./h5_n1/sam2/HA/" )
-# sam2-na
-.aa_recon( folderdir = "./h5_n1/sam2/NA/" )
+# sam2
+.aa_recon( folderdir = "./h5_n1/dS/h5n1_g2_h5/" )
+.aa_recon( folderdir = "./h5_n1/dS/h5n1_g2_n1/" )
 
 
 
+# 
+# 2nd samples  -----------------------------------------------------
 
-# dist. test  -----------------------------------------------------
+.root_seq(  seqfile = "./h5_n1/pHA_h5n1_g2.fasta", H5_treefile, H5_seq )
+.root_seq(  seqfile = "./h5_n1/pNA_h5n1_g2.fasta", N1_trefile, N1_seq )
+
+
+# aa reconstruction  -----------------------------------------------------
+
+# sam2
+.aa_recon( folderdir = "./h5_n1/dS_r//h5n1_g2_h5/" )
+.aa_recon( folderdir = "./h5_n1/dS_r/h5n1_g2_n1/" )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

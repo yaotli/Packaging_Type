@@ -132,6 +132,65 @@ rm <- grep( "JX878683|LC316683", n2659.seqname )
 write.fasta( n2659.seq[-rm], n2659.seqname[-rm], file.out = "./gsgd/processed/pH5_c2344_2657.fasta" )
 
 
+# prepare big tree for ancestral aa reconstruction
+
+n2657.seqname = fastaEx( "./gsgd/processed/pH5_c2344_2657.fasta" )$id
+n2657.seq     = fastaEx( "./gsgd/processed/pH5_c2344_2657.fasta" )$seq
+mix <- grep( "mix", n2657.seqname, ignore.case = TRUE )
+write.fasta( n2657.seq[-mix], n2657.seqname[-mix], file.out = "./gsgd/processed/pH5_c2344_2629.fasta" )
+
+rmDup( "./gsgd/processed/pH5_c2344_2629.fasta", rmdup = TRUE )
+rmdup_plus( "./gsgd/processed/pH5_c2344_2629_rmd.fasta" )
+
+
+# subsampling 
+# criteria: one sample with the same country and the same serotype in time period - 
+
+n_1547 = "./gsgd/processed/pH5_c2344_2629_rmd_rmd2.fasta"
+
+in.seq = fastaEx( n_1547 )$seq
+in.id  = fastaEx( n_1547 )$id
+
+set.seed( 1000 )
+con.i  = str_match( in.id, "\\|([A-Za-z_]+)\\|" )[,2]
+sero.i = str_match( in.id, "\\|_(H5N[0-9])_" )[,2]
+time.i = str_match( in.id, "[0-9.]+$" )
+
+# set grid
+time.t = round( as.numeric(time.i), digit = 2 )
+
+samp= c()
+for( y in 1: length( unique(as.character(time.t)) ) )
+{
+  ii = which( time.t == unique( as.character(time.t) )[y] )  # time 
+  if( length(ii) == 1 ){ samp = c( samp, ii ) }else
+  {
+    con.ii   = con.i[ ii ]
+    sero.ii  = sero.i[ ii ]
+    con_sero = paste0( con.ii, sero.ii )
+    
+    for( z in 1: length( unique( con_sero ) ) )
+    {
+      jj = which( con_sero == unique(con_sero)[z] ) # sero + country
+      if( length(jj) == 1 ){ samp = c( samp, ii[jj] ) }else
+      {
+        samp = c( samp, sample( ii[jj], size = 1) )
+      } 
+    }
+  }
+}
+
+write.fasta( in.seq[samp], in.id[samp], file.out = "./gsgd/processed/pH5_c2344_1547ts.fasta" )
+
+
+
+
+
+
+
+
+
+
 
 
 

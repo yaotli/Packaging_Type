@@ -14,3 +14,7 @@ meme_resi_clade <- c( c2344_clade[[1]][[4]], c2344_clade[[2]][[4]], c2344_clade[
 
 
 ha_num( ref_fas = "./aa_numbering/align_aa_ref.fasta", ref_csv = "./aa_numbering/ref_numbering.csv", data_pos = meme_resi_clade )
+
+
+a  = parse_hyphy( n_sample = 26, folerdif = "./selection/out/20190216/" )
+

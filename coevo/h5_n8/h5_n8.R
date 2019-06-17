@@ -1,5 +1,5 @@
 source( "./function.coevo.R" )
-source( "./ha_classi.R" )
+#source( "./ha_classi.R" )
 source( "./f.aa_recon.R")
 require(ggtree)
 require(ape)
@@ -104,4 +104,50 @@ g2_na <- gsub( "'", "", n8_table$label )[ g2_out$ix ]
 g2_ha <- gsub( "'", "", ha_table$label[ ha_mdr.5$ix[ ha_na[ match( g2_out$ix, n8_mdr$ix ) ] ] ] )
 leafEx( H5_seq, g2_ha, seq.out = "./h5_n8/pHA_h5n8_g2.fasta")
 leafEx( N8_seq, g2_na, seq.out = "./h5_n8/pNA_h5n8_g2.fasta")  
+
+
+
+
+# aa reconstruction I -----------------------------------------------------
+
+# sam1
+.aa_recon( folderdir = "./h5_n8/dS/h5n8_g1_h5/" )
+.aa_recon( folderdir = "./h5_n8/dS/h5n8_g1_n8/" )
+
+# sam2
+.aa_recon( folderdir = "./h5_n8/dS/h5n8_g2_h5/" )
+.aa_recon( folderdir = "./h5_n8/dS/h5n8_g2_n8/" )
+
+
+# 
+# 2nd samples  -----------------------------------------------------
+
+# g1
+.root_seq(  seqfile = "./h5_n8/pHA_h5n8_g1.fasta", treefile = H5_treefile, originfas = H5_seq )
+.root_seq(  seqfile = "./h5_n8/pNA_h5n8_g1.fasta", treefile = N8_trefile, originfas = N8_seq )
+
+# g2
+.root_seq(  seqfile = "./h5_n8/pHA_h5n8_g2.fasta", treefile = H5_treefile, originfas = H5_seq )
+.root_seq(  seqfile = "./h5_n8/pNA_h5n8_g2.fasta", treefile = N8_trefile, originfas = N8_seq )
+
+
+# aa reconstruction II -----------------------------------------------------
+
+# sam1
+.aa_recon( folderdir = "./h5_n8/dS_r/h5n8_g1_h5/" )
+.aa_recon( folderdir = "./h5_n8/dS_r/h5n8_g1_n8/" )
+
+# sam2
+.aa_recon( folderdir = "./h5_n8/dS_r/h5n8_g2_h5/" )
+.aa_recon( folderdir = "./h5_n8/dS_r/h5n8_g2_n8/" )
+
+
+# aa reconstruction III -----------------------------------------------------
+
+# sam1
+.aa_recon( folderdir = "./h5_n8/dS_com/h5n8_g0_h5/" )
+.aa_recon( folderdir = "./h5_n8/dS_com/h5n8_g0_n8/" )
+
+
+
 

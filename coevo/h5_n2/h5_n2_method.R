@@ -5,6 +5,7 @@ require(ggtree)
 require(ape)
 require(tidyverse)
 require(stringr)
+require(dbscan)
 
 
 H5_treefile = "./gsgd/processed/tree/raxml_c2344_2657/raxml_pH5_2657.tre"
@@ -44,41 +45,54 @@ ha_mdr.2$type = "H"
 
 
 
-# # V1
-# ggplot( n2_mdr, aes( x = Dim_1, y = Dim_2, label = id ) )  + geom_point( aes(color = group), alpha = 0.5, size = 5)
-# 
-# # V2
-# ggplot( rbind( ha_mdr.2, n2_mdr ), aes( x = Dim_1, y = Dim_2, label = id ) )  +
-#   geom_point( aes(color = group, alpha = type ), size = 5) +
-#   geom_line( aes(group = id), size = 0.1) +
-#   geom_rect( aes( xmin = h5n2_g1[1], xmax = h5n2_g1[2], ymin = h5n2_g1[3], ymax = h5n2_g1[4] ), inherit.aes = FALSE, color = "red", fill = NA) +
-#   geom_rect( aes( xmin = h5n2_g2[1], xmax = h5n2_g2[2], ymin = h5n2_g2[3], ymax = h5n2_g2[4] ), inherit.aes = FALSE, color = "red", fill = NA) +
-#   geom_rect( aes( xmin = h5n2_g3[1], xmax = h5n2_g3[2], ymin = h5n2_g3[3], ymax = h5n2_g3[4] ), inherit.aes = FALSE, color = "red", fill = NA) +
-#   geom_rect( aes( xmin = h5n2_g4[1], xmax = h5n2_g4[2], ymin = h5n2_g4[3], ymax = h5n2_g4[4] ), inherit.aes = FALSE, color = "red", fill = NA)
-# 
-# # coord_cartesian( xlim = c(0.15, 0.25), ylim = c(0.025, 0.1) ) +
-# # geom_text( aes(alpha = type), size = 2, vjust = 1) +
-# # scale_y_continuous( limits = c( 0.1,  0.2) )
-# 
-# # V3
-# N2_trein = treeio::read.nexus( N2_trefile )
-# N2_tredf = fortify( N2_trein )
-# N2_tredf$shape = NA
-# N2_tredf$group = NA
-# 
-# N2_tredf$shape[ n2_mdr$ix ] = 1
-# ggtree( N2_trein, right = TRUE ) %<+% N2_tredf + geom_tippoint( aes( shape = I(shape) ), color = "red", size = 5, alpha = 0.5 )
-# 
-# # V4
-# N2_tredf$group[ n2_mdr$ix ] = n2_mdr$group
-# ggtree( N2_trein, right = TRUE ) %<+% N2_tredf + geom_tippoint( aes( shape = I(shape), color = group ), size = 5, alpha = 0.5 )
-# 
-# # V5
-# N2_tredf$shape[ g4_out$ix ] = 19
-# ggtree( N2_trein, right = TRUE ) %<+% N2_tredf + geom_tippoint( aes( shape = I(shape), color = group ), size = 5 )
+# V1
+ggplot( n2_mdr, aes( x = Dim_1, y = Dim_2, label = id ) )  + geom_point( aes(color = as.factor(groupN) ), alpha = 0.5, size = 5)
+
+# V2
+ggplot( rbind( ha_mdr.2, n2_mdr ), aes( x = Dim_1, y = Dim_2, label = id ) )  +
+  geom_point( aes(color = group, alpha = type ), size = 5) +
+  geom_line( aes(group = id), size = 0.1) +
+  geom_rect( aes( xmin = h5n2_g1[1], xmax = h5n2_g1[2], ymin = h5n2_g1[3], ymax = h5n2_g1[4] ), inherit.aes = FALSE, color = "red", fill = NA) +
+  geom_rect( aes( xmin = h5n2_g2[1], xmax = h5n2_g2[2], ymin = h5n2_g2[3], ymax = h5n2_g2[4] ), inherit.aes = FALSE, color = "red", fill = NA) +
+  geom_rect( aes( xmin = h5n2_g3[1], xmax = h5n2_g3[2], ymin = h5n2_g3[3], ymax = h5n2_g3[4] ), inherit.aes = FALSE, color = "red", fill = NA) +
+  geom_rect( aes( xmin = h5n2_g4[1], xmax = h5n2_g4[2], ymin = h5n2_g4[3], ymax = h5n2_g4[4] ), inherit.aes = FALSE, color = "red", fill = NA)
+
+# coord_cartesian( xlim = c(0.15, 0.25), ylim = c(0.025, 0.1) ) +
+# geom_text( aes(alpha = type), size = 2, vjust = 1) +
+# scale_y_continuous( limits = c( 0.1,  0.2) )
+
+# V3
+N2_trein = treeio::read.nexus( N2_trefile )
+N2_tredf = fortify( N2_trein )
+N2_tredf$shape = NA
+N2_tredf$group = NA
+
+N2_tredf$shape[ n2_mdr$ix ] = 1
+ggtree( N2_trein, right = TRUE ) %<+% N2_tredf + geom_tippoint( aes( shape = I(shape) ), color = "red", size = 5, alpha = 0.5 )
+
+# V4
+N2_tredf$group[ n2_mdr$ix ] = n2_mdr$group
+ggtree( N2_trein, right = TRUE ) %<+% N2_tredf + geom_tippoint( aes( shape = I(shape), color = as.factor(group) ), size = 5, alpha = 0.5 )
+
+# V5
+N2_tredf$shape[ g4_out$ix ] = 19
+ggtree( N2_trein, right = TRUE ) %<+% N2_tredf + geom_tippoint( aes( shape = I(shape), color = as.factor(group) ), size = 5 )
 
 
 # grouping   
+
+n2.mx = n2_mdr[, c(1:2)]
+
+kNNdistplot( n2.mx, k =  4 )
+abline( h = 0.005 )
+
+n2_mdr$groupN = dbscan( n2.mx, minPts = 4, eps = 0.005 )$cluster
+
+
+
+
+
+
 h5n2_g1 <- c( 0.15, 0.2, 0.01, 0.025 )
 h5n2_g2 <- c( -0.04, -0.01, -0.005, 0.01 )
 h5n2_g3 <- c( 0.12, 0.13, -0.15, -0.11 )

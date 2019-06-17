@@ -135,6 +135,72 @@
 }
 
 
+# find a sister strain as root --------------------------------------------
+
+.root_seq <- function( seqfile = file.choose(), treefile, originfas )
+{
+  
+  getDes_ <- function( node, curr = NULL )
+  {
+    if( is.null(curr) ){ curr <- vector() }
+    
+    edgemax   <- tree.d[ c(1,2) ]
+    daughters <- edgemax[which( edgemax[,1] == node ), 2]
+    
+    curr <- c(curr, daughters)
+    nd   <- which( daughters >= length( which( tree.d$isTip )) )
+    
+    if( length(nd) > 0)
+    {
+      for(i in 1:length(nd) ){ curr <- getDes_( daughters[ nd[i] ], curr ) }
+    }
+    return(curr)
+  }
+  
+  tiplist = str_match( fastaEx( seqfile )$id, "^[A-Z0-9]+" )[,1] 
+  
+  tre    = treeio::read.nexus( treefile )
+  tre$tip.label = gsub( "'", "", tre$tip.label )
+  tree.d = as.data.frame( fortify( tre ) )
+  
+  tiplist_adj = tre$tip.label[ match( tiplist, str_match( tre$tip.label, "^[A-Z0-9]+" )[,1] ) ]
+  
+  # mrca
+  mrca_c = ggtree::MRCA( obj = tre,  
+                         tip = tiplist_adj )
+  if( mrca_c == ( length(tre$tip.label) + 1) ){ stop() }
+  
+  # get the most closely related seq
+  mrca_s = setdiff( which( tree.d$parent == tree.d$parent[ mrca_c ] ), mrca_c )
+  
+  if( mrca_s > length(tre$tip.label) )
+  {
+    taxa_s = getDes_( node = mrca_s )[ getDes_( node = mrca_s ) < length(tre$tip.label) ]
+    outgp  = taxa_s[ which.min( tree.d$x[ taxa_s ] ) ]
+    
+  }else
+  {
+    outgp = mrca_s  
+  }
+  
+  m0 = readline( prompt = paste0( tree.d$label[ outgp ], " (Y/N)\n") ) # export nexus file
+  
+  if( grepl( "y", m0, ignore.case = TRUE ) )
+  {
+    
+    s.i   = which( fastaEx( originfas )$id == tree.d$label[ outgp ] )
+    id.i  = c( fastaEx( seqfile )$id, tree.d$label[ outgp ] )
+    seq.i = c( fastaEx( seqfile )$seq, fastaEx( originfas )$seq[s.i] )
+    
+    write.fasta( sequences = seq.i, names = id.i, file.out = gsub( "\\/p", "/", seqfile )  )
+    
+  }else
+  {
+    stop()
+  }
+  
+}
+
 
 
 

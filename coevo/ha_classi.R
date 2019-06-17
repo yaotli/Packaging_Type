@@ -28,20 +28,20 @@ N8_seq = "./raw_data.n8/processed/pN8_3467.fasta"
 # H5_tredf$group = NA
 # 
 # # to map the targets on the tree
-# H5_tredf$shape[ ha_mdr.4$ix ] = "20"
+# H5_tredf$shape[ ha_mdr.2$ix ] = "20"
 # ggtree( H5_trein, right = TRUE ) %<+% H5_tredf + geom_tippoint( aes( shape = shape ), color = "red", size = 5, alpha = 0.5 )
 # 
-# H5_tredf$group[ ha_mdr.4$ix ] = ha_mdr.4$group
+# H5_tredf$group[ ha_mdr.2$ix ] = ha_mdr.2$group
 # ggtree( H5_trein, right = TRUE ) %<+% H5_tredf + geom_tippoint( aes( shape = shape, color = group ), size = 5, alpha = 0.5 )
 # 
-# # for specific subtype with classification 
-# ggplot( ha_mdr.2, aes( x = Dim_1, y = Dim_2, label = id ) )  + geom_point( aes(color = group), alpha = 0.5, size = 4) 
+# # for specific subtype with classification
+# ggplot( ha_mdr.2, aes( x = Dim_1, y = Dim_2, label = id ) )  + geom_point( aes(color = group), alpha = 0.5, size = 4)
 # 
 # # for reduced dimension plot
-# ggplot( rbind( ha_mdr.1, ha_mdr.2, ha_mdr.3, ha_mdr.4, ha_mdr.5 ), aes( x = Dim_1, y = Dim_2, label = id ) )  + 
-#   geom_point( aes(color = sero, alpha = sero ), size = 4) + 
-#   scale_alpha_manual( values = c( 0, 0, 0, 1, 0) ) +
-#   # geom_text( aes( alpha = sero ), size = 2, vjust = 1) 
+# ggplot( rbind( ha_mdr.1, ha_mdr.2, ha_mdr.3, ha_mdr.4, ha_mdr.5 ), aes( x = Dim_1, y = Dim_2, label = id ) )  +
+#   geom_point( aes(color = sero, alpha = sero ), size = 4) +
+#   scale_alpha_manual( values = c( 0, 1, 0, 0, 0) ) +
+#   # geom_text( aes( alpha = sero ), size = 2, vjust = 1)
 
 
 # locate the Nx virus on HA tree  -----------------------------------------------------
@@ -92,7 +92,7 @@ for( j in 1: 3 )
 }
 
 # H5 - n2
-h5n2_sam1 = c( -0.06, -0.03, -0.0125, 0.02 )
+h5n2_sam1 = c( -0.06, -0.03, -0.0125, 0.01 )
 h5n2_sam2 = c( -0.05, -0.04, -0.03, -0.0125 )
 h5n2_sam3 = c( -0.02, 0, -0.0125, 0 )
 h5n2_sam4 = c( 0, 0.015, -0.0125, 0.01 )

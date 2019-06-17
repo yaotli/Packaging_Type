@@ -114,19 +114,35 @@ leafEx( N5_seq, g2_na, seq.out = "./h5_n5/pNA_h5n5_g2.fasta" )
 
 # aa reconstruction  -----------------------------------------------------
 
-# group1-ha
-.aa_recon( folderdir = "./h5_n5/dS/h5n5_g1/HA/" )
-# group1-na
-.aa_recon( folderdir = "./h5_n1/sam1/NA/" )
+# sam1
+.aa_recon( folderdir = "./h5_n5/dS/h5n5_g1_h5/" )
+.aa_recon( folderdir = "./h5_n5/dS/h5n5_g1_n5/" )
+
+# sam2
+.aa_recon( folderdir = "./h5_n5/dS/h5n5_g2_h5/" )
+.aa_recon( folderdir = "./h5_n5/dS/h5n5_g2_n5/" )
 
 
-# sam2-ha
-.aa_recon( folderdir = "./h5_n1/sam2/HA/" )
-# sam2-na
-.aa_recon( folderdir = "./h5_n1/sam2/NA/" )
+# 
+# 2nd samples  -----------------------------------------------------
+
+# g1
+.root_seq(  seqfile = "./h5_n5/pHA_h5n5_g1.fasta", treefile = H5_treefile, originfas = H5_seq )
+.root_seq(  seqfile = "./h5_n5/pNA_h5n5_g1.fasta", treefile = N5_trefile, originfas = N5_seq )
+
+# g2
+.root_seq(  seqfile = "./h5_n5/pHA_h5n5_g2.fasta", treefile = H5_treefile, originfas = H5_seq )
+.root_seq(  seqfile = "./h5_n5/pNA_h5n5_g2.fasta", treefile = N5_trefile, originfas = N5_seq )
 
 
+# aa reconstruction  -----------------------------------------------------
 
+# sam1
+.aa_recon( folderdir = "./h5_n5/dS_r/h5n5_g1_h5/" )
+.aa_recon( folderdir = "./h5_n5/dS_r/h5n5_g1_n5/" )
 
-# dist. test  -----------------------------------------------------
+# sam2
+.aa_recon( folderdir = "./h5_n5/dS_r/h5n5_g2_h5/" )
+.aa_recon( folderdir = "./h5_n5/dS_r/h5n5_g2_n5/" )
+
 

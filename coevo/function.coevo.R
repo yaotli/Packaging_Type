@@ -448,7 +448,7 @@ tagExtra <- function( filedir = file.choose() )
 leafEx <- function( filedir   = file.choose(), 
                     leaflist  = c(), 
                     consenseq = FALSE, 
-                    seq.out  = NA )
+                    seq.out   = NA )
 {
   require( seqinr )
   
@@ -469,11 +469,11 @@ leafEx <- function( filedir   = file.choose(),
       
     }else
     {
-      write.fasta( fas.s[ m ], fas.n[ m ], gsub( pattern = ".fasta", 
+      write.fasta( fas.s[ m ], fas.n[ m ], gsub( pattern     = ".fasta", 
                                                  replacement = paste0( "_", length(m), ".fasta"), 
-                                                 x = filedir ) )    
+                                                 x           = filedir ) )    
       
-      }
+    }
     
     
   }
@@ -488,20 +488,20 @@ leafEx <- function( filedir   = file.choose(),
                
                if ( length( grep( "a|t|c|g", x, value = TRUE, ignore.case = TRUE) )  == 0 ){ most = "-" }else
                {
-                 most <- as.data.frame( table( grep( "a|t|c|g", x, value = TRUE, ignore.case = TRUE) ), 
-                                        stringsAsFactors = FALSE)[1,1]
+                 most <- names( sort( table( grep( "a|t|c|g", x, value = TRUE, ignore.case = TRUE) ), decreasing = TRUE) )[1]
+                 
                }
                
                return( most )
                
              })
     
-    write.fasta( list(Conseq), "Conseq", gsub( pattern = ".fasta", 
+    write.fasta( list(Conseq), "Conseq", gsub( pattern     = ".fasta", 
                                                replacement = paste0( "_con", length(m), ".fasta"), 
-                                               x = filedir ) )
+                                               x           = filedir ) )
   }
   
-  #v20190121
+  #v20190209
 }
 
 ### rmDup --------------------------------
@@ -1172,6 +1172,7 @@ ha_num <- function( ref_fas = file.choose(),
                     ref_csv = file.choose(),
                     data_pos = c( 2, 354, 500 ) )
 {
+  # require fastaEx
   require( seqinr )
   require( stringr )
   
@@ -1340,9 +1341,9 @@ parse_hyphy <- function( n_sample = 1,
         unlist( sapply( as.list(slac.row.i[-1]), 
                         function(x)
                         {
-                          codon  = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\. ]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,2] )
-                          po_ne  = str_match( x, "^ ([0-9]+) [\\|0-9\\. ]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,3]
-                          pvalue = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\. ]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,4] )
+                          codon  = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\. \\-a-z]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,2] )
+                          po_ne  = str_match( x, "^ ([0-9]+) [\\|0-9\\. \\-a-z]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,3]
+                          pvalue = as.numeric( str_match( x, "^ ([0-9]+) [\\|0-9\\. \\-a-z]+ ([A-Za-z]+). p \\= ([0-9\\.]+) " )[,4] )
                           
                           if( (po_ne == "Pos") & (pvalue < p) ){ return(codon) }
                         } 
@@ -1388,7 +1389,7 @@ parse_hyphy <- function( n_sample = 1,
   
   return( out )
   
-  #v20181120
+  #v20190315
 }
 
 
@@ -1559,6 +1560,72 @@ treeMDR <- function( index, bigmatrix )
   return( out )
   
   #v20190110
+}
+
+
+
+### Nx_num --------------------------------
+
+Nx_num <- function( align_file = file.choose(),
+                    ref_file   = file.choose(),
+                    data_pos   = c(340,2,3), 
+                    input_na   = c(1,5,8),
+                    out_na     = c(2,2,2)) 
+{
+  require( seqinr )
+  require( stringr )
+  
+  align_s = fastaEx( align_file )$seq
+  align_n = fastaEx( align_file )$id
+  ref_s   = fastaEx( ref_file )$seq
+  ref_n   = fastaEx( ref_file )$id
+  
+  data_pos = as.numeric( data_pos )
+  input_na = as.numeric( input_na )
+  out_na   = as.numeric( out_na )
+  
+  if( FALSE %in% ( unique( input_na ) %in% as.numeric( str_extract( align_n, "(\\d)" ) ) ) )
+  { stop( "no such na subtype in the align_file..." ) }
+  if( length(data_pos) != length(input_na) ){ stop( "numbers of data_pos and input_na are not the same..." ) }
+  
+  pos = lapply( as.list( seq(1, length(data_pos) ) ), 
+                function(x)
+                {
+                  po.i  = data_pos[x]
+                  nx.i  = input_na[x]
+                  o.i   = out_na[x]
+                  
+                  seq.align.w = align_s[ which( str_extract( align_n, "(\\d)" ) == as.character( nx.i ) ) ][[1]]
+                  abPos.align = grep( "-", seq.align.w, invert = TRUE )[ po.i ]
+                  
+                  ref.align.i = ref_s[ which( str_extract( ref_n, "(\\d)" ) == as.character( nx.i ) ) ][[1]]
+                  abPos.ref   = grep( "-", ref.align.i, invert = TRUE )[ abPos.align ]
+                  
+                  ref.align.o = ref_s[ which( str_extract( ref_n, "(\\d)" ) == as.character( o.i ) ) ][[1]]
+                  pos.ref.o   = which( grep( "-", ref.align.o, invert = TRUE ) == abPos.ref )
+                  
+                  seq.align.o = align_s[ which( str_extract( align_n, "(\\d)" ) == as.character( o.i ) ) ][[1]]
+                  pos.align.w = which( grep( "-", seq.align.o, invert = TRUE ) == pos.ref.o )
+                  
+                  if( length(pos.align.w) < 1 )
+                  {  pos.align.w = "-"  
+                     out.aa      = "-"
+                  }else
+                  {
+                    out.aa = seq.align.o[ pos.ref.o ]
+                  }
+                  
+                  out = data.frame( type = c( paste0( "N", nx.i ), paste0("N", o.i )  ),
+                                    pos  = as.character( c( po.i, pos.align.w ) ),
+                                    resi = c( toupper( seq.align.w[ abPos.align ] ), toupper( out.aa ) ), 
+                                    stringsAsFactors = FALSE )
+                  return( out )
+                }
+  )
+
+  return( pos )
+  
+  #20190214
 }
 
 
